@@ -22,26 +22,6 @@ PURPOSE.  See the above copyright notice for more information.
 #include <cstring>
 #include <cstdlib>
 
-template<class T>
-T StringToNumeric(const std::string& string)
-{
-  T ret = 0; // Safe since T should only be a numeric type
-  std::stringstream stream;
-  stream << string;
-  stream >> ret;
-  return ret;
-}
-
-template<class T, class P>
-T NumericToString(P x)
-{
-  T ret;
-  std::stringstream ss;
-  ss << x;
-  ss >> ret;
-  return ret;
-}
-
 template<class X, class Y>
 static Y convertXToY(X val)
 {
