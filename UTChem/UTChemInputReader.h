@@ -54,7 +54,7 @@ struct UTChemInputReader
   // Giant list of public variables for use later
   int imode, imes, idispc, icwm, icap, ireact, ibio, icoord, itreac, itc, igas, ieng;
   int nx, ny, nz, idxyz, iunit;
-  float dx1, dy1, dz1;
+  float r1, dx1, dy1, dz1;
   int N, no, ntw, nta, ngc, ng, noth;
   int icumtm, istop, ioutgms, is3g;
   int ippres, ipsat, ipctot, ipbio, ipcap, ipgel, ipalk, iptemp, ipobs;
@@ -94,25 +94,20 @@ private:
   void skipLines(int numLines);
   void readNextLine(std::string& str);
   int readIVarInLine(int numVars, const char* str, std::vector<int>& container);
-  int readDVar(std::string& str, std::vector<double>& container, int numExpected=-1);
+  void readRegionalCoords(std::string& str, std::vector<double>& container, int numExpected=-1);
+  void readCurvilinearXZ(std::string&, std::vector<double>&, std::vector<double>&);
 
-  // Static helpers
-  static void skipLines(std::ifstream& InputFile, int numLines, int& lineCount);
-  static void readNextLine(std::ifstream& InputFile, std::string& line, int& lineCount);
   static char* consumeProcessed(char* ptr);
 
   // Extra setup functions
   void determineGridType();
   void setupRGridCoords();
-  void setupSGridPointsCurv(const std::vector<double>&);
-	void setupSGridPoints();
-
+  void setupSGridCoords();
 	void calculateCellVolume();
 
   std::ifstream InputFile;
   int readParams;
   int objectType; // 0 = Image Data, 1 = Rectilinear Grid
-  int line;
   bool isValid;
   vtkDataObject * gridObject;
   float ** cellCenters;

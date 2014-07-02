@@ -64,6 +64,7 @@ void UTChemWellReader::CollectRevisions(ostream& os)
 // constructor
 UTChemWellReader::UTChemWellReader()
 {
+	std::cout << "MVM: well reader ctor called\n";
 	readHeader();
   this->SetNumberOfOutputPorts(2);
 }
@@ -275,6 +276,7 @@ int UTChemWellReader::parseAsWellTable(const char* c_str)
   for (unsigned i = 0; i <= len; i++){
     if (i==len || c_str[i] == ','){
       if(token.size()>0) {
+		// MVM: cast or proper use of stream extraction should get rid of this
       	data.push_back(convertXToY<std::string, float>(token));
         token.clear();
       }

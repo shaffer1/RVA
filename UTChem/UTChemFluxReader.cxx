@@ -16,17 +16,7 @@ PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 
 #include "UTChemFluxReader.h"
-
-#ifdef _MSC_VER 
-#pragma warning( disable: 4996 )
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-// Include our header
-#include "UTChemFluxReader.h"
 #include "UTChemInputReader.h"
-
-// Standard libraries
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -36,15 +26,13 @@ PURPOSE.  See the above copyright notice for more information.
 #include <limits>
 #include <sstream>
 #include <stdexcept>
-
-// Useful vtk/paraview headers
 #include "vtkInformationVector.h"
 #include "vtkInformation.h"
 #include "vtkObjectFactory.h"
 #include "vtkStructuredGrid.h"
 #include "vtkPointData.h"
 #include "vtkPoints.h"
-#include "vtkfloatArray.h"
+#include "vtkFloatArray.h"
 #include "vtkDataObject.h"
 #include "vtkCellData.h"
 #include "vtkImageData.h"
@@ -67,38 +55,47 @@ void UTChemFluxReader::CollectRevisions(ostream& os)
 	os << "Version: 1.0"; // 
 }
 
-/**
-* Constructor
-*
-*/
 UTChemFluxReader::UTChemFluxReader() : fluxNameCount(0),directionXYZ(0)
 {
+	std::cout << "UTChemFluxReader ctor called\n";
 }
 
 UTChemFluxReader::~UTChemFluxReader()
 {
 }
 
-const char* UTChemFluxReader::fileExtensionToLabel(std::string&ext) {
-	if(ext == "PROF") return "Flux";
-	return "";
-}
-
-// Standard VTK file reader support
 int UTChemFluxReader::CanReadFile(const char* filename)
 {
-	if(!filename) return 0;
-	std::string ext = toUpperCaseFileExtension(filename);
-	if(ext != "PROF") return 0;
-	// Check that ivel data is available
+	
+	if (!filename) 
+	{
+	  return 0;
+  }
+  
+  // MVM: They're kidding, right?
+  std::string ext = toUpperCaseFileExtension(filename);
+	if (ext != "PROF") 
+  {
+    return 0;
+  }
+  
+  // Check that ivel data is available
   try {
+		// MVM: why reload the entire INPUT file just to find one var?
+		// should be cataloged on first go through.
 	  reloadInputFile(filename);
+		// MVM: same with this, should be stored
 	  std::string inputFileName(getInputFileFromFileName(filename));
-    return InputInfo->canReadFile() && InputInfo->ivel !=0;
-  } catch(std::exception& e) {
+    return InputInfo->canReadFile() && InputInfo->ivel != 0;
+  } catch (std::exception& e) {
     e; // avoid compiler warning of unused var
     return 0;
   }
+}
+
+const char* UTChemFluxReader::fileExtensionToLabel(std::string&ext) {
+	if(ext == "PROF") return "Flux";
+	return "";
 }
 
 /* throws an exception if nx,ny,nz if valid dimensions could not be extracted from header */
@@ -131,9 +128,14 @@ int UTChemFluxReader::parseLine(const char* c_str) {
 
 int UTChemFluxReader::parseAsLayerIdent(const char* c_str){ // 1 for success
 	int layerIndex =0;
+	
+	// MVM: yikes
 	int parsedLayerIndex= 1==sscanf(c_str,"D E T A I L S   O F   L A Y E R   N U M B E R     %d",&layerIndex);
-	if(!parsedLayerIndex || layerIndex<1 || layerIndex > nz)
-		throw std::exception("Failed to read layer number");
+	
+	if(!parsedLayerIndex || layerIndex<1 || layerIndex > nz) {
+	//	throw std::exception("Failed to read layer number");
+		throw std::runtime_error("Failed to read layer number");
+	}
 	this->layer = layerIndex - 1;
 	return 1; // consumed
 }
@@ -143,7 +145,8 @@ int UTChemFluxReader::parseAsFluxHeader(const char* c_str){
 
 	if( 3!=sscanf(c_str,"%99s PHASE %c-FLUX  (%255s",this->phaseName,&directionChar,fluxUnits)) {
 		vtkErrorMacro(<<"Could not parse PHASE FLUX :'"<<nextLine<<"'")
-			throw std::exception("Failed to read phase flux heading");
+			//throw std::exception("Failed to read phase flux heading");
+			throw std::runtime_error("Failed to read phase flux heading");
 
 	}
 	this->phaseName[sizeof(phaseName)-1]=0; // Paranoia
@@ -154,7 +157,8 @@ int UTChemFluxReader::parseAsFluxHeader(const char* c_str){
 	this->directionXYZ = directionChar-'X';
 	if(!*phaseName || !*fluxUnits || directionXYZ<0 || directionXYZ>2) {
 		vtkErrorMacro(<<"Unexpected PHASE FLUX values :'"<<nextLine<<"'")
-			throw std::exception("Unexpected values found in phase flux heading");
+//			throw std::exception("Unexpected values found in phase flux heading");
+		throw std::runtime_error("Unexpected values found in phase flux heading");
 	}
 	std::string phaseNameString(phaseName);
 	if( ! this->fluxNameToIndex.count(phaseNameString) ){
@@ -185,8 +189,10 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 	while(numColsParsedEarlier < nx) {
 
 		const char* c_str = readNextLine(true); 
-		if(!contains(c_str,"J/I="))
-			throw std::exception("Expected J/I= data");
+		if(!contains(c_str,"J/I=")) {
+		//	throw std::exception("Expected J/I= data");
+			throw std::runtime_error("Expected J/I= data");
+		}
 		int numColsExpected=0;
 		for(int j=0;j<ny;j++) {
 
@@ -195,8 +201,10 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 			const char *next_ptr=c_str;
 			int jthIndex = (int)strtod(c_str, (char**) &next_ptr);
 			
-			if(jthIndex<1 || jthIndex>ny || jthIndex != j+1 || next_ptr == c_str)
-				throw std::exception("Invalid j index");
+			if(jthIndex<1 || jthIndex>ny || jthIndex != j+1 || next_ptr == c_str) {
+				//throw std::exception("Invalid j index");
+				throw std::runtime_error("Invalid j index");
+			}
 
 			c_str =  next_ptr;
 
@@ -207,7 +215,8 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 			if( ! array || idx<0 
 				|| (long)idx + (nx-numColsParsedEarlier)> (long)array->GetNumberOfTuples() 
 				|| directionXYZ <0 || directionXYZ>= (int)array->GetNumberOfComponents()){
-				throw std::exception("Invalid internal state");
+				//throw std::exception("Invalid internal state");
+				throw std::runtime_error("Invalid internal state");
 			}
 			while(true) {
 
@@ -222,10 +231,14 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
           val = makeExponential(val, (char**)&next_ptr);
         c_str = next_ptr;
 
-				if(i>=nx)
-					throw std::exception("Too many columns read");
-				if(remainNumValues<=0)
-					throw std::exception("Too many values read");
+				if(i>=nx) {
+					//throw std::exception("Too many columns read");
+					throw std::runtime_error("Too many columns read");
+				}
+				if(remainNumValues<=0) {
+					//throw std::exception("Too many values read");
+					throw std::runtime_error("Too many values read");
+				}
 
 				array->SetComponent(idx,directionXYZ,val);
 				columnCount++;
@@ -236,16 +249,22 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 			// sanity check that all remaining rows also have a reasonable column count - 
 			if(j==0) {
 				numColsExpected = columnCount;
-				if(columnCount<1)
-					throw std::exception("Expected at least one data column");
+				if(columnCount<1) {
+					//throw std::exception("Expected at least one data column");
+					throw std::runtime_error("Expected at least one data column");
+				}
 			}
-			else if(columnCount != numColsExpected)
-				throw std::exception("Incorrect number of columns in J/I data");
+			else if(columnCount != numColsExpected) {
+		//				throw std::exception("Incorrect number of columns in J/I data");
+				throw std::runtime_error("Incorrect number of columns in J/I data");
+			}
 		} // for all rows of data
 		numColsParsedEarlier += numColsExpected;
 	} // while
-	if(remainNumValues!=0)
-		throw std::exception("Incorrect number of values read");
+	if(remainNumValues!=0) {
+//		throw std::exception("Incorrect number of values read");
+		throw std::runtime_error("Incorrect number of values read");
+	}
 
 	return 1; // Success
 }
@@ -266,10 +285,14 @@ vtkFloatArray* UTChemFluxReader::getCurrentFloatArray() {
 
   unsigned arraySize = nx*ny*nz;
 
-  if(currentTimeStep == NULL || arraySize==0)
-    throw std::exception("Can't readLayerValues when there's no current time step (or proper dimensions)");
-  if(phase<0)
-    throw std::exception("Negative phase values are unsupported"); // meaningful name requires non-neg
+  if(currentTimeStep == NULL || arraySize==0) {
+    //throw std::exception("Can't readLayerValues when there's no current time step (or proper dimensions)");
+	throw std::runtime_error("Can't readLayerValues when there's no current time step (or proper dimensions)");
+  }
+  if(phase<0) {
+    //throw std::exception("Negative phase values are unsupported"); // meaningful name requires non-neg
+	throw std::runtime_error("Negative phase values are unsupported");
+  }
 
   if( ! currentTimeStep->count(phase)) {
     vtkFloatArray* floatArray = vtkFloatArray::New();
