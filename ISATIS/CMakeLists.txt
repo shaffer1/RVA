@@ -41,7 +41,7 @@ IF(PARAVIEW_BUILD_QT_GUI)
   elseif(APPLE)
     link_directories(${GTXSERVER_LIB_DIR}/darwin/static)
   else()
-    link_directories(${GTXSERVER_LIB_DIR}/linux-gcc41/static)
+    link_directories(${GTXSERVER_LIB_DIR}/linux64-gcc41/static)
   endif()
 
   SET_SOURCE_FILES_PROPERTIES(
