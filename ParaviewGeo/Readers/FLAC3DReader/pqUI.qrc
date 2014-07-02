@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/PVGReaders" >
+        <file>pqFLAC3DReader.ui</file>
+    </qresource>
+</RCC>

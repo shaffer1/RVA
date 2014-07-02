@@ -1,0 +1,8 @@
+<ParaViewFilters>
+  <Category name="RVA" menu_label="&amp;RVA">
+    <Filter name="ConnectedThreshold" />
+	<Filter name="ConnectedThresholdWithCustomSource" />
+    <Filter name="CutBetweenWells" />
+    <Filter name="Sum" />
+  </Category>
+</ParaViewFilters>

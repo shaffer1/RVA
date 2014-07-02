@@ -1,0 +1,29 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+  
+    <SourceProxy name="FLAC3DReader" class="vtkFLAC3DReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="DisplacementVectorsFile"
+        command="SetDisplacementVectorsFile"
+        number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ZonesScalarsFile"
+        command="SetZonesScalarsFile"
+        number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ZonesTensorsFile"
+        command="SetZonesTensorsFile"
+        number_of_elements="1">
+      </StringVectorProperty>
+    </SourceProxy>
+	
+  </ProxyGroup>
+</ServerManagerConfiguration>

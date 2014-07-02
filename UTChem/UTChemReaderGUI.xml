@@ -1,0 +1,17 @@
+<!-- See paraview's Plugin_HowTo wiki -->
+<ParaViewReaders>
+  <Reader name="UTChemConcReader" extensions="PRESP SATP CONCP VISC COMP_AQ COMP_ME COMP_OIL PERM TEMPP ALKP"
+        	file_description="UTCHEM Simulation data">
+  </Reader>
+   <Reader name="UTChemWellReader" extensions="HIST
+           HIST01 HIST02 HIST03 HIST04 HIST05 HIST06 HIST07 HIST08 HIST09 HIST10 HIST11 HIST12 
+           HIST13 HIST14 HIST15 HIST16 HIST17 HIST18 HIST19 HIST20 HIST21 HIST22 HIST23 HIST24 
+           HIST25 HIST26 HIST27 HIST28 HIST29 HIST30 HIST31 HIST32 HIST33 HIST34 HIST35 HIST36 
+           HIST37 HIST38 HIST39 HIST40 HIST41 HIST42 HIST43 HIST44 HIST45 HIST46 HIST47 HIST48 
+           HIST49 HIST50 HIST51 HIST52 HIST53 HIST54 HIST55 HIST56 HIST57 HIST58 HIST59 HIST60"
+          	file_description="UTCHEM Simulation well history">
+  </Reader>
+   <Reader name="UTChemFluxReader" extensions="PROF"
+          	file_description="UTCHEM Simulation profile data">
+  </Reader>
+</ParaViewReaders>

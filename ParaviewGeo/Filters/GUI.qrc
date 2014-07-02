@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/PVGFilters" >
+      <file>ApplySchedule/pqApplySchedule.ui</file>
+      <file>BoundingBox/pqBoundingBox.ui</file>
+      <file>ConvertPointsToBlocks/pqConvertPointsToBlocks.ui</file>
+      <file>RegexThreshold/pqRegexThreshold.ui</file>
+      <file>SumBillboard/SumBillboard.ui</file>
+      <file>TimeThreshold/pqTimeThreshold.ui</file>
+	  <file>Mine24DtoMap3D/pqMine24DtoMap3D.ui</file>
+    </qresource>
+</RCC>

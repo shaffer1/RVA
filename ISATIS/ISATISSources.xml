@@ -1,0 +1,96 @@
+ <ServerManagerConfiguration>
+   
+   <!-- Filters -->
+   <ProxyGroup name="filters">
+     <!-- For filters - set SourceProxy elements in a very similar way-->
+   </ProxyGroup>
+   
+   <!-- Sources -->
+   <ProxyGroup name="sources">
+   <!-- ==================================================================== -->
+   <SourceProxy name="ISATISReaderSource" class="ISATISReaderSource"
+                label="ISATISReader">
+      
+       <IntVectorProperty
+    name=" GTX Server Port"
+    command="SetGTXServerPort"
+    number_of_elements="1"
+    default_values="0">
+           <IntRangeDomain name="range" />
+           <Documentation>
+           </Documentation>
+       </IntVectorProperty>
+
+       <StringVectorProperty
+          name=" GTX Server Host"
+          command="SetGTXServerHost"
+          number_of_elements="1"
+          default_values="">
+       </StringVectorProperty>
+
+       <StringVectorProperty
+          name=" GTX Server Path"
+          command="SetGTXServerPath"
+          number_of_elements="1"
+          default_values="">
+       </StringVectorProperty>
+
+
+       <StringVectorProperty
+          name=" Placeholder"
+          number_of_elements="1"
+          default_values="Click Refresh to connect">
+       </StringVectorProperty>
+
+
+      <StringVectorProperty
+           name=" GTX Study"
+           command="SetGTXStudy"
+           number_of_elements="1"
+           default_values="RVA1_Basic">
+          <EnumerationDomain name="GTXStudies">
+              <!-- No default values - do it programmatically -->
+          </EnumerationDomain>
+       </StringVectorProperty>
+
+       <StringVectorProperty
+        name=" GTX Directory"
+        command="SetGTXDirectory"
+        number_of_elements="1"
+        default_values="Grids">
+       <EnumerationDomain name="GTXDirectories">
+           <!-- No default values - do it programmatically -->
+       </EnumerationDomain>
+       </StringVectorProperty>
+
+       <StringVectorProperty
+        name=" GTX File Name"
+        command="SetGTXFileName"
+        number_of_elements="1"
+        default_values="RVA1_Structure">
+           <EnumerationDomain name="GTXFiles">
+               <!-- No default values - do it programmatically -->
+           </EnumerationDomain>
+       </StringVectorProperty>
+
+
+ <StringVectorProperty
+        name=" Length Units"
+        number_of_elements="1"
+        default_values="">
+           <EnumerationDomain name="Units">
+               <!-- No default values - do it programmatically -->
+           </EnumerationDomain>
+       </StringVectorProperty>
+       
+      <Documentation
+        long_help="Import data from ISATIS Studies using a GTX Server"
+        short_help="Import ISATIS studies using a local or remote GTX Server">
+The ISATIS Reader imports study data from Geovariance ISATIS GTX Server.
+      </Documentation>
+   
+   </SourceProxy>
+   
+ 
+     </ProxyGroup>
+   </ServerManagerConfiguration>

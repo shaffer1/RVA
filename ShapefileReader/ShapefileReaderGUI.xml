@@ -1,0 +1,5 @@
+<!-- Sample GUI based off of default listed on paraview's Plugin_HowTo wiki -->
+<ParaViewReaders>
+  <Reader name="ShapefileReader" extensions="shp" file_description="shapefiles">
+  </Reader>
+</ParaViewReaders>

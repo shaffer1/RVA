@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>3DECReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

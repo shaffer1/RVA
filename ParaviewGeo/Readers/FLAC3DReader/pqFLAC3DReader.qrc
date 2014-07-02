@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>FLAC3DReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

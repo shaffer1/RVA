@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="FLAC3DReader"
+    extensions="flac3d"
+    file_description="FLAC3D Grid File">
+  </Reader>
+</ParaViewReaders>

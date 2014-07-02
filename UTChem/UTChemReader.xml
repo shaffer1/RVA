@@ -1,0 +1,79 @@
+<!-- Sample server XML based off of default listed on paraview's Plugin_HowTo wiki -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+    <SourceProxy name="UTChemConcReader" class="UTChemConcReader" label="UTChem Concentration, Pressure, Saturation and Viscosity data">
+      <Documentation
+	      long_help="Import UTchem multiphase fluid data"
+	      short_help="Read UTChem data">
+      </Documentation>
+      <StringVectorProperty name="FileName"
+	      animateable="0"
+	      command="SetFileName"
+	      number_of_elements="1">
+        <FileListDomain name="files" />
+        <Documentation>
+	    Specifies filename for the reader
+        </Documentation>
+      </StringVectorProperty>
+        <DoubleVectorProperty
+        name="TimestepValues"
+        repeatable="1"
+        information_only="1">
+            <TimeStepsInformationHelper/>
+            <Documentation>
+                Available timestep values.
+            </Documentation>
+        </DoubleVectorProperty>
+    </SourceProxy>
+    <SourceProxy name="UTChemWellReader" class="UTChemWellReader" label="UTChem Well data">
+      <OutputPort name="Position" index="0" />
+      <OutputPort name="History" index="1" />
+      <Documentation
+	      long_help="Import UTchem well data"
+	      short_help="Read UTChem well data">
+      </Documentation>
+      <StringVectorProperty name="FileName"
+	      animateable="0"
+	      command="SetFileName"
+	      number_of_elements="1">
+        <FileListDomain name="files" />
+        <Documentation>
+          Specifies filename for the reader
+        </Documentation>
+      </StringVectorProperty>
+      <DoubleVectorProperty
+      name="TimestepValues"
+      repeatable="1"
+      information_only="1">
+        <TimeStepsInformationHelper/>
+        <Documentation>
+          Available timestep values.
+        </Documentation>
+      </DoubleVectorProperty>
+    </SourceProxy>
+    <SourceProxy name="UTChemFluxReader" class="UTChemFluxReader" label="UTChem Flux (velocity) data">
+      <Documentation
+	      long_help="Import UTchem flux (velocity) data"
+	      short_help="Read UTChem flux data">
+      </Documentation>
+      <StringVectorProperty name="FileName"
+	      animateable="0"
+	      command="SetFileName"
+	      number_of_elements="1">
+        <FileListDomain name="files" />
+        <Documentation>
+          Specifies filename for the reader
+        </Documentation>
+      </StringVectorProperty>
+      <DoubleVectorProperty
+      name="TimestepValues"
+      repeatable="1"
+      information_only="1">
+        <TimeStepsInformationHelper/>
+        <Documentation>
+          Available timestep values.
+        </Documentation>
+      </DoubleVectorProperty>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,0 +1,471 @@
+<ServerManagerConfiguration>
+
+  <!-- Filters -->
+  <ProxyGroup name="filters">
+    <!-- For filters - set SourceProxy elements in a very similar way-->
+
+    <!-- Cut Between Wells filter -->
+    <SourceProxy name="CutBetweenWells" label="Cut Between Wells" class="CutBetweenWellsFilter">
+      <Documentation
+         long_help="This filter extracts cells on a Data Set that lie between two wells."
+         short_help="Extract cells between two wells.">
+        The Cut Between Wells filter extracts the portions of the input dataset whose cells lie between the two selected wells.
+
+        The input can be any type of Data Set. The wells must be Poly Data. The result is an Unstructured Grid.
+      </Documentation>
+      <InputProperty
+        name="DataSet"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          This property specifies the Data Set to be evaluated by the Cut Between Wells filter.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="WellOne"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <Documentation>
+          This property specifies the first well to be evaluated.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="WellTwo"
+        port_index="2"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <Documentation>
+          This property specifies the second well to be evaluated.
+        </Documentation>
+      </InputProperty>
+
+    </SourceProxy>
+
+    <!-- Connected Threshold With Custom Source Filter -->
+    <SourceProxy name="ConnectedThresholdWithCustomSource" label="Connected Threshold With Custom Source" class="ConnectedThresholdWithCustomSourceFilter">
+      <Documentation
+         long_help="This filter extracts cells that have cell scalars in the specified range and are all connected to each other."
+         short_help="Extract connected cells that satisfy a threshold criterion.">
+        The Connected Threshold With Custom Source filter extracts the portions of the input dataset whose scalars lie within the specified range and are connected. This connection begins at the Seed Points input. This filter operates only on cell-centered data. The input must be Image Data or a Rectilinear Grid. The resulting output type is the same as the input.
+
+        The filter can be set on two different scalars from the same object. The Lower Threshold and Upper Threshold sliders determine the range of the scalars to retain in the output. The Exclude Range checkbox will cause only the scalars below the Lower Threshold and above the Upper Threshold to be retained in the output.
+      </Documentation>
+      <InputProperty
+         name="Input"
+         command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkImageData"/>
+          <DataType value="vtkRectilinearGrid"/>
+          <DataType value="vtkStructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" number_of_components="1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                function="FieldDataSelection"/>
+          </RequiredProperties>
+        </InputArrayDomain>
+        <Documentation>
+          This property specifies the input to be evaluated by the Connected Threshold filter.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="SeedPoints"
+       port_index="1"
+        command="SetInputConnection"
+        label="Seed Points">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <Documentation>
+          This input tells the Connected Threshold filter where to start evaluating.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+   name="SelectInputScalars"
+   command="SetRVAArrayName"
+   number_of_elements="5"
+   element_types="0 0 0 0 2"
+   label="Scalars 1">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+
+        <Documentation>
+          The value of this property contains the name of the scalar array from which to perform thresholding.
+        </Documentation>
+        <Hints>
+          <ShowInSummaryPanel/>
+        </Hints>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+   name="SelectInputScalars2"
+   command="SetRVAArrayName2"
+   number_of_elements="5"
+   element_types="0 0 0 0 2"
+   label="Scalars 2">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+
+        <Documentation>
+          The value of this property contains the name of the second scalar array from which to perform thresholding.
+        </Documentation>
+        <Hints>
+          <ShowInSummaryPanel/>
+        </Hints>
+      </StringVectorProperty>
+
+      <!-- Filter mode drop-down -->
+      <IntVectorProperty name="FilterMode" 
+                         command="SetMode" 
+                         number_of_elements="1" 
+                         default_values="2"
+                         label="Filter Mode">
+        <EnumerationDomain name="FilterModeBox">
+          <Entry value="0" text="And" />
+          <Entry value="1" text="Or" />
+          <Entry value="2" text="Only Scalar 1" />
+          <Entry value="3" text="Only Scalar 2" />
+        </EnumerationDomain>
+        <Documentation>
+          This specifies how to combine the two scalars. "And" will retain only cells that pass the threshold for both scalars. "Or" retains
+          cells that pass the threshold for either scalar. "Only Scalar 1" ignores Scalar 2 and "Only Scalar 2" ignores Scalar 1.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+   name="ThresholdBetween"
+   command="ThresholdBetween"
+   number_of_elements="2"
+   default_values="0 0"
+   label="Threshold Range 1">
+        <ArrayRangeDomain name="range">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+            <Property name="SelectInputScalars" function="ArraySelection"/>
+          </RequiredProperties>
+        </ArrayRangeDomain>
+        <Documentation>
+          The values of this property specify the upper and lower bounds of the thresholding operation for Scalar 1.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+    name="ThresholdBetween2"
+    command="ThresholdBetween2"
+    number_of_elements="2"
+    default_values="0 0"
+    label="Threshold Range 2">
+        <ArrayRangeDomain name="range">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+            <Property name="SelectInputScalars2" function="ArraySelection"/>
+          </RequiredProperties>
+        </ArrayRangeDomain>
+        <Documentation>
+          The values of this property specify the upper and lower bounds of the thresholding operation for Scalar 2.
+        </Documentation>
+        <Hints>
+          <ShowInSummaryPanel/>
+        </Hints>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="InsideOut"
+        command="SetInsideOut"
+        number_of_elements="1"
+        default_values="0"
+        label="Exclude Range (Inverse) 1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this option is selected only scalars in Scalar 1 below the Lower Threshold and above the Upper Threshold will be retained.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="InsideOut2"
+        command="SetInsideOut2"
+        number_of_elements="1"
+        default_values="0"
+        label="Exclude Range (Inverse) 2">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this option is selected only scalars in Scalar 2 below the Lower Threshold and above the Upper Threshold will be retained.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+      name="ResultArrayName"
+      command="SetResultArrayName"
+      number_of_elements="1"
+      default_values="Connectivity"
+      label="Result Array Name">
+        <Documentation>
+          This allows  you to change the name of the resulting array.
+        </Documentation>
+      </StringVectorProperty>
+
+    </SourceProxy>
+    
+    <!-- Volume Filter 
+        <SourceProxy name="Volume" label="Volume" class="VolumeFilter">
+          <Documentation
+            long_help="This filter finds the volume of each cell."
+            short_help="Find the volume of each cell.">
+            The Volume filter calculates the volume of each cell and creates a Cell Data Array called volume containing this number.
+          </Documentation>
+          <InputProperty
+             name="Input"
+             command="SetInputConnection">
+            <ProxyGroupDomain name="groups">
+              <Group name="sources"/>
+              <Group name="filters"/>
+            </ProxyGroupDomain>
+            <DataTypeDomain name="input_type">
+              <DataType value="vtkDataSet"/>
+            </DataTypeDomain>
+            <Documentation>
+              This property specifies the input to the Volume filter.
+            </Documentation>
+          </InputProperty>
+          
+    
+    </SourceProxy>-->
+
+    <!-- Connected Threshold  Filter -->
+    <SourceProxy name="ConnectedThreshold" label="Connected Threshold" class="ConnectedThresholdFilter">
+      <Documentation
+         long_help="This filter extracts cells that have cell scalars in the specified range and are all connected to each other."
+         short_help="Extract connected cells that satisfy a threshold criterion.">
+        The Connected Threshold filter extracts the portions of the input dataset whose scalars lie within the specified range. Each connected group is numbered in the output array. This filter operates only on cell-centered data. The input must be Image Data or a Rectilinear Grid. The resulting output type is the same as the input.
+
+        The filter can be set on two different scalars from the same object. The Lower Threshold and Upper Threshold sliders determine the range of the scalars to retain in the output. The Exclude Range checkbox will cause only the scalars below the Lower Threshold and above the Upper Threshold to be retained in the output.
+      </Documentation>
+      <InputProperty
+         name="Input"
+         command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkImageData"/>
+          <DataType value="vtkRectilinearGrid"/>
+          <DataType value="vtkStructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" number_of_components="1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                function="FieldDataSelection"/>
+          </RequiredProperties>
+        </InputArrayDomain>
+        <Documentation>
+          This property specifies the input to be evaluated by the Connected Threshold filter.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+   name="SelectInputScalars"
+   command="SetRVAArrayName"
+   number_of_elements="5"
+   element_types="0 0 0 0 2"
+   label="Scalars 1">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+
+        <Documentation>
+          The value of this property contains the name of the scalar array from which to perform thresholding.
+        </Documentation>
+        <Hints>
+          <ShowInSummaryPanel/>
+        </Hints>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+   name="SelectInputScalars2"
+   command="SetRVAArrayName2"
+   number_of_elements="5"
+   element_types="0 0 0 0 2"
+   label="Scalars 2">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+
+        <Documentation>
+          The value of this property contains the name of the second scalar array from which to perform thresholding.
+        </Documentation>
+        <Hints>
+          <ShowInSummaryPanel/>
+        </Hints>
+      </StringVectorProperty>
+
+      <!-- Filter mode drop-down -->
+      <IntVectorProperty name="FilterMode"
+                         command="SetMode"
+                         number_of_elements="1"
+                         default_values="2"
+                         label="Filter Mode">
+        <EnumerationDomain name="FilterModeBox">
+          <Entry value="0" text="And" />
+          <Entry value="1" text="Or" />
+          <Entry value="2" text="Only Scalar 1" />
+          <Entry value="3" text="Only Scalar 2" />
+        </EnumerationDomain>
+        <Documentation>
+          This specifies how to combine the two scalars. "And" will retain only cells that pass the threshold for both scalars. "Or" retains
+          cells that pass the threshold for either scalar. "Only Scalar 1" ignores Scalar 2 and "Only Scalar 2" ignores Scalar 1.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+   name="ThresholdBetween"
+   command="ThresholdBetween"
+   number_of_elements="2"
+   default_values="0 0"
+   label="Threshold Range 1">
+        <ArrayRangeDomain name="range">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+            <Property name="SelectInputScalars" function="ArraySelection"/>
+          </RequiredProperties>
+        </ArrayRangeDomain>
+        <Documentation>
+          The values of this property specify the upper and lower bounds of the thresholding operation for Scalar 1.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+    name="ThresholdBetween2"
+    command="ThresholdBetween2"
+    number_of_elements="2"
+    default_values="0 0"
+    label="Threshold Range 2">
+        <ArrayRangeDomain name="range">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+            <Property name="SelectInputScalars2" function="ArraySelection"/>
+          </RequiredProperties>
+        </ArrayRangeDomain>
+        <Documentation>
+          The values of this property specify the upper and lower bounds of the thresholding operation for Scalar 2.
+        </Documentation>
+        <Hints>
+          <ShowInSummaryPanel/>
+        </Hints>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="InsideOut"
+        command="SetInsideOut"
+        number_of_elements="1"
+        default_values="0"
+        label="Exclude Range (Inverse) 1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this option is selected only scalars in Scalar 1 below the Lower Threshold and above the Upper Threshold will be retained.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="InsideOut2"
+        command="SetInsideOut2"
+        number_of_elements="1"
+        default_values="0"
+        label="Exclude Range (Inverse) 2">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this option is selected only scalars in Scalar 2 below the Lower Threshold and above the Upper Threshold will be retained.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+      name="ResultArrayName"
+      command="SetResultArrayName"
+      number_of_elements="1"
+      default_values="Connectivity"
+      label="Result Array Name">
+        <Documentation>
+          This allows  you to change the name of the resulting array.
+        </Documentation>
+      </StringVectorProperty>
+
+    </SourceProxy>
+    
+    <!-- Sum Filter -->
+            <SourceProxy name="Sum" label="Sum" class="SumFilter">
+              <Documentation
+                long_help="This filter calculates the sum of each array."
+                short_help="Calculate the sum of each array.">
+                The Sum filter calculates the total sum of each Point Data and Cell Data array and displays the results in Field Data.
+              </Documentation>
+              <InputProperty
+                 name="Input"
+                 command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                  <Group name="sources"/>
+                  <Group name="filters"/>
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                  <DataType value="vtkDataSet"/>
+                </DataTypeDomain>
+                <Documentation>
+                  This property specifies the input to the Sum filter.
+                </Documentation>
+              </InputProperty>
+        
+    </SourceProxy>
+    
+  </ProxyGroup>
+
+  <!-- Sources -->
+  <ProxyGroup name="sources">
+
+
+  </ProxyGroup>
+</ServerManagerConfiguration>

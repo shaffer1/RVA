@@ -1,0 +1,34 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+  
+    <SourceProxy name="3DECReader" class="vtk3DECReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="DisplacementVectorsFile"
+        command="SetDisplacementVectorsFile"
+        number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ZonesScalarsFile"
+        command="SetZonesScalarsFile"
+        number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ZonesTensorsFile"
+        command="SetZonesTensorsFile"
+        number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="PointsFile"
+        command="SetPointsFile"
+        number_of_elements="1">
+      </StringVectorProperty>
+    </SourceProxy>
+		
+  </ProxyGroup>
+</ServerManagerConfiguration>

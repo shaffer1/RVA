@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="OracleReader"
+    extensions="oracle"
+    file_description="Oracle Database">
+  </Reader>
+</ParaViewReaders>

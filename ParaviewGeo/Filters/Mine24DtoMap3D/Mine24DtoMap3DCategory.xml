@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Objectivity">
+  <Filter name="Mine24D to Map3D"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

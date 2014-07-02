@@ -1,0 +1,13 @@
+PROJECT(FractureTrace)
+FIND_PACKAGE(ParaView REQUIRED)
+INCLUDE(${PARAVIEW_USE_FILE})
+ 
+ADD_PARAVIEW_PLUGIN(FractureTraceSMPlugin "1.0"
+	SERVER_MANAGER_XML FractureTrace.xml
+	SERVER_MANAGER_SOURCES vtkFractureTrace.cpp
+	SERVER_SOURCES)
+ 
+ADD_PARAVIEW_PLUGIN(FractureTraceCPlugin "1.0"
+	GUI_RESOURCE_FILES FractureTraceCategory.xml)
+
+

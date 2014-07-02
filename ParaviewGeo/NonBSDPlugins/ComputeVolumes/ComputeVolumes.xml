@@ -1,0 +1,24 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Compute Volumes" class="vtkComputeVolumes">
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>        
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+
+      <StringVectorProperty
+         name="VolumesArray"
+         command="GetVolumesArray"
+         information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+      
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
