@@ -19,6 +19,8 @@ PURPOSE.  See the above copyright notice for more information.
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <cstring>
+#include <cstdlib>
 
 template<class T>
 T StringToNumeric(const std::string& string)
