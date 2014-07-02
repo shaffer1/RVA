@@ -22,6 +22,8 @@ PURPOSE.  See the above copyright notice for more information.
 #include <cstring>
 #include <cstdlib>
 
+// MVM: This should probably be replaced with a C++ style cast. 
+// Need to inspect where this is being used.
 template<class X, class Y>
 static Y convertXToY(X val)
 {
