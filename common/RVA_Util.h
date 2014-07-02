@@ -65,6 +65,7 @@ static int contains(const char* s, const char* sub)
   return s && sub && NULL!=strstr(s,sub);
 }
 
+// MVM: Check to see if these can be replaced with normal C++ stream usage.
 static const char* skipWhiteSpace(const char *s) {
   if(!s) return NULL;
   while(*s == ' ' || *s =='\t')
@@ -86,6 +87,7 @@ static char* removeTrailingChar(char* s,char c) {
 	s[len]='\0';
 	return s;
 }
+
 static char* removeTrailingChars(char* s,const char* unwanted) {
 	if(!unwanted || !s) return s;
 	for(size_t i = strlen(unwanted)-1; i>=0;i--)
