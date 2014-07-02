@@ -14,17 +14,8 @@ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
-
-#ifdef _MSC_VER 
-#pragma warning( disable: 4996 )
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
-// Include our header
 #include "UTChemConcReader.h"
 #include "UTChemInputReader.h"
-
-// Standard libraries
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -33,15 +24,13 @@ PURPOSE.  See the above copyright notice for more information.
 #include <limits>
 #include <sstream>
 #include <stdexcept>
-
-// Useful vtk/paraview headers
 #include "vtkInformationVector.h"
 #include "vtkInformation.h"
 #include "vtkObjectFactory.h"
 #include "vtkStructuredGrid.h"
 #include "vtkPointData.h"
 #include "vtkPoints.h"
-#include "vtkfloatArray.h"
+#include "vtkFloatArray.h"
 #include "vtkDataObject.h"
 #include "vtkCellData.h"
 #include "vtkImageData.h"
@@ -64,17 +53,11 @@ void UTChemConcReader::CollectRevisions(ostream& os)
   os << "Version: 1.0"; // 
 }
 
-/**
-* Constructor
-*
-*/
 UTChemConcReader::UTChemConcReader()
 {
+	std::cout << "MVM concentration ctor called\n";
 }
 
-/**
-* Destructor
-*/
 UTChemConcReader::~UTChemConcReader()
 {
 }
@@ -96,18 +79,23 @@ static const char* fileExtensionToLabel(std::string&ext)
 // Standard VTK file reader support
 int UTChemConcReader::CanReadFile(const char* filename)
 {
-  if(!filename) return 0;
+  if (!filename) { 
+	  return 0;
+  }
+
   std::string ext = toUpperCaseFileExtension(filename);
-	if (strlen(fileExtensionToLabel(ext))==0) return 0;
-	  try {
+
+  if (strlen(fileExtensionToLabel(ext)) == 0) 
+  { 
+	return 0;
+  }
+  try {
+	  // MVM: again, why reloading?
 	  reloadInputFile(filename);
-	  //std::string inputFileName(getInputFileFromFileName(filename));
     return InputInfo->canReadFile();
-  } catch(std::exception& e) {
+  } catch (std::exception& e) {
     return 0;
-		}
-  //std::string inputFileName(getInputFileFromFileName(filename));
-  //return  //&& InputInfo->canReadFile();//UTChemInputReader::canReadFile(inputFileName.c_str());
+  }
 }
 
 /* throws an exception if nx,ny,nz if valid dimensions could not be extracted from header */
@@ -128,10 +116,10 @@ void UTChemConcReader::readHeader()
   int read = sscanf(oneLine.c_str(), "  NX =           %d  NY =           %d  NZ =            %d", &nx, &ny, &nz);
   if(nx <= 0 || ny <= 0 || nz <= 0 || read != 3) {
     vtkErrorMacro(<<"Failed to read NX,NY,NZ data from line:'"<<oneLine<<"'")
-    throw std::exception("Failed to read nx,ny,nz dimensions at head of the data file");
+	throw std::runtime_error("Failed to read nx,ny,nz dimensions at head of the data file");
   }
   if(nx != InputInfo->nx || ny != InputInfo->ny || nz != InputInfo->nz) {
-	throw std::exception("INPUT file inconsistent with nx,ny,nz dimensions in data file");
+	throw std::runtime_error("INPUT file inconsistent with nx,ny,nz dimensions in data file");
   }
 
 }
@@ -168,6 +156,7 @@ int UTChemConcReader::parseAsAStandardPropertyline(const char* c_str)
   //VISCOSITY (CP) OF PHASE            1  IN LAYER            1
   char measure[100];
   char unit[100];
+  //MVM This gives a warning because measure and unit are not char *, they are char *[100]
   if(4 !=  sscanf(c_str, "%99s %99s OF PHASE            %d  IN LAYER            %d",&measure,&unit, &phase, &layer))
     return 0;
   measure[sizeof(measure)-1] = unit[sizeof(unit)-1]='\0'; // paranoia for too large strings
@@ -281,6 +270,7 @@ int UTChemConcReader::parseAsTEMPERATUREline(const char* c_str)
   if(1 != sscanf(c_str,"TEMPERATURE (%*s) IN LAYER  %d",&layer))
     return 0;
   phase = 0;
+  // MVM: gives warning because of deprecated conversion from string constant to char *
   return readLayerValues("Temperature");
 }
 
@@ -293,6 +283,7 @@ int UTChemConcReader::parseAsPERMEABILITYline(const char* c_str)
   if(1 != sscanf(c_str,"X-PERMEABILITY (%*c%*c) IN LAYER  %d",&layer))
     return 0;
   phase = 0;
+  //MVM: deprecated conversion from string constant to char *
   return readLayerValues("Permeability");
 }
 
@@ -305,6 +296,7 @@ int UTChemConcReader::parseAsPOROSITYline(const char* c_str)
   if(1 != sscanf(c_str,"POROSITY IN LAYER  %d",&layer))
     return 0;
   phase = 1;
+  //MVM: deprecated conversion from string constant to char *
   return readLayerValues("Porosity");
 }
 
@@ -314,6 +306,7 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
   char comp[30];
   //TOTAL SURF.(SOAP+INJ) CONC. IN LAYER            1
   //TOTAL SURF.(GEN+INJ) CONC. IN LAYER            1
+  //MVM: &comp is char*[30] not char *
   if(2 != sscanf(c_str, "TOTAL SURF.%29s CONC. IN LAYER %d", &comp, &layer))
     return 0;
   strncat(name, comp, sizeof(name) - strlen(name));

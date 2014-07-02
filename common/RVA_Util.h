@@ -19,27 +19,11 @@ PURPOSE.  See the above copyright notice for more information.
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <cstring>
+#include <cstdlib>
 
-template<class T>
-T StringToNumeric(const std::string& string)
-{
-  T ret = 0; // Safe since T should only be a numeric type
-  std::stringstream stream;
-  stream << string;
-  stream >> ret;
-  return ret;
-}
-
-template<class T, class P>
-T NumericToString(P x)
-{
-  T ret;
-  std::stringstream ss;
-  ss << x;
-  ss >> ret;
-  return ret;
-}
-
+// MVM: This should probably be replaced with a C++ style cast. 
+// Need to inspect where this is being used.
 template<class X, class Y>
 static Y convertXToY(X val)
 {
@@ -81,6 +65,7 @@ static int contains(const char* s, const char* sub)
   return s && sub && NULL!=strstr(s,sub);
 }
 
+// MVM: Check to see if these can be replaced with normal C++ stream usage.
 static const char* skipWhiteSpace(const char *s) {
   if(!s) return NULL;
   while(*s == ' ' || *s =='\t')
@@ -100,11 +85,5 @@ static char* removeTrailingChar(char* s,char c) {
 	size_t len = strlen(s);
 	while(len && s[len-1]==c) len--;
 	s[len]='\0';
-	return s;
-}
-static char* removeTrailingChars(char* s,const char* unwanted) {
-	if(!unwanted || !s) return s;
-	for(size_t i = strlen(unwanted)-1; i>=0;i--)
-		removeTrailingChar(s,unwanted[i]);
 	return s;
 }

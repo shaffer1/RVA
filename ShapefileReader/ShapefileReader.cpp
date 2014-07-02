@@ -2,6 +2,9 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+
+// MVM - this is C++11, requires -std=c++0x with gcc
+// add this in ccmake under CMAKE_CXX_FLAGS
 #include <array>
 
 #include "ShapefileReader.h"

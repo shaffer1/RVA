@@ -15,8 +15,6 @@ PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
 
-#pragma warning( once: 4996 )
-#define _CRT_SECURE_NO_WARNINGS (1)
 #include "UTChemInputReader.h"
 #include "UTChemTopReader.h"
 #include "RVA_Util.h"
@@ -35,44 +33,10 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
 
-#if 0
-int UTChemInputReader::canReadFile(const char* filename)
-{
-  if(filename == NULL)
-    return 0;
-
-  int vals[12];
-  int ret = 1;
-  std::ifstream input(filename);
-  int unused = 0;
-  std::string str;
-
-  skipLines(input, 35, unused); // Eat lines we don't care about
-  readNextLine(input, str, unused);
-
-  // CC SIMULATION FLAGS
-  // *---- IMODE IMES IDISPC ICWM ICAP IREACT IBIO ICOORD ITREAC ITC IGAS IENG 
-  // ICOORD:
-  // 1 - Cartesian coordinate system is used
-  // 2 - Radial coordinate system is used
-  // 3 - Cartesian coordinate system with variable-width gridblock is used (2-D cross section only)
-  // 4 - Curvilinear grid definition of the X-Z cross section is used (2-D or 3-D)
-  if(12 != sscanf(str.c_str(), " %d %d %d %d %d %d %d %d %d %d %d %d", &vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5], &vals[6], &vals[7], &vals[8], &vals[9], &vals[10], &vals[11]))
-    ret = 0; // Bad formatting
-
-  // ICOORD is value number 7 in the array
-  if(vals[7] == 2)
-    ret = 0; // Radial not supported
-
-  input.close();
-  return 1 & ret;
-}
-#endif
-
 UTChemInputReader::UTChemInputReader(const std::string& input)
-  : readParams(0), gridObject(NULL), objectType(0), line(1), xdim(NULL), ydim(NULL), zdim(NULL),
+  : readParams(0), gridObject(NULL), objectType(0), xdim(NULL), ydim(NULL), zdim(NULL),
   parseResult(UTChemInputReader::NO_FILE), points(NULL), top(NULL), cellVolume(NULL),
-   N(0), dx1(1), dy1(1), dz1(1), iads(0), ibio(0), icap(0), ickl(0), icnm(0), icoord(0), 
+   N(0), r1(0), dx1(1), dy1(1), dz1(1), iads(0), ibio(0), icap(0), ickl(0), icnm(0), icoord(0), 
 	 icse(0), icumtm(0), icvis(0), icwm(0), idispc(0), idxyz(0), ieng(0), ifoamp(0), igas(0), 
 	 ihystp(0), imes(0), imode(0), inoneq(0), ioutgms(0), ipalk(0), ipbio(0), ipcap(0), 
 	 ipctot(0), iper(0), ipgel(0), iphse(0), ipobs(0), ippres(0), ipsat(0), iptemp(0), 
@@ -81,11 +45,13 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 	 tmax(0), compr(0), pstand(0), ipor1(0), ipermx(0), ipermy(0), ipermz(0), imod(0), 
 	 itranz(0), intg(0), idepth(0), ipress(0), iswi(0), icwi(0)
 {
+	//std::cout << "MVM, debugging. UTChemInputReader ctor called with: " << input << std::endl;
   try {
     InputFile.open(input.c_str());
     if(InputFile.is_open()) {
       parseResult = readFile();
 
+	  		// MVM? according to user guide idepth should be {0, 1, 2}
 			if (idepth==4)
 			{
 				size_t found;
@@ -94,7 +60,6 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 				found = input_copy.rfind(key);
 				input_copy.replace(found, key.length(), "TOP");
 				top = new UTChemTopReader(input_copy.c_str(), nx, ny);
-				setupSGridPoints();
 			}
     }
     switch(parseResult) {
@@ -155,41 +120,30 @@ UTChemInputReader::~UTChemInputReader()
 
 int UTChemInputReader::canReadFile() {
 
-  return icoord != 2 && parseResult != NO_FILE && !(icoord == 4 && idxyz == 2);
+  // MVM: this is unfortunate.
+  //return icoord != 2 && parseResult != NO_FILE && !(icoord == 4 && idxyz == 2);
+  //return icoord != 2 && parseResult != NO_FILE;
+  return parseResult != NO_FILE;
 }
 
-void UTChemInputReader::skipLines(std::ifstream& InputFile, int numLines, int& lineCount)
+void UTChemInputReader::readNextLine(std::string& str)
+{
+    std::getline(InputFile, str);
+}
+
+void UTChemInputReader::skipLines(int numLines)
 {
   std::string tmp;
 
-  if(!InputFile.is_open())
-    return;
-
   for(int i = 0 ; i < numLines ; ++i) {
-    try {
       std::getline(InputFile, tmp);
-      lineCount++;
-    } catch(...) {
-      return;
-    }
-  }
-}
-
-void UTChemInputReader::readNextLine(std::ifstream& InputFile, std::string& str, int& lineCount)
-{
-  if(!InputFile.is_open())
-    return;
-
-  try {
-    std::getline(InputFile, str);
-    lineCount++;
-  } catch(...) {
-    return; // Exception caught
   }
 }
 
 char* UTChemInputReader::consumeProcessed(char* ptr)
 {
+	// MVM: the readability is "skip all the white space... then skip all the non
+	// white space.., tell you what, just skip everything."
   return (char*)skipNonWhiteSpace(skipWhiteSpace(ptr));
 }
 
@@ -285,294 +239,551 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   // Make sure we start at the beginning
   InputFile.seekg(0, std::ios_base::beg);
 
-  // Read first set of variables
-  if((retval = readResvDesc(str)) != UTChemInputReader::SUCCESS)
+  // Read Title and Reservoir Decription Data section 3.1
+  std::cout << "MVM: file pos before readResvDesc: " << InputFile.tellg() << std::endl;
+  if ((retval = readResvDesc(str)) != UTChemInputReader::SUCCESS) 
+  {
     return retval;
+  }
+  std::cout << "MVM: file pos after readResvDesc: " << InputFile.tellg() << std::endl;
 
-  // Read the next set of variables under the Output Options Section
-  if((retval = readOutputOpts(str)) != UTChemInputReader::SUCCESS)
+  // Read Output Option Data section 3.2
+  std::cout << "MVM: file pos before readOutputOpts: " << InputFile.tellg() << std::endl;
+  if ((retval = readOutputOpts(str)) != UTChemInputReader::SUCCESS)
+  {
     return retval;
+  }
+  std::cout << "MVM: file pos after readOutputOpts: " << InputFile.tellg() << std::endl;
 
-  // Read the next set of variables under the Reservoir Properties Section
-  if((retval = readReservoirProperties(str)) != UTChemInputReader::SUCCESS)
+  // Read Reservoir Properties section 3.3
+  std::cout << "MVM: file pos before readReservoirProperties: " << InputFile.tellg() << std::endl;
+  if ((retval = readReservoirProperties(str)) != UTChemInputReader::SUCCESS)
+  {
     return retval;
+  }
+  std::cout << "MVM: file pos after readReservoirProperties: " << InputFile.tellg() << std::endl;
 
-  if((retval = readWellInformation(str)) != UTChemInputReader::SUCCESS)
-    return retval;
+  // Skip General Physical Property Data section 3.4
+  // Skip Physical Property Data for Geochemical Options section 3.5
+  // Skip Data for Biodegradation Option section 3.6
+
+  // Read Recurrent Injection/Production Data Set section setion 3.7
+  std::cout << "MVM: file pos before readWellInformation: " << InputFile.tellg() << std::endl;
+  if((retval = readWellInformation(str)) != UTChemInputReader::SUCCESS) {
+	  return retval;
+  }
+  std::cout << "MVM:file pos after readWellInformation: " << InputFile.tellg() << std::endl;
 
   return UTChemInputReader::SUCCESS;
 }
 
 UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 {
-  skipLines(35); // Eat lines we don't care about
+  // Section #.#.# refers to section in UTCHEM User's Guide
+  std::stringstream ss;
+
+  // Header
+  std::cout << "MVM: skipping Reservoir Description header\n";
+  skipLines(22);  
+
+  // Section 3.1.1
+  std::cout << "MVM: skipping section 3.1.1\n";
+  skipLines(3+1);
+
+  // Section 3.1.2
+  std::cout << "MVM: skipping section 3.1.2\n";
+  skipLines(3+3);
+ 
+  // Section 3.1.3
+  std::cout << "MVM: reading section 3.1.3\n";
+  skipLines(3);   
   readNextLine(str);
 
-  // CC SIMULATION FLAGS
-  // *---- IMODE IMES IDISPC ICWM ICAP IREACT IBIO ICOORD ITREAC ITC IGAS IENG 
-  // ICOORD:
-  // 1 - Cartesian coordinate system is used
-  // 2 - Radial coordinate system is used
-  // 3 - Cartesian coordinate system with variable-width gridblock is used (2-D cross section only)
-  // 4 - Curvilinear grid definition of the X-Z cross section is used (2-D or 3-D)
-  if(12 != sscanf(str.c_str(), " %d %d %d %d %d %d %d %d %d %d %d %d", &imode, &imes, &idispc, &icwm, &icap, &ireact, &ibio, &icoord, &itreac, &itc, &igas, &ieng))
-    return UTChemInputReader::FAIL_HEADER;
+  ss << str;
+  ss >> imode >> imes >> idispc >> icwm 
+	  >> icap >> ireact >> ibio >> icoord
+	  >> itreac >> itc >> igas >> ieng;
 
+  // Section 3.1.4
+  std::cout << "MVM: reading section 3.1.4\n";
+  skipLines(3); 
+  readNextLine(str);
+
+  ss.clear();
+  ss.str(str);
+  ss >> nx >> ny >> nz >> idxyz >> iunit;
+
+  // Next set of sections depends on idxyz and icoord
+  skipLines(3);  
+  readNextLine(str); // might want to move this read inside the branching...
+  
+  switch (idxyz) {
+	case 0:	
+    	// Globally Constant	
+		if (icoord == 1) {
+			// Cartesian
+  			// Section 3.1.6  
+	  		std::cout << "MVM: reading section 3.1.6\n";
+			ss.clear();
+			ss.str(str);
+			ss >> dx1 >> dy1 >> dz1;
+		}
+		else if (icoord == 2) {
+			// Radial
+			// Section 3.1.7 
+	  		std::cerr << "MVM: reading section 3.1.7\n";
+			ss.clear();
+			ss.str(str);
+			ss >> r1 >> dx1 >> dz1;
+		}
+		else if (icoord == 4) {
+			// Curvilinear
+			// Sections 3.1.5 and 3.1.8
+			std::cout << "MVM: reading section 3.1.5\n";
+			readCurvilinearXZ(str, xspace, zspace);
+
+			std::cout << "MVM: reading section 3.1.8\n";
+			skipLines(2);
+			readNextLine(str);
+
+			std::cout << "MVM: str in 3.1.8: " << str << "\n";
+			ss.clear();
+			ss.str(str);
+			ss >> dy1;
+			std::cout << "MVM: dy1: " << dy1 << "\n";
+			// use dy1 to populate yspace for later
+			// note to self - I'm expanding the dys here...
+			// need to be consistent about that!
+			//for (int i = 0; i <= ny; i++) {
+				//yspace.push_back(double(i * dy1));
+			//}
+			for (int i = 0; i < ny; i++) {
+				yspace.push_back(dy1);
+			}
+			setupSGridCoords();
+		}
+		else {
+			// unrecognized IDXYZ/ICOORD combination
+			std::cerr << "Unrecognized IDXYZ/ICOORD combination.\n";
+		}
+		break;	
+	case 1:
+		// regionally variable
+		if (icoord == 1) {
+			// Cartesian
+			// Section 3.1.9 
+			std::cout << "MVM: reading section 3.1.9\n";
+    		readRegionalCoords(str, xspace, nx);
+
+			// Section 3.1.10
+			std::cout << "MVM: reading section 3.1.10\n";
+    		skipLines(3);
+    		readNextLine(str);
+    		readRegionalCoords(str, yspace, ny);
+
+			// Section 3.1.11
+			std::cout << "MVM: reading section 3.1.11\n";
+    		skipLines(3);
+    		readNextLine(str);
+    		readRegionalCoords(str, zspace, nz);
+
+    		// Finally setup the coordinates
+    		setupRGridCoords();
+		}
+		else if (icoord == 2) {
+			// Radial
+			// Sections 3.1.12, 3.1.13, 3.1.14
+			std::cerr << "Reading regionally variable radial grids unsupported.\n";
+		}
+		else if (icoord == 4) {
+			// Curvilinear
+			// Sections 3.1.5, 3.1.15
+			std::cout << "MVM: reading section 3.1.5\n";
+			readCurvilinearXZ(str, xspace, zspace);
+			std::cout << "MVM: reading section 3.1.15\n";
+			
+			skipLines(2);
+			readNextLine(str);
+			std::cout << "3.1.5 str: " << str << "\n";
+			readRegionalCoords(str, yspace, ny);
+			setupSGridCoords();
+		}
+		else {
+			// Unimplmented IDXYZ/ICOORD combo
+		}
+		break;	
+	case 2:
+		// globally variable
+		if (icoord == 1) {
+			// Cartesian
+	  		// Section 3.1.16
+	  		// NX delta x's
+	  		std::stringstream ss;	
+	  		ss.str(str);
+			std::cout << "MVM: reading section 3.1.16\n";
+			for (int i = 0; i < nx; i++)
+			{
+		  		double tmp;
+		  		ss >> tmp;
+		  		xspace.push_back(tmp);
+			}
+
+			// Section 3.1.17
+			std::cout << "MVM: reading section 3.1.17\n";
+			skipLines(3);
+			readNextLine(str);
+			ss.clear();
+			ss.str(str);
+			for (int i = 0; i < ny; i++) 
+			{
+				double tmp;
+				ss >> tmp;
+				yspace.push_back(tmp);
+			}
+
+			// Section 3.1.19
+			std::cout << "MVM: reading section 3.1.19\n";
+			skipLines(3);
+			readNextLine(str);
+			for (int i = 0; i < nz; i++)
+			{
+				double tmp;
+				ss >> tmp;
+				zspace.push_back(tmp);
+			}
+			setupRGridCoords();
+		}
+		else if (icoord == 2) {
+			// Radial
+			std::cerr << "Globally variable radial files not supported.\n";
+		}
+		else if (icoord == 3) {
+			// weird Cartesian
+			std::cerr << "Current type of cartesian grid not supported.\n";
+		}
+		else if (icoord == 4) {
+			// 20140624 -- seems to read fine, but later on something
+			// happens to prevent the file from being read.
+			// Curvilinear
+	  		// Section 3.1.5, 3.1.17
+      		std::cout << "MVM: reading section 3.1.5\n";
+      		readCurvilinearXZ(str, xspace, zspace);	
+
+			// Section 3.1.17
+	  		std::cout << "MVM: reading section 3.1.17\n";
+    		skipLines(2);
+    		readNextLine(str);
+			std::cout << "3.1.17 str: " << str << "\n";
+			ss.clear();
+			ss.str(str);
+
+			for (int i = 0; i < ny; i++) 
+			{
+				double tmp;
+				ss >> tmp;
+				yspace.push_back(tmp);
+			}
+		
+			setupSGridCoords();
+		}
+		else {
+			// unrecognized IDXYZ/ICOORD combo 
+		}
+
+		break;
+	default:
+		// unrecognized IDXYZ value
+		break;
+  }
+
+  // User Guide section 3.1.23
+  std::cout << "MVM: reading section 3.1.23\n";
+  skipLines(3); 
+  readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  ss >> N >> no >> ntw >> nta >> ngc >> ng >> noth; 
+ 
+  // Section 3.1.24 - this will vary in size
+  std::cout << "MVM: reading section 3.1.24\n";
   skipLines(3);
-  readNextLine(str);
-
-  // CC NO. OF GRIDBLOCKS,FLAG SPECIFIES CONSTANT OR VARIABLE GRID SIZE, UNIT
-  // *----NX   NY  NZ  IDXYZ   IUNIT
-  // IDXYZ - Flag indicating constant or variable grid size.
-  // 0 - Constant grid size
-  // 1 - Variable grid size on a regional basis
-  // 2 - Variable grid size
-  // Note: IDXYZ must be set equal to 2 if ICOORD=3
-  // IUNIT - Flag indicating English or Metric units.
-  // 0 - English unit
-  // 1 - Metric unit
-  if(5 != sscanf(str.c_str(), " %d %d %d %d %d", &nx, &ny, &nz, &idxyz, &iunit))
-    return UTChemInputReader::FAIL_HEADER;
-
-  skipLines(3);
-  readNextLine(str);
-
-  // Double checking
-  if(idxyz == 1) {
-    // CC  CONSTANT GRID BLOCK SIZE IN X, Y, AND Z
-    // *----DX double check
-    int skip = readDVar(str, xspace, nx);
-
-    skipLines(skip);
+  for (int i = 0 ; i < N ; ++i) {
     readNextLine(str);
+	species.push_back(str);
+  }
 
-    // CC  CONSTANT GRID BLOCK SIZE IN X, Y, AND Z
-    // *----Dy double check  
-    skip = readDVar(str, yspace, ny);
-
-    skipLines(skip);
-    readNextLine(str);
-
-    // CC  CONSTANT GRID BLOCK SIZE IN X, Y, AND Z
-    // *----Dz 
-    skip = readDVar(str, zspace, nz);
-
-    skipLines(skip);
-    readNextLine(str);
-
-    // Finally setup the coordinates
-    setupRGridCoords();
-  } else if(idxyz == 0) {
-    // CC  CONSTANT GRID BLOCK SIZE IN X, Y, AND Z
-    // *----DX1       DY1      DZ1
-    if(3 != sscanf(str.c_str(), " %f %f %f", &dx1, &dy1, &dz1))
-      return UTChemInputReader::FAIL_HEADER;
-
-    skipLines(3);
-    readNextLine(str);
-  } else if(idxyz == 2 && icoord == 4) { // Variable grid (support assumes icoord == 4 [curvilinear])
-                                         // But some logic may or may not work for others
-    int numCross = ((nx + 1) * (nz + 1)) * 2;
-    std::vector<double> crossSection; // This vector is stored flat
-    crossSection.reserve(numCross);
-
-    // From UTChem manual:
-    // XCORD(I), ZCORD(I), for I=1, (NX+1)×(NZ+1) (This line is read only if ICOORD=4)
-    // CC  VARIABLE GRID BLOCK SIZE IN X
-    // *----DX(I)     DZ(I)
-    int skip = readDVar(str, crossSection, numCross);
-
-    // According to UTChem manual, we can now enjoy a fixed Y under this
-    // configuration
-    // CC  CONSTANT GRID BLOCK SIZE IN Y
-    // *----DY 
-    skipLines(skip);
-    readNextLine(str);
-    skip = readDVar(str, yspace, ny);
-
-   /* // Calculate xspace
-    for(int i = 0, k = 0 ; i < nx ; i++, k += 2) {
-      if((i % nz == 0) && i != 0)
-        k += 2; // Skip the end points on spacing
-      xspace.push_back(crossSection[k + 2] - crossSection[k]);
-    }
-
-    // Calculate zspace
-    for(int i = 0, k = 1 ; i < nz ; i++, k += 2) {
-      if((i % nx == 0) && i != 0)
-        k += 2; // Skip the end points on spacing
-      zspace.push_back(crossSection[k + 2] - crossSection[k]);
-    }*/
-
-    setupSGridPointsCurv(crossSection);
-    skipLines(skip);
+  // Section 3.1.25 - only exists if NTW > 0 and ITREAC == 1?
+  if (ntw > 0 && itreac == 1) {
+    std::cout << "MVM: reading Section 3.1.25\n";
+	skipLines(3);
     readNextLine(str);
   }
 
-  // CC TOTAL NO. OF COMPONENTS, NO. OF TRACERS, NO. OF GEL COMPONENTS
-  // *----N   NO  NTW NTA  NGC NG  NOTH
-  if(7 != sscanf(str.c_str(), " %d %d %d %d %d %d %d", &N, &no, &ntw, &nta, &ngc, &ng, &noth))
-    return UTChemInputReader::FAIL_HEADER;
-
-  skipLines(3);
-
-  // CC  NAME OF SPECIES
-  // *---- SPNAME(I) FOR I=1,N 
-  for(int i = 0 ; i < N ; ++i) {
-    readNextLine(str);
-    species.push_back(str);
-  }
-
+  // Section 3.1.26
+  std::cout << "MVM: reading section 3.1.26\n";
   skipLines(3);
   readNextLine(str);
-
-  if(itreac) { // It seems there exists variables without comments if this is enabled
-    // sscanf(str.c_str(), " %d %d %d", &itreac1, &itreac2, &itreac3); // If we want to read these
-    skipLines(3);
-    readNextLine(str);
+  std::cout << "MVM: 3.1.26 str: " << str << std::endl;
+  if (N != readIVarInLine(N, str.c_str(), icf)) {
+    return UTChemInputReader::FAIL_HEADER;
   }
 
-  // CC FLAG INDICATING IF THE COMPONENT IS INCLUDED IN CALCULATIONS OR NOT
-  // *----ICF(KC) FOR KC=1,N
-  if(N != readIVarInLine(N, str.c_str(), icf))
-    return UTChemInputReader::FAIL_HEADER;
-
+  std::cout << "MVM: exiting reading resv desc\n";
   return UTChemInputReader::SUCCESS;
 }
 
 UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str)
 {
-  skipLines(10);
-  readNextLine(str);
+	std::stringstream ss;
 
-  // CC FLAG FOR PV OR DAYS TO PRINT OR TO STOP THE RUN
-  // *----ICUMTM  ISTOP  IOUTGMS  IS3G
-  if(4 != sscanf(str.c_str(), " %d %d %d %d", &icumtm, &istop, &ioutgms, &is3g)) {
-    // *----ICUMTM  ISTOP  IOUTGMS (in ex09)
-    // HACK: Need to see why this really changes
-    if(3 != sscanf(str.c_str(), " %d %d %d", &icumtm, &istop, &ioutgms))
-      return UTChemInputReader::FAIL_OUTPUTOPTS;
+	// skipping section header
+	skipLines(7);
+
+	// Section 3.2.1
+	std::cout << "MVM: reading section 3.2.1\n";
+  	skipLines(3);
+  readNextLine(str);
+  ss.str(str);
+  ss >> icumtm >> istop >> ioutgms;
+
+  // Section 3.2.2
+  // What is done with this section?
+  std::cout << "MVM: reading section 3.2.2\n";
+  skipLines(3);
+  readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  int tmp;
+  while (ss >> tmp)
+	  ;
+
+  // Section 3.2.3
+  std::cout << "MVM: reading section 3.2.3\n";
+  skipLines(3);
+  readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  ss >> ippres >> ipsat >> ipctot >> ipbio >> ipcap >> ipgel >> ipalk >> iptemp >> ipobs;
+
+  // Section 3.2.4
+  std::cout << "MVM: reading section 3.2.4\n";
+  skipLines(3);
+  readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  ss >> ickl >> icvis >> iper >> icnm >> icse >> ihystp >> ifoamp >> inoneq;
+
+  // Section 3.2.5
+  std::cout << "MVM: reading section 3.2.5\n";
+  skipLines(3);
+  readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  ss >> iads >> ivel >> irkf >> iphse;
+
+  // Section 3.2.6
+  int nobs;
+  if (ipobs == 1) {
+	  std::cout << "MVM: reading section 3.2.6\n";
+	  skipLines(3);
+	  readNextLine(str);
+	  ss.clear();
+	  ss.str(str);
+	  ss >> nobs;
   }
 
-  skipLines(3);
-  readNextLine(str);
-
-  // CC FLAG INDICATING IF THE PROFILE OF KCTH COMPONENT SHOULD BE WRITTEN
-  // *----IPRFLG(KC),KC=1,N
-  if(N != readIVarInLine(N, str.c_str(), iprflag))
-    return UTChemInputReader::FAIL_OUTPUTOPTS;
-
-  skipLines(3);
-  readNextLine(str);
-
-  // CC FLAG FOR individual map files
-  // *----IPPRES IPSAT IPCTOT IPBIO IPCAP IPGEL IPALK IPTEMP IPOBS 
-  if(9 != sscanf(str.c_str(), " %d %d %d %d %d %d %d %d %d", &ippres, &ipsat, &ipctot, &ipbio, &ipcap, &ipgel, &ipalk, &iptemp, &ipobs))
-    return UTChemInputReader::FAIL_OUTPUTOPTS;
-
-  skipLines(3);
-  readNextLine(str);
-
-  // CC FLAG for individual output map files
-  // *----ICKL IVIS IPER ICNM ICSE ihystp  ifoamp  inoneq
-  if(8 != sscanf(str.c_str(), " %d %d %d %d %d %d %d %d", &ickl, &icvis, &iper, &icnm, &icse, &ihystp, &ifoamp, &inoneq))
-    return UTChemInputReader::FAIL_OUTPUTOPTS;
-
-  skipLines(3);
-  readNextLine(str);
-
-  // CC FLAG  for variables to PROF output file
-  // *----Iads IVel Irkf Iphse 
-  if(4 != sscanf(str.c_str(), " %d %d %d %d", &iads, &ivel, &irkf, &iphse))
-    return UTChemInputReader::FAIL_OUTPUTOPTS;
+  // Section 3.2.7
+  if (ipobs == 1 && nobs > 0) 
+  {
+	  std::cout << "MVM: reading section 3.2.7\n";
+  	  skipLines(3);
+	  readNextLine(str);
+  }
 
   return UTChemInputReader::SUCCESS;
 }
 
 UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::string& str)
 {
-  skipLines(10);
-  readNextLine(str);
+  std::stringstream ss;
+  // skip header
+  skipLines(7);
 
-	// CC MAX. SIMULATION TIME ( DAYS)
-  // *---- TMAX 
-  if(1 != sscanf(str.c_str(), " %d", &tmax))
-    return UTChemInputReader::FAIL_RESERVOIRPROPERTIES;
-
+  // Section 3.3.1
+  std::cout << "MVM: reading section 3.3.1\n";
   skipLines(3);
   readNextLine(str);
+  ss.str(str);
+  ss >> tmax;
 
-  // CC rock comp. 0.000004 1/kpa
-	// CC ROCK COMPRESSIBILITY (1/KPA), STAND. PRESSURE(KPA)
-  // *----COMPR        PSTAND
-  if(2 != sscanf(str.c_str(), " %lg %lg", &compr, &pstand))
-    return UTChemInputReader::FAIL_RESERVOIRPROPERTIES;
+  // Section 3.3.2
+  std::cout << "MVM: reading section 3.3.2\n";
+  skipLines(3);
+  readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  ss >> compr >> pstand;
 
+  // Section 3.3.3
+  std::cout << "MVM: reading section 3.3.3\n";
 	skipLines(3);
   readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  ss >> ipor1 >> ipermx >> ipermy >> ipermz >> imod;
 
-  // CC FLAGS INDICATION CONSTANT OR VARIABLE POROSITY, X,Y,AND Z PERMEABILITY
-  // *----IPOR1 IPERMX IPERMY IPERMZ  IMOD   ITRANZ   INTG
-  if(7 != sscanf(str.c_str(), " %d %d %d %d %d %d %d", &ipor1, &ipermx, &ipermy, &ipermz, &imod, & itranz, &intg)) {
-    // HACK: Need to investigate why fewer parameters
-    // *----IPOR1 IPERMX IPERMY IPERMZ  IMOD (in ex09)
-    if(5 != sscanf(str.c_str(), " %d %d %d %d %d", &ipor1, &ipermx, &ipermy, &ipermz, &imod))
-      return UTChemInputReader::FAIL_RESERVOIRPROPERTIES;
+  // Following sections depend on previous line
+  if (ipor1 == 0) {
+	  // Section 3.3.4
+	  std::cout << "MVM: reading section 3.3.4\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  else if (ipor1 == 1) {
+	  // Section 3.3.5 1,nz
+	  std::cout << "MVM: reading section 3.3.5\n";
+	  skipLines(3);
+	  readNextLine(str); 
+
+  }
+  else if (ipor1 == 2) {
+	  // Section 3.3.6 1, nx*ny*nz
+	  std::cout << "MVM: reading section 3.3.6\n";
+	  skipLines(3);
+	  std::string tmp;
+	  for (int i = 0; i < (nx * ny * nz); i++ )
+	  {
+		  InputFile >> tmp;
+	  }
+	  InputFile.ignore(1, '\n');
+  }
+  
+  if (ipermx == 0) {
+	  // Section 3.3.7
+	  std::cout << "MVM: reading section 3.3.7\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  else if (ipermx == 1) {
+	  // Section 3.3.8 1,nz
+	  std::cout << "MVM: reading section 3.3.8\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  else if (ipermx == 2) {
+	  // Section 3.3.9 1, nx*ny*nz
+	  std::cout << "MVM: reading section 3.3.9\n";
+	  skipLines(3);
+	  std::string tmp;
+	  for (int i = 0; i < (nx * ny * nz) ; i++ )
+	  {
+		  InputFile >> tmp; 
+	  }
+	  InputFile.ignore(1, '\n');
   }
 
-	/*int skip=3;
-	if (ipor1!=4) skip+=4;
-	if (ipermx!=4) skip+=4;
-	if (ipermy!=4 && icoord!=2) skip+=4;
-	if (ipermz!=4) skip+=4;*/
-
-  // HACK: Looks increasingly variable - so let's hope
-  // comment line exists? :S
-  while(0 != str.compare(0, strlen("*----IDEPTH"), "*----IDEPTH")) {
-    readNextLine(str);
+  if (ipermy == 0 && icoord != 2) {
+	  // Section 3.3.10
+	  std::cout << "MVM: reading section 3.3.10\n";
+	  skipLines(3);
+	  readNextLine(str);
   }
-  //skipLines(1); // Skip this line
+  else if (ipermy == 1 && icoord != 2) {
+      // Section 3.3.11 1, nz
+	  std::cout << "MVM: reading section 3.3.11\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  else if (ipermy == 2 && icoord != 2) {
+	  // Section 3.3.12 1,nx*ny*nz
+	  std::cout << "MVM: reading section 3.3.12\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  else if (ipermy == 3 && icoord != 2) {
+	  // Section 3.3.13
+	  std::cout << "MVM: reading section 3.3.13\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+
+  if (ipermz == 0) {
+	  // Section 3.3.14
+	  std::cout << "MVM: reading section 3.3.14\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  else if (ipermz == 1) {
+	  // Section 3.3.15 1,nz
+	  std::cout << "MVM: reading section 3.3.15\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  else if (ipermz == 2) {
+	  // Section 3.3.16 1,nx*ny*nz
+	  std::cout << "MVM: reading section 3.3.16\n";
+	  skipLines(3);
+	  std::string tmp;
+	  for (int i = 0; i < (nx*ny*nz); i++)
+	  {
+		  InputFile >> tmp;
+	  }
+	  InputFile.ignore(1, '\n');
+  }
+  else if (ipermz == 3) {
+	  // Section 3.3.17
+	  std::cout << "MVM: reading section 3.3.17\n";
+	  skipLines(3);
+	  readNextLine(str);
+  }
+  
+  // Section 3.3.18
+  std::cout << "MVM: reading section 3.3.18\n";
+  skipLines(3);
   readNextLine(str);
+  ss.clear();
+  ss.str(str);
+  ss >> idepth >> ipress >> iswi >> icwi;
 
-  // CC FLAG FOR CONSTANT OR VARIABLE DEPTH, PRESSURE,WATER SATURATION
-  // *----IDEPTH  IPRESS  ISWI  icwi
-  if(4 != sscanf(str.c_str(), " %d %d %d %d", &idepth, &ipress, &iswi, &icwi))
-    return UTChemInputReader::FAIL_RESERVOIRPROPERTIES;
-
-	return UTChemInputReader::SUCCESS;
+  return UTChemInputReader::SUCCESS;
 }
  
 
 UTChemInputReader::ParseState UTChemInputReader::readWellInformation(std::string& str)
 {
-  // Maybe necessary to rewind file in the future? For now it does not seem this way (as long as this is read last)
-  // based on our sample datasets
-
-  // Read everything over and find our well data
+  // Section 3.7
+  std::stringstream ss;
+  // MVM: seems to hunt for info in sections 3.7.6.a and ?  
   while(!InputFile.eof()) {
     readNextLine(str);
+
+	// MVM: The real problem is that there are multiple sections that start with "IDW"
+	// 3.7.6.a, what we want, and 3.7.2* where according to the User Guide it should be
+	// "ID" but is really "IDW".
+	// What we really want here is a regexp matching
 
     // CC
     // CC WELL ID,LOCATIONS,AND FLAG FOR SPECIFYING WELL TYPE, WELL RADIUS, SKIN
     // *----IDW   IW    JW    IFLAG    RW     SWELL  IDIR   IFIRST  ILAST  IPRF
-    // NOTE: This is, perhaps, too primitive as these comments may not always exist
-    //   but seems to be present in all of our sample data sets.
+	
     if(str.find("*----IDW") != std::string::npos || str.find("*---- IDW") != std::string::npos) {
       readNextLine(str);
-
-      int idw, iw, jw, iflag, idir, ifirst, ilast, iprf;
+	  ss.clear();
+      ss.str(str);
+      int idw, iw, jw, iflag, idir, kfirst, klast, iprf;
       float rw, swell;
       std::vector<WellData::DeviatedCoords> deviated;
 
-      int check = sscanf(str.c_str(), " %d %d %d %d %g %g %d %d %d %d", &idw, &iw, &jw, &iflag, &rw, &swell, &idir, &ifirst, &ilast, &iprf);
-      // HACK: FIXME. In ex09 this line is skipping an integer in the middle?
-      // the iflags value is not in the string according to the debugger? How?
-      // Fix this and remove check != 3 (only reason it is here is due to the fact
-      // that these values are currently unused)
-      if(check != 10 && check != 3) {
-        return UTChemInputReader::FAIL_WELLINFO;
-      }
-
+	  std::cout << "MVM: ss: " << ss.str() << std::endl;
+	  if (!(ss >> idw >> iw >> jw >> iflag >> rw >> swell >> idir >> kfirst >> klast >> iprf)) {
+		//std::cout << "MVM: in new check\n";
+		// MVM: This probably is not an error in reading, but rather that IDW is being
+		// used as an identifier in a different section.
+		
+		// This will have to be completely redone!
+		//return UTChemInputReader::FAIL_WELLINFO;
+	  }
+      
       if(idir == 4) { // Deviated well
         // Skip until we find the information
         while(!InputFile.eof() && str.find("*----IW") == std::string::npos) readNextLine(str);
@@ -588,16 +799,16 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation(std::string
         }
       }
 
-      WellData x = { idw, iw, jw, iflag, rw, swell, idir, ifirst, ilast, iprf, deviated };
+      WellData x = { idw, iw, jw, iflag, rw, swell, idir, kfirst, klast, iprf, deviated };
       wellInfo[idw] = x;
     }
   }
-
   return UTChemInputReader::SUCCESS;
 }
 
 void UTChemInputReader::setupRGridCoords()
 {
+	// MVM: change to use smartpointers
     xdim = vtkDoubleArray::New();
     ydim = vtkDoubleArray::New();
     zdim = vtkDoubleArray::New();
@@ -611,176 +822,116 @@ void UTChemInputReader::setupRGridCoords()
      assert(xspace.size() == nx);
      assert(yspace.size() == ny);
      assert(zspace.size() == nz);
-    for(i = 0 ; i < nx ; ++i) {
+
+    for (i = 0; i < nx; ++i) {
       xpos += xspace[i];
       xdim->InsertNextValue(xpos);
     }
-    for(i = 0 ; i < ny ; ++i) {
+
+    for (i = 0; i < ny; ++i) {
       ypos += yspace[i];
       ydim->InsertNextValue(ypos);
     }
-    for(i = 0 ; i < nz ; ++i) {
+
+    for (i = 0; i < nz; ++i) {
       zpos += zspace[i];
       zdim->InsertNextValue(zpos);
     }
 }
 
-void UTChemInputReader::setupSGridPointsCurv(const std::vector<double>& cross)
+void UTChemInputReader::setupSGridCoords()
 {
-	int i=0;
-	int j=0;
-	int k=0;
+	// change to smartpointer
 	points = vtkPoints::New();
-	for (k=0; k<= nz; k++)
-	{
-		//double zbase = zdim!=NULL ? zdim->GetValue(k) : dz1*k;
-		for (j=0; j<= ny; j++)
-		{
-			///double y = ydim!=NULL ? ydim->GetValue(j) : dy1*i;
 
-			for (i=0; i<= nx; i++)
-			{
-				/*double zAverage = zbase;
+	// note: the way the coords are given in the file is the
+	// equivalent to x-z-y fastest, but VTK expects x-y-z	
 
-				if(top!=NULL && top->isValid) {
-				int iminusone = std::max(i-1, 0);
-				int jminusone = std::max(j-1, 0);
-				int boundedi = std::min(i, nx-1);
-				int boundedj = std::min(j, ny-1);
-			// Calculate the averge of 4 top values
-				// being careful that we don't go past the end
-				double z00 = top->topdim[boundedi+boundedj*nx];
-				double z01 = top->topdim[iminusone+boundedj*nx];
-				double z10 = top->topdim[boundedi+jminusone*nx];
-				double z11 = top->topdim[iminusone+jminusone*nx];
+	// change this - UTChem gives deltas, but VTK wants absolutes
+	// need to convert the dys to absolutes, x-z-y ordering messes up
+	// the obvious way to do this!
+	double* y = new double[ny+1];
+	double ypos = 0.0;
+	y[0] = 0.0;
+	for (int i = 1; i <= ny+1; i++) {
+		ypos += yspace[i-1];
+		y[i] = ypos;
+	}
 
-				  zAverage += (z00+z01+z10+z11)/4.0;
-				}
+	for (int k = 0; k <= nz; k++) {
+		for (int j = 0; j <= ny; j++) {
+			for (int i = 0; i <= nx; i++) {
+				points->InsertNextPoint(xspace[i], y[j], zspace[k]);
 
-				double x = xdim!=NULL ? xdim->GetValue(i) : dx1*i;*/
-				points->InsertNextPoint(cross[2 * i], yspace[j % ny], cross[(2 * k) + 1]);
 			}
 		}
 	}
+	delete [] y;
 }
 
-void UTChemInputReader::setupSGridPoints()
-{
-	int i=0;
-	int j=0;
-	int k=0;
-	points = vtkPoints::New();
-	for (k=0; k<=nz; k++)
-	{
-		double zbase = zdim!=NULL ? zdim->GetValue(k) : dz1*k;
-		for (j=0; j<=ny; j++)
-		{
-			double y = ydim!=NULL ? ydim->GetValue(j) : dy1*i;
-
-			for (i=0; i<=nx; i++)
-			{
-				double zAverage = zbase;
-
-				if(top!=NULL && top->isValid) {
-				int iminusone = std::max(i-1, 0);
-				int jminusone = std::max(j-1, 0);
-				int boundedi = std::min(i, nx-1);
-				int boundedj = std::min(j, ny-1);
-			// Calculate the averge of 4 top values
-				// being careful that we don't go past the end
-				double z00 = top->topdim[boundedi+boundedj*nx];
-				double z01 = top->topdim[iminusone+boundedj*nx];
-				double z10 = top->topdim[boundedi+jminusone*nx];
-				double z11 = top->topdim[iminusone+jminusone*nx];
-
-				  zAverage += (z00+z01+z10+z11)/4.0;
-				}
-
-				double x = xdim!=NULL ? xdim->GetValue(i) : dx1*i;
-				points->InsertNextPoint(x,y,zAverage);
-			}
-		}
-	}
-}
-
-void UTChemInputReader::readNextLine(std::string& str)
-{
-  UTChemInputReader::readNextLine(InputFile, str, line);
-}
-
-void UTChemInputReader::skipLines(int numLines)
-{
-  UTChemInputReader::skipLines(InputFile, numLines, line);
-}
-
-// readIVarInLine
-//  - This function extracts numVars number of ints from a line and stores them in a container
-// * numVars = Number of variables to be read
-// * str = Beginning of the line
-// * container = Where the variables will be stored
-// Returns number of variables successfully read
+// MVM: change to return void or elide
 int UTChemInputReader::readIVarInLine(int numVars, const char* str, std::vector<int>& container)
 {
-  int i = 0, tmp = 0;
-  char* ptr = (char*)str;
-  for(i = 0 ; i < numVars && ptr != NULL ; ++i, ptr=consumeProcessed(ptr)) {
-    if(1 != sscanf(ptr, " %d", &tmp))
-      return i;
-    container.push_back(tmp);
+  std::stringstream ss;
+  ss.str(str);
+  int item;
+  int i = 0;
+  while (ss >> item) 
+  {
+	  container.push_back(item);
+	  i++;
   }
   return i;
 }
 
-// readDVar
-//   - Much like readIVarInLine except no known boundaries
-// * str = Beginning of line
-// * container = here variables are stored
-// Returns void
-int UTChemInputReader::readDVar(std::string& str, std::vector<double>& container, int numExpected)
+void UTChemInputReader::readRegionalCoords(std::string& str, std::vector<double>& container, int numExpected)
 {
-  while(str.find("cc") == std::string::npos && str.find("CC") == std::string::npos) {
-    int count;
-    double val;
-    char* ptr = (char*)str.c_str();
+  int begin = -1;
+  int end = -1;
+  double delta = 0.0;
 
-    while(ptr != NULL && *ptr != '\0' && *ptr != '\n' && *ptr != '\r') {
-      ptr = (char*)skipWhiteSpace(ptr);
-      
-      if(*ptr == '\0' || *ptr == '\n' || *ptr == '\r')
-        break; // Just in case there was trailing whitespace
-      
-      count = 0;
-      val = 0;
-      if(2 == sscanf(ptr, "%d*%lg", &count, &val)) {
-        assert(count>0 && val>0);
-        assert(numExpected <0 || count + container.size() <= numExpected);
-         
-        if(numExpected >=0  && numExpected < container.size() + count) {
-          throw std::exception("Too many values read");
-        }
-        for(int i = 0 ; i < count ; ++i)
-          container.push_back(val);
-      } else if(1 == sscanf(ptr, "%lg", &val)) {
-        container.push_back(val);
-      } else {
-        throw std::exception("Unexpected line format");
-      }
+  std::stringstream ss;
 
-      // Consume what was just processed
-      ptr=consumeProcessed(ptr);
-    }
-    readNextLine(str);
+  // MVM: ugly, needs to be revisited, not sure I like how the first line is
+  // sent in...
+  // MVM: also change to read in num items not lines
+  while (true) 
+  {
+	ss.clear();
+	ss.str(str);
+	ss >> begin >> end >> delta;
+	for (int i = begin - 1; i < end; i++) 
+	{
+		container.push_back(delta);
+	}	
+  
+	if (end == numExpected) 
+	{
+		break;
+	}
+	readNextLine(str);
   }
-  if(numExpected >=0 && container.size() != numExpected) {
-    std::string err("Invalid number of entries in INPUT on line: ");
-    err.append(convertXToY<int, std::string>(line));
-    err.append(" - numExpected = ");
-    err.append(convertXToY<int, std::string>(numExpected));
-    err.append(" , size = ");
-    err.append(convertXToY<int, std::string>(container.size()));
-    throw std::exception(err.c_str());
+  std::cout << "container size: " << container.size() << std::endl;
+  for (int i = 0; i < container.size(); i++) {
+	  std::cout << container[i] << std::endl;
   }
-  return 2; // Default
+}
+
+void UTChemInputReader::readCurvilinearXZ(std::string& str, std::vector<double>& xcoords, std::vector<double>& zcoords)
+{
+	// Reads section 3.1.5 which is used for all three types of curvilinear files.
+	// This is (nx+1)*(nz+1) lines of x,z coordinate pairs.
+	std::stringstream ss;
+	double x, z;
+	int lines = (nx+1)*(nz+1);
+	for (int i = 0; i < lines; ++i) {
+		ss.clear();
+		ss.str(str);
+		ss >> x >> z;
+		xcoords.push_back(x);
+		zcoords.push_back(z);
+		readNextLine(str);
+	}
 }
 
 vtkDataObject * UTChemInputReader::getObject(vtkInformation* info)
@@ -798,23 +949,30 @@ vtkDataObject * UTChemInputReader::getObject(vtkInformation* info)
 
 void UTChemInputReader::determineGridType()
 {
-  if(gridObject)
+  if (gridObject) {
     gridObject->Delete();
+  }
   gridObject = NULL;
 
-	if (points)
-	{
-		objectType = 2;
-		gridObject = vtkStructuredGrid::New();
-	}
-	else
-  if((icoord > 1 && icoord < 5) || idxyz == 2) { // Using only rectilinear grids for all other types - this may not be correct
-    objectType = 1;
-    gridObject = vtkRectilinearGrid::New();
-  } else { // icoord == 1 or by default
+  // Note that IDXYZ 2, ICOORD 3 is not handled, it
+  // is probably going to be a vtkUnstructuredGrid.
+  if (points)
+  {
+	// the Curvilinear types
+    objectType = 2;
+    gridObject = vtkStructuredGrid::New();
+  }
+  //else if (idxyz == 0 && (icoord == 1 || icoord == 2)) { 
+  else if (idxyz == 0 && icoord == 1) {
+  // constant Cartesian or Radial
     objectType = 0;
     gridObject = vtkImageData::New();
-  }
+  } else { 
+	// variable Cartesian or Radial
+	objectType = 1;
+    gridObject = vtkRectilinearGrid::New();
+  } 
+  
 }
 
 int UTChemInputReader::getObjectType() const
@@ -822,6 +980,7 @@ int UTChemInputReader::getObjectType() const
   return objectType;
 }
 
+// MVM: why not use the PV filter to calc cell volumes?
 void UTChemInputReader::calculateCellVolume()
 {
 	cellVolume = vtkFloatArray::New();

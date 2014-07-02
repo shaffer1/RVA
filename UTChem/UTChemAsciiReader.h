@@ -77,7 +77,7 @@ protected:
   static  std::string getInputFileFromFileName(const char* filename);
   virtual int readLayerValues(char* name = NULL, bool absolutePhase = true); // reads NX*NY  numerical values
   virtual void setMeaningfulArrayName(vtkFloatArray* array,int thePhase, char* name = NULL, bool absolutePhase = true);
-  virtual void readNXNYnumericalValuesIntoArray(float*receivingArray, int spaceIndexTestForNewDataRow);
+  virtual void readNXNYnumericalValuesIntoArray(float*receivingArray);
   virtual unsigned findClosestTimeStep(double& reqTime);
   virtual int buildVTKObject(const unsigned& bestidx, vtkInformation* outInfo);
   virtual int buildImageData(vtkDataSet * dataSet);
@@ -87,7 +87,10 @@ protected:
   virtual void freeDataVectors(); // Called by destructor and when parsing fails
 
   void reloadInputFile(const char*filename);
-  const char* UTChemAsciiReader::readNextLine(bool mustBeNonEmpty); // assumes stream is already open
+
+  // MVM - gcc chokes on UTChemAsciiReader::, what was the intent?
+  //const char* UTChemAsciiReader::readNextLine(bool mustBeNonEmpty); // assumes stream is already open
+  const char* readNextLine(bool mustBeNonEmpty);
 
   // Methods to add well VOI information to the object
   void setWellVOI(vtkDataObject* dataObj);
