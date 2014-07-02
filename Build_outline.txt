@@ -1,0 +1,26 @@
+20140702
+
+Brief Linux build overview for developers.
+
+Requires:
+ParaView 3.14.1
+GTXServer
+CMake
+
+0) build ParaView 3.14.1 (directions should be available on ParaView wiki)
+1) clone RVA github repo into a source directory
+2) create a separate build directory
+3) run ccmake from within build directory
+3.0) configure 
+3.1) set the ParaView_DIR to where you built
+3.2) configure
+3.3) set the GTX include and lib dirs
+3.4) configure
+3.5) toggle advanced view, set CMAKE_CXX_FLAGS to -std=c++0x
+3.6) configure
+3.7) generate and exit
+4) make (don't install)
+
+There should now be 4 .so's in Core/,ISATIS/,ShapefileReader/, and UTChem/
+
+Building ParaviewGeo is untested.
