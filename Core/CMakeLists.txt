@@ -95,6 +95,8 @@ ENDIF(WIN32)
 
 INSTALL(TARGETS RVA_Core_Plugin
 		RUNTIME DESTINATION . COMPONENT Core
+		# For compiling on Linux, works, but might not be best option
+		LIBRARY DESTINATION lib
 )
 
 set(CPACK_COMPONENT_PVGREADERS_DISPLAY_NAME "RVA Core")  

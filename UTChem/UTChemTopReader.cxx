@@ -198,7 +198,8 @@ UTChemTopReader::ParseState UTChemTopReader::readDVar(std::string& str, std::vec
       } else if(1 == sscanf(ptr, "%lg", &val)) {
         container.push_back(val);
       } else {
-        throw std::exception("Unexpected line format");
+        //throw std::exception("Unexpected line format");
+		throw std::runtime_error("Unexpected line format");
       }
 
       // Consume what was just processed
@@ -207,10 +208,12 @@ UTChemTopReader::ParseState UTChemTopReader::readDVar(std::string& str, std::vec
     
   }
   if(numExpected >=0 && container.size() < numExpected) {
-    throw std::exception("Insufficient TOP values read");
+    //throw std::exception("Insufficient TOP values read");
+	throw std::runtime_error("Insufficient TOP values read");
   }
 	if(!ignoreTooManyValues && numExpected >=0 && container.size() != numExpected) {
-		throw std::exception("Too many TOP values read");
+		//throw std::exception("Too many TOP values read");
+		throw std::runtime_error("Too many TOP values read");
 	}
 
   return UTChemTopReader::SUCCESS; // Default
