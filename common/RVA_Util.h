@@ -87,10 +87,3 @@ static char* removeTrailingChar(char* s,char c) {
 	s[len]='\0';
 	return s;
 }
-
-static char* removeTrailingChars(char* s,const char* unwanted) {
-	if(!unwanted || !s) return s;
-	for(size_t i = strlen(unwanted)-1; i>=0;i--)
-		removeTrailingChar(s,unwanted[i]);
-	return s;
-}
