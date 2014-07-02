@@ -17,9 +17,9 @@ PURPOSE.  See the above copyright notice for more information.
 
 #include <cassert>
 
-#include "gtxfaultsystem.hpp"
-#include "gtxfault.hpp"
-#include "gtxfaultinfo.hpp"
+#include "GTXFaultSystem.hpp"
+#include "GTXFault.hpp"
+#include "GTXFaultInfo.hpp"
 
 #include "ISATISFaultProcessor.h"
 
