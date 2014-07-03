@@ -23,7 +23,7 @@ IF(PARAVIEW_BUILD_QT_GUI)
 
   # Now crete a plugin for the toolbar. Here we pass IFACES and IFACE_SRCS
   # which are filled up by the above macro with relevant entries
-  ADD_PARAVIEW_PLUGIN(RVA_UTChemReaders_Plugin "RC_UTChem 1.0"
+  ADD_PARAVIEW_PLUGIN(RVA_UTChemReaders_Plugin "RC_UTChem 1.1"
     SERVER_MANAGER_XML 
       UTChemReader.xml
     SERVER_MANAGER_SOURCES
