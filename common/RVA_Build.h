@@ -18,10 +18,10 @@ PURPOSE.  See the above copyright notice for more information.
 #ifndef _RVA_BUILD_H_
 #define _RVA_BUILD_H_
 
-#define RVA_BUILD_MAJOR "0"
-#define RVA_BUILD_MINOR "0"
-#define RVA_BUILD_RELEASE "1"
-#define RVA_BUILD_NUMBER "20130308.01"
-#define RVA_BUILD_DATE "20130308"
+#define RVA_BUILD_MAJOR "1"
+#define RVA_BUILD_MINOR "1"
+#define RVA_BUILD_RELEASE "2"
+#define RVA_BUILD_NUMBER "20140703.01"
+#define RVA_BUILD_DATE "20140703"
 
 #endif // _RVA_BUILD_H_
