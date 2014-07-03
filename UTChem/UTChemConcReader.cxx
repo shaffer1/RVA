@@ -55,7 +55,6 @@ void UTChemConcReader::CollectRevisions(ostream& os)
 
 UTChemConcReader::UTChemConcReader()
 {
-	std::cout << "MVM concentration ctor called\n";
 }
 
 UTChemConcReader::~UTChemConcReader()

@@ -47,7 +47,6 @@ PURPOSE.  See the above copyright notice for more information.
 UTChemAsciiReader::UTChemAsciiReader() :
   dataObj(NULL), FileName(0) 
 {
-	std::cout << "MVM ascii reader ctor\n";
    *this->phaseName = '\0';
 
   this->InputInfo= new UTChemInputReader("");
@@ -529,7 +528,6 @@ int UTChemAsciiReader::buildSGridData(vtkDataSet * dataSet)
   return 1;
 }
 
-// MVM: Why does it care about whitespace? because sscanf? USE streams!
 void UTChemAsciiReader::readNXNYnumericalValuesIntoArray(float*output)
 {
   int i = 0;
@@ -650,7 +648,6 @@ int UTChemAsciiReader::readFile()
 
   bool failed = false;
 
-  std::cout << "MVM: entering UTChemAsciiReader::readFile try block\n";
   try {
 	  
     readHeader(); // gets valid nx,ny,nz or throws exception. Subclasses should also reset their state here

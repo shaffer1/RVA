@@ -45,13 +45,13 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 	 tmax(0), compr(0), pstand(0), ipor1(0), ipermx(0), ipermy(0), ipermz(0), imod(0), 
 	 itranz(0), intg(0), idepth(0), ipress(0), iswi(0), icwi(0)
 {
-	//std::cout << "MVM, debugging. UTChemInputReader ctor called with: " << input << std::endl;
   try {
     InputFile.open(input.c_str());
     if(InputFile.is_open()) {
       parseResult = readFile();
 
-	  		// MVM? according to user guide idepth should be {0, 1, 2}
+	  		// MVM: according to 9.3 user guide idepth should be {0, 1, 2}
+	        // I'm not sure what this was trying to accomplish. 
 			if (idepth==4)
 			{
 				size_t found;
@@ -119,10 +119,6 @@ UTChemInputReader::~UTChemInputReader()
 }
 
 int UTChemInputReader::canReadFile() {
-
-  // MVM: this is unfortunate.
-  //return icoord != 2 && parseResult != NO_FILE && !(icoord == 4 && idxyz == 2);
-  //return icoord != 2 && parseResult != NO_FILE;
   return parseResult != NO_FILE;
 }
 
@@ -140,10 +136,9 @@ void UTChemInputReader::skipLines(int numLines)
   }
 }
 
+// MVM: this is a candidate for deletion.
 char* UTChemInputReader::consumeProcessed(char* ptr)
 {
-	// MVM: the readability is "skip all the white space... then skip all the non
-	// white space.., tell you what, just skip everything."
   return (char*)skipNonWhiteSpace(skipWhiteSpace(ptr));
 }
 
@@ -240,39 +235,31 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   InputFile.seekg(0, std::ios_base::beg);
 
   // Read Title and Reservoir Decription Data section 3.1
-  std::cout << "MVM: file pos before readResvDesc: " << InputFile.tellg() << std::endl;
   if ((retval = readResvDesc(str)) != UTChemInputReader::SUCCESS) 
   {
     return retval;
   }
-  std::cout << "MVM: file pos after readResvDesc: " << InputFile.tellg() << std::endl;
 
   // Read Output Option Data section 3.2
-  std::cout << "MVM: file pos before readOutputOpts: " << InputFile.tellg() << std::endl;
   if ((retval = readOutputOpts(str)) != UTChemInputReader::SUCCESS)
   {
     return retval;
   }
-  std::cout << "MVM: file pos after readOutputOpts: " << InputFile.tellg() << std::endl;
 
   // Read Reservoir Properties section 3.3
-  std::cout << "MVM: file pos before readReservoirProperties: " << InputFile.tellg() << std::endl;
   if ((retval = readReservoirProperties(str)) != UTChemInputReader::SUCCESS)
   {
     return retval;
   }
-  std::cout << "MVM: file pos after readReservoirProperties: " << InputFile.tellg() << std::endl;
 
   // Skip General Physical Property Data section 3.4
   // Skip Physical Property Data for Geochemical Options section 3.5
   // Skip Data for Biodegradation Option section 3.6
 
   // Read Recurrent Injection/Production Data Set section setion 3.7
-  std::cout << "MVM: file pos before readWellInformation: " << InputFile.tellg() << std::endl;
   if((retval = readWellInformation(str)) != UTChemInputReader::SUCCESS) {
 	  return retval;
   }
-  std::cout << "MVM:file pos after readWellInformation: " << InputFile.tellg() << std::endl;
 
   return UTChemInputReader::SUCCESS;
 }
@@ -283,19 +270,15 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
   std::stringstream ss;
 
   // Header
-  std::cout << "MVM: skipping Reservoir Description header\n";
   skipLines(22);  
 
   // Section 3.1.1
-  std::cout << "MVM: skipping section 3.1.1\n";
   skipLines(3+1);
 
   // Section 3.1.2
-  std::cout << "MVM: skipping section 3.1.2\n";
   skipLines(3+3);
  
   // Section 3.1.3
-  std::cout << "MVM: reading section 3.1.3\n";
   skipLines(3);   
   readNextLine(str);
 
@@ -305,7 +288,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 	  >> itreac >> itc >> igas >> ieng;
 
   // Section 3.1.4
-  std::cout << "MVM: reading section 3.1.4\n";
   skipLines(3); 
   readNextLine(str);
 
@@ -323,7 +305,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 		if (icoord == 1) {
 			// Cartesian
   			// Section 3.1.6  
-	  		std::cout << "MVM: reading section 3.1.6\n";
 			ss.clear();
 			ss.str(str);
 			ss >> dx1 >> dy1 >> dz1;
@@ -331,7 +312,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 		else if (icoord == 2) {
 			// Radial
 			// Section 3.1.7 
-	  		std::cerr << "MVM: reading section 3.1.7\n";
 			ss.clear();
 			ss.str(str);
 			ss >> r1 >> dx1 >> dz1;
@@ -339,18 +319,14 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 		else if (icoord == 4) {
 			// Curvilinear
 			// Sections 3.1.5 and 3.1.8
-			std::cout << "MVM: reading section 3.1.5\n";
 			readCurvilinearXZ(str, xspace, zspace);
 
-			std::cout << "MVM: reading section 3.1.8\n";
 			skipLines(2);
 			readNextLine(str);
 
-			std::cout << "MVM: str in 3.1.8: " << str << "\n";
 			ss.clear();
 			ss.str(str);
 			ss >> dy1;
-			std::cout << "MVM: dy1: " << dy1 << "\n";
 			// use dy1 to populate yspace for later
 			// note to self - I'm expanding the dys here...
 			// need to be consistent about that!
@@ -372,17 +348,14 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 		if (icoord == 1) {
 			// Cartesian
 			// Section 3.1.9 
-			std::cout << "MVM: reading section 3.1.9\n";
     		readRegionalCoords(str, xspace, nx);
 
 			// Section 3.1.10
-			std::cout << "MVM: reading section 3.1.10\n";
     		skipLines(3);
     		readNextLine(str);
     		readRegionalCoords(str, yspace, ny);
 
 			// Section 3.1.11
-			std::cout << "MVM: reading section 3.1.11\n";
     		skipLines(3);
     		readNextLine(str);
     		readRegionalCoords(str, zspace, nz);
@@ -398,13 +371,10 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 		else if (icoord == 4) {
 			// Curvilinear
 			// Sections 3.1.5, 3.1.15
-			std::cout << "MVM: reading section 3.1.5\n";
 			readCurvilinearXZ(str, xspace, zspace);
-			std::cout << "MVM: reading section 3.1.15\n";
 			
 			skipLines(2);
 			readNextLine(str);
-			std::cout << "3.1.5 str: " << str << "\n";
 			readRegionalCoords(str, yspace, ny);
 			setupSGridCoords();
 		}
@@ -420,7 +390,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 	  		// NX delta x's
 	  		std::stringstream ss;	
 	  		ss.str(str);
-			std::cout << "MVM: reading section 3.1.16\n";
 			for (int i = 0; i < nx; i++)
 			{
 		  		double tmp;
@@ -429,7 +398,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 			}
 
 			// Section 3.1.17
-			std::cout << "MVM: reading section 3.1.17\n";
 			skipLines(3);
 			readNextLine(str);
 			ss.clear();
@@ -442,7 +410,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 			}
 
 			// Section 3.1.19
-			std::cout << "MVM: reading section 3.1.19\n";
 			skipLines(3);
 			readNextLine(str);
 			for (int i = 0; i < nz; i++)
@@ -466,11 +433,9 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 			// happens to prevent the file from being read.
 			// Curvilinear
 	  		// Section 3.1.5, 3.1.17
-      		std::cout << "MVM: reading section 3.1.5\n";
       		readCurvilinearXZ(str, xspace, zspace);	
 
 			// Section 3.1.17
-	  		std::cout << "MVM: reading section 3.1.17\n";
     		skipLines(2);
     		readNextLine(str);
 			std::cout << "3.1.17 str: " << str << "\n";
@@ -497,7 +462,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
   }
 
   // User Guide section 3.1.23
-  std::cout << "MVM: reading section 3.1.23\n";
   skipLines(3); 
   readNextLine(str);
   ss.clear();
@@ -505,7 +469,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
   ss >> N >> no >> ntw >> nta >> ngc >> ng >> noth; 
  
   // Section 3.1.24 - this will vary in size
-  std::cout << "MVM: reading section 3.1.24\n";
   skipLines(3);
   for (int i = 0 ; i < N ; ++i) {
     readNextLine(str);
@@ -514,21 +477,17 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
   // Section 3.1.25 - only exists if NTW > 0 and ITREAC == 1?
   if (ntw > 0 && itreac == 1) {
-    std::cout << "MVM: reading Section 3.1.25\n";
 	skipLines(3);
     readNextLine(str);
   }
 
   // Section 3.1.26
-  std::cout << "MVM: reading section 3.1.26\n";
   skipLines(3);
   readNextLine(str);
-  std::cout << "MVM: 3.1.26 str: " << str << std::endl;
   if (N != readIVarInLine(N, str.c_str(), icf)) {
     return UTChemInputReader::FAIL_HEADER;
   }
 
-  std::cout << "MVM: exiting reading resv desc\n";
   return UTChemInputReader::SUCCESS;
 }
 
@@ -540,7 +499,6 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
 	skipLines(7);
 
 	// Section 3.2.1
-	std::cout << "MVM: reading section 3.2.1\n";
   	skipLines(3);
   readNextLine(str);
   ss.str(str);
@@ -548,7 +506,6 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
 
   // Section 3.2.2
   // What is done with this section?
-  std::cout << "MVM: reading section 3.2.2\n";
   skipLines(3);
   readNextLine(str);
   ss.clear();
@@ -558,7 +515,6 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
 	  ;
 
   // Section 3.2.3
-  std::cout << "MVM: reading section 3.2.3\n";
   skipLines(3);
   readNextLine(str);
   ss.clear();
@@ -566,7 +522,6 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
   ss >> ippres >> ipsat >> ipctot >> ipbio >> ipcap >> ipgel >> ipalk >> iptemp >> ipobs;
 
   // Section 3.2.4
-  std::cout << "MVM: reading section 3.2.4\n";
   skipLines(3);
   readNextLine(str);
   ss.clear();
@@ -574,7 +529,6 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
   ss >> ickl >> icvis >> iper >> icnm >> icse >> ihystp >> ifoamp >> inoneq;
 
   // Section 3.2.5
-  std::cout << "MVM: reading section 3.2.5\n";
   skipLines(3);
   readNextLine(str);
   ss.clear();
@@ -584,7 +538,6 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
   // Section 3.2.6
   int nobs;
   if (ipobs == 1) {
-	  std::cout << "MVM: reading section 3.2.6\n";
 	  skipLines(3);
 	  readNextLine(str);
 	  ss.clear();
@@ -595,7 +548,6 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
   // Section 3.2.7
   if (ipobs == 1 && nobs > 0) 
   {
-	  std::cout << "MVM: reading section 3.2.7\n";
   	  skipLines(3);
 	  readNextLine(str);
   }
@@ -610,14 +562,12 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::st
   skipLines(7);
 
   // Section 3.3.1
-  std::cout << "MVM: reading section 3.3.1\n";
   skipLines(3);
   readNextLine(str);
   ss.str(str);
   ss >> tmax;
 
   // Section 3.3.2
-  std::cout << "MVM: reading section 3.3.2\n";
   skipLines(3);
   readNextLine(str);
   ss.clear();
@@ -625,7 +575,6 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::st
   ss >> compr >> pstand;
 
   // Section 3.3.3
-  std::cout << "MVM: reading section 3.3.3\n";
 	skipLines(3);
   readNextLine(str);
   ss.clear();
@@ -635,20 +584,17 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::st
   // Following sections depend on previous line
   if (ipor1 == 0) {
 	  // Section 3.3.4
-	  std::cout << "MVM: reading section 3.3.4\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipor1 == 1) {
 	  // Section 3.3.5 1,nz
-	  std::cout << "MVM: reading section 3.3.5\n";
 	  skipLines(3);
 	  readNextLine(str); 
 
   }
   else if (ipor1 == 2) {
 	  // Section 3.3.6 1, nx*ny*nz
-	  std::cout << "MVM: reading section 3.3.6\n";
 	  skipLines(3);
 	  std::string tmp;
 	  for (int i = 0; i < (nx * ny * nz); i++ )
@@ -660,19 +606,16 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::st
   
   if (ipermx == 0) {
 	  // Section 3.3.7
-	  std::cout << "MVM: reading section 3.3.7\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipermx == 1) {
 	  // Section 3.3.8 1,nz
-	  std::cout << "MVM: reading section 3.3.8\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipermx == 2) {
 	  // Section 3.3.9 1, nx*ny*nz
-	  std::cout << "MVM: reading section 3.3.9\n";
 	  skipLines(3);
 	  std::string tmp;
 	  for (int i = 0; i < (nx * ny * nz) ; i++ )
@@ -684,44 +627,37 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::st
 
   if (ipermy == 0 && icoord != 2) {
 	  // Section 3.3.10
-	  std::cout << "MVM: reading section 3.3.10\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipermy == 1 && icoord != 2) {
       // Section 3.3.11 1, nz
-	  std::cout << "MVM: reading section 3.3.11\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipermy == 2 && icoord != 2) {
 	  // Section 3.3.12 1,nx*ny*nz
-	  std::cout << "MVM: reading section 3.3.12\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipermy == 3 && icoord != 2) {
 	  // Section 3.3.13
-	  std::cout << "MVM: reading section 3.3.13\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
 
   if (ipermz == 0) {
 	  // Section 3.3.14
-	  std::cout << "MVM: reading section 3.3.14\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipermz == 1) {
 	  // Section 3.3.15 1,nz
-	  std::cout << "MVM: reading section 3.3.15\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   else if (ipermz == 2) {
 	  // Section 3.3.16 1,nx*ny*nz
-	  std::cout << "MVM: reading section 3.3.16\n";
 	  skipLines(3);
 	  std::string tmp;
 	  for (int i = 0; i < (nx*ny*nz); i++)
@@ -732,13 +668,11 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::st
   }
   else if (ipermz == 3) {
 	  // Section 3.3.17
-	  std::cout << "MVM: reading section 3.3.17\n";
 	  skipLines(3);
 	  readNextLine(str);
   }
   
   // Section 3.3.18
-  std::cout << "MVM: reading section 3.3.18\n";
   skipLines(3);
   readNextLine(str);
   ss.clear();
@@ -774,9 +708,7 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation(std::string
       float rw, swell;
       std::vector<WellData::DeviatedCoords> deviated;
 
-	  std::cout << "MVM: ss: " << ss.str() << std::endl;
 	  if (!(ss >> idw >> iw >> jw >> iflag >> rw >> swell >> idir >> kfirst >> klast >> iprf)) {
-		//std::cout << "MVM: in new check\n";
 		// MVM: This probably is not an error in reading, but rather that IDW is being
 		// used as an identifier in a different section.
 		

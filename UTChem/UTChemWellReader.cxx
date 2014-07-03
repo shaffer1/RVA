@@ -64,7 +64,6 @@ void UTChemWellReader::CollectRevisions(ostream& os)
 // constructor
 UTChemWellReader::UTChemWellReader()
 {
-	std::cout << "MVM: well reader ctor called\n";
 	readHeader();
   this->SetNumberOfOutputPorts(2);
 }

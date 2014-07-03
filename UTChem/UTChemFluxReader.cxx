@@ -57,7 +57,6 @@ void UTChemFluxReader::CollectRevisions(ostream& os)
 
 UTChemFluxReader::UTChemFluxReader() : fluxNameCount(0),directionXYZ(0)
 {
-	std::cout << "UTChemFluxReader ctor called\n";
 }
 
 UTChemFluxReader::~UTChemFluxReader()
@@ -72,7 +71,6 @@ int UTChemFluxReader::CanReadFile(const char* filename)
 	  return 0;
   }
   
-  // MVM: They're kidding, right?
   std::string ext = toUpperCaseFileExtension(filename);
 	if (ext != "PROF") 
   {
