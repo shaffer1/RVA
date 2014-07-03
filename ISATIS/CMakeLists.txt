@@ -58,11 +58,11 @@ IF(PARAVIEW_BUILD_QT_GUI)
   WRAP_EXCLUDE)
 
   # Important for Build information
-  SET(RVA_BUILD_MAJOR "\"0\"")
-  SET(RVA_BUILD_MINOR "\"0\"")
-  SET(RVA_BUILD_RELEASE "\"1\"")
-  SET(RVA_BUILD_NUMBER "\"20120710.01\"")
-  SET(RVA_BUILD_DATE "\"20120710\"")
+  SET(RVA_BUILD_MAJOR "\"1\"")
+  SET(RVA_BUILD_MINOR "\"1\"")
+  SET(RVA_BUILD_RELEASE "\"2\"")
+  SET(RVA_BUILD_NUMBER "\"20140703.01\"")
+  SET(RVA_BUILD_DATE "\"20140703\"")
   CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/common/RVA_Build.h.cmake ${CMAKE_SOURCE_DIR}/common/RVA_Build.h)
 
   # Now crete a plugin for the toolbar. Here we pass IFACES and IFACE_SRCS
