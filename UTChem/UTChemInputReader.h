@@ -35,82 +35,82 @@ class UTChemTopReader;
 
 struct UTChemInputReader
 {
-  typedef enum {NO_FILE=0,FAIL_HEADER=1,FAIL_OUTPUTOPTS =2, FAIL_WELLINFO =3, FAIL_RESERVOIRPROPERTIES =4, SUCCESS=256} ParseState;
+	typedef enum {NO_FILE=0,FAIL_HEADER=1,FAIL_OUTPUTOPTS =2, FAIL_WELLINFO =3, FAIL_RESERVOIRPROPERTIES =4, SUCCESS=256} ParseState;
 
-  UTChemInputReader::ParseState parseResult;
-  UTChemInputReader(const std::string& input);
-  ~UTChemInputReader();
+	UTChemInputReader::ParseState parseResult;
+	UTChemInputReader(const std::string& input);
+	~UTChemInputReader();
 
-  // Well data information
-  struct WellData
-  {
-    struct DeviatedCoords { int i, j, k; };
-    int idw, iw, jw, iflag;
-    float rw, swell;
-    int idir, ifirst, ilast, iprf;
-    std::vector<DeviatedCoords> deviated; // Holds values for deviated wells
-  };
+	// Well data information
+	struct WellData
+	{
+	struct DeviatedCoords { int i, j, k; };
+	int idw, iw, jw, iflag;
+	float rw, swell;
+	int idir, ifirst, ilast, iprf;
+	std::vector<DeviatedCoords> deviated; // Holds values for deviated wells
+	};
 
-  // Giant list of public variables for use later
-  int imode, imes, idispc, icwm, icap, ireact, ibio, icoord, itreac, itc, igas, ieng;
-  int nx, ny, nz, idxyz, iunit;
-  float r1, dx1, dy1, dz1;
-  int N, no, ntw, nta, ngc, ng, noth;
-  int icumtm, istop, ioutgms, is3g;
-  int ippres, ipsat, ipctot, ipbio, ipcap, ipgel, ipalk, iptemp, ipobs;
-  int ickl, icvis, iper, icnm, icse, ihystp, ifoamp, inoneq;
-  int iads, ivel, irkf, iphse;
+	// Giant list of public variables for use later
+	int imode, imes, idispc, icwm, icap, ireact, ibio, icoord, itreac, itc, igas, ieng;
+	int nx, ny, nz, idxyz, iunit;
+	float r1, dx1, dy1, dz1;
+	int N, no, ntw, nta, ngc, ng, noth;
+	int icumtm, istop, ioutgms, is3g;
+	int ippres, ipsat, ipctot, ipbio, ipcap, ipgel, ipalk, iptemp, ipobs;
+	int ickl, icvis, iper, icnm, icse, ihystp, ifoamp, inoneq;
+	int iads, ivel, irkf, iphse;
 	int tmax;
 	double compr, pstand;
 	int ipor1, ipermx, ipermy, ipermz, imod, itranz, intg;
 	int idepth, ipress, iswi, icwi;
-  std::vector<std::string> species;
-  std::vector<int> icf, iprflag;
-  std::vector<double> xspace, yspace, zspace;
-  vtkDoubleArray * xdim, * ydim, * zdim;
+	std::vector<std::string> species;
+	std::vector<int> icf, iprflag;
+	std::vector<double> xspace, yspace, zspace;
+	vtkDoubleArray * xdim, * ydim, * zdim;
 	vtkFloatArray * cellVolume;
 	vtkPoints * points;
-  std::map<int, WellData> wellInfo;
+	std::map<int, WellData> wellInfo;
 
-  vtkDataObject * getObject(vtkInformation*);
-  int getObjectType() const;
+	vtkDataObject * getObject(vtkInformation*);
+	int getObjectType() const;
 
-  int canReadFile();
-  float** getCellCenters();
+	int canReadFile();
+	float** getCellCenters();
 	void getCellCenter(int i, int j, int k, float * out);
 
 	UTChemTopReader * top;
 
 private:
-  ParseState readFile();
+	ParseState readFile();
 
-  // Keep things clean
-  ParseState readResvDesc(std::string& str);
-  ParseState readOutputOpts(std::string& str);
+	// Keep things clean
+	ParseState readResvDesc(std::string& str);
+	ParseState readOutputOpts(std::string& str);
 	ParseState readReservoirProperties(std::string& str);
-  ParseState readWellInformation(std::string& str);
+	ParseState readWellInformation(std::string& str);
 
-  // Helper functions
-  void skipLines(int numLines);
-  void readNextLine(std::string& str);
-  int readIVarInLine(int numVars, const char* str, std::vector<int>& container);
-  void readRegionalCoords(std::string& str, std::vector<double>& container, int numExpected=-1);
-  void readCurvilinearXZ(std::string&, std::vector<double>&, std::vector<double>&);
+	// Helper functions
+	void skipLines(int numLines);
+	void readNextLine(std::string& str);
+	int readIVarInLine(int numVars, const char* str, std::vector<int>& container);
+	void readRegionalCoords(std::string& str, std::vector<double>& container, int numExpected=-1);
+	void readCurvilinearXZ(std::string&, std::vector<double>&, std::vector<double>&);
 
-  static char* consumeProcessed(char* ptr);
+	static char* consumeProcessed(char* ptr);
 
-  // Extra setup functions
-  void determineGridType();
-  void setupRGridCoords();
-  void setupSGridCoords();
+	// Extra setup functions
+	void determineGridType();
+	void setupRGridCoords();
+	void setupSGridCoords();
 	void calculateCellVolume();
 
-  std::ifstream InputFile;
-  int readParams;
-  int objectType; // 0 = Image Data, 1 = Rectilinear Grid
-  bool isValid;
-  vtkDataObject * gridObject;
-  float ** cellCenters;
+	std::ifstream InputFile;
+	int readParams;
+	int objectType; // 0 = Image Data, 1 = Rectilinear Grid
+	bool isValid;
+	vtkDataObject * gridObject;
+	float ** cellCenters;
 };
 
 #endif /* __UTChemInputReader_h */
