@@ -49,7 +49,7 @@ UTChemAsciiReader::UTChemAsciiReader() :
 {
    *this->phaseName = '\0';
 
-  this->InputInfo= new UTChemInputReader("");
+  this->InputInfo = new UTChemInputReader("");
   this->SetDebug(1);
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
