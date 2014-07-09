@@ -23,6 +23,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
+#include <vector>
 
 #include "vtkDataObject.h"
 #include "vtkDoubleArray.h"
@@ -782,7 +783,7 @@ void UTChemInputReader::setupSGridCoords()
 	// change this - UTChem gives deltas, but VTK wants absolutes
 	// need to convert the dys to absolutes, x-z-y ordering messes up
 	// the obvious way to do this!
-	std::vector y;
+	std::vector<double> y;
 	double ypos = 0.0;
 	y.push_back(ypos);
 	
@@ -794,7 +795,7 @@ void UTChemInputReader::setupSGridCoords()
 	for (int k = 0; k <= nz; k++) {
 		for (int j = 0; j <= ny; j++) {
 			for (int i = 0; i <= nx; i++) {
-				points->InsertNextPoint(xspace[i], y[j], zspace[k]);
+				points->InsertNextPoint(xspace[i], y.at(j), zspace[k]);
 
 			}
 		}
