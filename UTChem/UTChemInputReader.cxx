@@ -782,12 +782,13 @@ void UTChemInputReader::setupSGridCoords()
 	// change this - UTChem gives deltas, but VTK wants absolutes
 	// need to convert the dys to absolutes, x-z-y ordering messes up
 	// the obvious way to do this!
-	double* y = new double[ny+1];
+	std::vector y;
 	double ypos = 0.0;
-	y[0] = 0.0;
-	for (int i = 1; i <= ny+1; i++) {
+	y.push_back(ypos);
+	
+	for (int i = 1; i < ny+1; i++) {
 		ypos += yspace[i-1];
-		y[i] = ypos;
+		y.push_back(ypos);
 	}
 
 	for (int k = 0; k <= nz; k++) {
@@ -798,7 +799,6 @@ void UTChemInputReader::setupSGridCoords()
 			}
 		}
 	}
-	delete [] y;
 }
 
 // MVM: change to return void or elide
