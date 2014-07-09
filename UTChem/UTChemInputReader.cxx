@@ -34,6 +34,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
 
+
 UTChemInputReader::UTChemInputReader(const std::string& input)
   : readParams(0), gridObject(NULL), objectType(0), xdim(NULL), ydim(NULL), zdim(NULL),
   parseResult(UTChemInputReader::NO_FILE), points(NULL), top(NULL), cellVolume(NULL),
@@ -46,13 +47,14 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 	 tmax(0), compr(0), pstand(0), ipor1(0), ipermx(0), ipermy(0), ipermz(0), imod(0), 
 	 itranz(0), intg(0), idepth(0), ipress(0), iswi(0), icwi(0)
 {
-  try {
-    InputFile.open(input.c_str());
-    if(InputFile.is_open()) {
-      parseResult = readFile();
+	try {
+		InputFile.open(input.c_str());
+		if (InputFile.is_open()) {
+			vtkOutputWindowDisplayErrorText("MVM: InputFile is open.");
+			parseResult = readFile();
 
 	  		// MVM: according to 9.3 user guide idepth should be {0, 1, 2}
-	        // I'm not sure what this was trying to accomplish. 
+			// I'm not sure what this was trying to accomplish. 
 			if (idepth==4)
 			{
 				size_t found;
@@ -62,35 +64,40 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 				input_copy.replace(found, key.length(), "TOP");
 				top = new UTChemTopReader(input_copy.c_str(), nx, ny);
 			}
-    }
-    switch(parseResult) {
-      case UTChemInputReader::FAIL_HEADER :
-           vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading Reservoir Description");
-           isValid = false;
-    break;
-      case UTChemInputReader::FAIL_OUTPUTOPTS :
-           vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading Output Options");
-           isValid = false;
-     break;
-      case UTChemInputReader::FAIL_WELLINFO :
-        vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading well information");
-        isValid = false;
-     break;
-      default:
-        isValid = true;
-     break;
-    }
-  } catch(const std::exception& e) {
-    vtkOutputWindowDisplayErrorText(e.what()); // should not happen
-    parseResult = UTChemInputReader::NO_FILE;
-    isValid = false;
-  } 
+		}
+		else {
+			vtkOutputWindowDisplayErrorText("MVM: Inputfile is closed.");
+		}
+		switch(parseResult) {
+			case UTChemInputReader::FAIL_HEADER :
+				vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading Reservoir Description");
+				isValid = false;
+				break;
+			case UTChemInputReader::FAIL_OUTPUTOPTS :
+				vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading Output Options");
+				isValid = false;
+				break;
+			case UTChemInputReader::FAIL_WELLINFO :
+				vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading well information");
+				isValid = false;
+				break;
+			default:
+				isValid = true;
+				break;
+		}
+	} catch(const std::exception& e) {
+		vtkOutputWindowDisplayErrorText(e.what()); // should not happen
+		parseResult = UTChemInputReader::NO_FILE;
+		isValid = false;
+	} 
+
 	if (parseResult != UTChemInputReader::NO_FILE)
 	{
 		determineGridType();
 		calculateCellVolume();
 	}
-  try { InputFile.close(); } catch(...) {}
+	
+	try { InputFile.close(); } catch(...) {}
 }
 
 UTChemInputReader::~UTChemInputReader()
