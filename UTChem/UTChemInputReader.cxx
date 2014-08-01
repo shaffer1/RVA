@@ -264,7 +264,7 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   // Skip Data for Biodegradation Option section 3.6
 
   // Read Recurrent Injection/Production Data Set section setion 3.7
-  if((retval = readWellInformation(str)) != UTChemInputReader::SUCCESS) {
+  if((retval = readWellInformation()) != UTChemInputReader::SUCCESS) {
 	  return retval;
   }
 
@@ -691,8 +691,9 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
 }
  
 
-UTChemInputReader::ParseState UTChemInputReader::readWellInformation(std::string& str)
+UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
 {
+  std::string str;
   // Section 3.7
   std::stringstream ss;
   // MVM: seems to hunt for info in sections 3.7.6.a and ?  
