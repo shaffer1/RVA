@@ -223,7 +223,6 @@ std::string UTChemAsciiReader::getInputFileFromFileName(const char* filename)
   std::string inputfile(tmp.substr(0, tmp.find_last_of("/")));
   inputfile.append("/INPUT");
 #endif
-  std::cout << "mvm debugging, inputfile is: " << inputfile << std::endl;
   return inputfile;
 }
 
