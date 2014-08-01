@@ -248,7 +248,7 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   }
 
   // Read Output Option Data section 3.2
-  if ((retval = readOutputOpts(str)) != UTChemInputReader::SUCCESS)
+  if ((retval = readOutputOpts()) != UTChemInputReader::SUCCESS)
   {
     return retval;
   }
@@ -501,8 +501,9 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc()
   return UTChemInputReader::SUCCESS;
 }
 
-UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str)
+UTChemInputReader::ParseState UTChemInputReader::readOutputOpts()
 {
+	std::string str;
 	std::stringstream ss;
 
 	// skipping section header
