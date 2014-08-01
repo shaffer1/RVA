@@ -419,6 +419,8 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 			// Section 3.1.19
 			skipLines(3);
 			readNextLine(str);
+			ss.clear();
+			ss.str(str);
 			for (int i = 0; i < nz; i++)
 			{
 				double tmp;
