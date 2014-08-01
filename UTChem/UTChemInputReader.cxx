@@ -49,7 +49,6 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 {
 	InputFile.open(input.c_str());
 	if (InputFile.is_open()) {
-		vtkOutputWindowDisplayErrorText("MVM: InputFile is open.");
 		parseResult = readFile();
 
 		// MVM: according to 9.3 user guide idepth should be {0, 1, 2}
@@ -63,9 +62,6 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 			input_copy.replace(found, key.length(), "TOP");
 			top = new UTChemTopReader(input_copy.c_str(), nx, ny);
 		}
-	}
-	else {
-		vtkOutputWindowDisplayErrorText("MVM: Inputfile is closed.");
 	}
 	
 	switch(parseResult) {
