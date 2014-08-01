@@ -81,6 +81,10 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 			vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading well information");
 			isValid = false;
 			break;
+		case UTChemInputReader::NO_FILE:
+			vtkOutputWindowDisplayErrorText("No readable INPUT file in directory.");
+			isValid = false;
+			break;
 		default:
 			isValid = true;
 			break;
