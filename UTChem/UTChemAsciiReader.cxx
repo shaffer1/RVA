@@ -244,11 +244,13 @@ const char* UTChemAsciiReader::fileExtensionToLabel(std::string&ext)
 static std::string sanitizeName(const char* name)
 {
   std::string ret;
+  // MVM add underscore if it starts with a numeral
   if (isdigit(*name)) 
   { 
     ret +='_';
   }
   
+  // MVM replace spaces, pluses, or minuses with underscore
   for(; *name ; name++)
   {
     char c = *name;
