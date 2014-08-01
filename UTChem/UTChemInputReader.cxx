@@ -254,7 +254,7 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   }
 
   // Read Reservoir Properties section 3.3
-  if ((retval = readReservoirProperties(str)) != UTChemInputReader::SUCCESS)
+  if ((retval = readReservoirProperties()) != UTChemInputReader::SUCCESS)
   {
     return retval;
   }
@@ -562,8 +562,9 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
   return UTChemInputReader::SUCCESS;
 }
 
-UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties(std::string& str)
+UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
 {
+  std::string str;
   std::stringstream ss;
   // skip header
   skipLines(7);
