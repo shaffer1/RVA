@@ -143,12 +143,6 @@ void UTChemInputReader::skipLines(int numLines)
   }
 }
 
-// MVM: this is a candidate for deletion.
-char* UTChemInputReader::consumeProcessed(char* ptr)
-{
-  return (char*)skipNonWhiteSpace(skipWhiteSpace(ptr));
-}
-
 void UTChemInputReader::getCellCenter(int i, int j, int k, float * out)
 {
 	if(objectType==0)

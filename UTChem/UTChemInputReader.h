@@ -97,7 +97,6 @@ private:
 	void readRegionalCoords(std::string& str, std::vector<double>& container, int numExpected=-1);
 	void readCurvilinearXZ(std::string&, std::vector<double>&, std::vector<double>&);
 
-	static char* consumeProcessed(char* ptr);
 
 	// Extra setup functions
 	void determineGridType();
