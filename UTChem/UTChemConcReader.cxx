@@ -155,8 +155,7 @@ int UTChemConcReader::parseAsAStandardPropertyline(const char* c_str)
   //VISCOSITY (CP) OF PHASE            1  IN LAYER            1
   char measure[100];
   char unit[100];
-  //MVM This gives a warning because measure and unit are not char *, they are char *[100]
-  if(4 !=  sscanf(c_str, "%99s %99s OF PHASE            %d  IN LAYER            %d",&measure,&unit, &phase, &layer))
+  if(4 !=  sscanf(c_str, "%99s %99s OF PHASE            %d  IN LAYER            %d",measure,unit, &phase, &layer))
     return 0;
   measure[sizeof(measure)-1] = unit[sizeof(unit)-1]='\0'; // paranoia for too large strings
   if(strlen(unit) <2 || unit[0] != '(' || unit[strlen(unit)-1] != ')') {
