@@ -305,7 +305,7 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
   //TOTAL SURF.(SOAP+INJ) CONC. IN LAYER            1
   //TOTAL SURF.(GEN+INJ) CONC. IN LAYER            1
   //MVM: &comp is char*[30] not char *
-  if(2 != sscanf(c_str, "TOTAL SURF.%29s CONC. IN LAYER %d", &comp, &layer))
+  if(2 != sscanf(c_str, "TOTAL SURF.%29s CONC. IN LAYER %d", comp, &layer))
     return 0;
   strncat(name, comp, sizeof(name) - strlen(name));
   if(reverseMap.count(name) == 0)
