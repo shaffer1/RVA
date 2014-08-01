@@ -75,8 +75,8 @@ protected:
 
   virtual  const char*fileExtensionToLabel(std::string&ext);
   static  std::string getInputFileFromFileName(const char* filename);
-  virtual int readLayerValues(char* name = NULL, bool absolutePhase = true); // reads NX*NY  numerical values
-  virtual void setMeaningfulArrayName(vtkFloatArray* array,int thePhase, char* name = NULL, bool absolutePhase = true);
+  virtual int readLayerValues(std::string name = "", bool absolutePhase = true); // reads NX*NY  numerical values
+  virtual void setMeaningfulArrayName(vtkFloatArray* array,int thePhase, std::string name = "", bool absolutePhase = true);
   virtual void readNXNYnumericalValuesIntoArray(float*receivingArray);
   virtual unsigned findClosestTimeStep(double& reqTime);
   virtual int buildVTKObject(const unsigned& bestidx, vtkInformation* outInfo);
