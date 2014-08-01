@@ -85,7 +85,7 @@ private:
 	ParseState readFile();
 
 	// Keep things clean
-	ParseState readResvDesc(std::string& str);
+	ParseState readResvDesc();
 	ParseState readOutputOpts(std::string& str);
 	ParseState readReservoirProperties();
 	ParseState readWellInformation();

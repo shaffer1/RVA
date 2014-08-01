@@ -242,7 +242,7 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   InputFile.seekg(0, std::ios_base::beg);
 
   // Read Title and Reservoir Decription Data section 3.1
-  if ((retval = readResvDesc(str)) != UTChemInputReader::SUCCESS) 
+  if ((retval = readResvDesc()) != UTChemInputReader::SUCCESS) 
   {
     return retval;
   }
@@ -271,9 +271,10 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   return UTChemInputReader::SUCCESS;
 }
 
-UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
+UTChemInputReader::ParseState UTChemInputReader::readResvDesc()
 {
   // Section #.#.# refers to section in UTCHEM User's Guide
+	std::string str;
   std::stringstream ss;
 
   // Header
