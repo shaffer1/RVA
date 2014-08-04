@@ -25,11 +25,11 @@ PURPOSE.  See the above copyright notice for more information.
 #include <map>
 
 #include "vtkAlgorithm.h"
+#include "vtkDataObject.h"
+#include "vtkFloatArray.h"
+#include "vtkDataSet.h"
 
 struct UTChemInputReader;
-class vtkDataObject;
-class vtkFloatArray;
-class vtkDataSet;
 
 typedef  std::map<int,vtkFloatArray*> IntegerTovtkFloatArrayMap;
 typedef  std::map<int,vtkFloatArray*>::iterator IntegerTovtkFloatArrayMap_it;
