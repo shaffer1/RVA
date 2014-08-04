@@ -32,26 +32,13 @@ class VTK_EXPORT UTChemConcReader : public UTChemAsciiReader {
 public:
   static UTChemConcReader* New();
   vtkTypeRevisionMacro(UTChemConcReader, UTChemAsciiReader);
-  //void PrintSelf(ostream& os, vtkIndent indent);
 
   virtual int CanReadFile(const char*);
-  //virtual int FillOutputPortInformation(int port, vtkInformation* info);
 
 protected:
   UTChemConcReader();
   ~UTChemConcReader();
-
-  // Useful functions:
-  //  int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
-  //  int ProcessRequest (public member)
-  //  int RequestInformation - will be important for running in parallel (large data sets will do this?)
-  //  int CanReadFile(const char*)
-  // According to: http://www.itk.org/Wiki/Writing_ParaView_Readers
- /* virtual int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
-  virtual int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
-  virtual int RequestDataObject(vtkInformation*,vtkInformationVector**,vtkInformationVector*);
-  virtual int ProcessRequest(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector);*/
-
+  
 private:
   //BTX
 
