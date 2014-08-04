@@ -723,9 +723,13 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
 
         while(!InputFile.eof() && str.find("CC") == std::string::npos && str.find("cc") == std::string::npos) {
           WellData::DeviatedCoords coords;
-          if(3 != sscanf(str.c_str(), " %d %d %d", &coords.i, &coords.j, &coords.k))
-            return UTChemInputReader::FAIL_WELLINFO;
-          deviated.push_back(coords);
+          ss.clear();
+		  ss.str(str);
+		  if (!(ss >> coords.i >> coords.j >> coords.k)) {
+			  return UTChemInputReader::FAIL_WELLINFO;
+		  } 
+          
+		  deviated.push_back(coords);
           getline(InputFile,str);
         }
       }
