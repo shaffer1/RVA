@@ -51,10 +51,6 @@ protected:
   virtual ~UTChemAsciiReader();
 
   // Useful functions:
-  //  int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
-  //  int ProcessRequest (public member)
-  //  int RequestInformation - will be important for running in parallel (large data sets will do this?)
-  //  int CanReadFile(const char*)
   // According to: http://www.itk.org/Wiki/Writing_ParaView_Readers
   virtual int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
   virtual int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
@@ -88,8 +84,6 @@ protected:
 
   void reloadInputFile(const char*filename);
 
-  // MVM - gcc chokes on UTChemAsciiReader::, what was the intent?
-  //const char* UTChemAsciiReader::readNextLine(bool mustBeNonEmpty); // assumes stream is already open
   const char* readNextLine(bool mustBeNonEmpty);
 
   // Methods to add well VOI information to the object
