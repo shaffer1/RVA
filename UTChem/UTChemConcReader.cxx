@@ -265,7 +265,7 @@ int UTChemConcReader::parseAsPCONCENTRATIONline(const char* match, const char* c
 int UTChemConcReader::parseAsTEMPERATUREline(const char* c_str)
 {
   // TEMPERATURE (F) IN LAYER            1
-  if(1 != sscanf(c_str,"TEMPERATURE (%*s) IN LAYER  %d",&layer))
+  if(1 != sscanf(c_str,"TEMPERATURE (%*c) IN LAYER  %d",&layer))
     return 0;
   phase = 0;
   // MVM: gives warning because of deprecated conversion from string constant to char *
