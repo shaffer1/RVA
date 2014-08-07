@@ -522,9 +522,15 @@ int UTChemWellReader::parseAsInjectorVariable()
 // contains only valid data, after its read entirely
 bool UTChemWellReader::validFileRead()
 {
-  bool divisible = (data.size() % varCount) == 0;
+	bool divisible = false;
 
-  if (divisible){
+	if (varCount != 0) {
+		if (data.size() % varCount == 0) {
+			divisible = true;
+		}
+	}
+
+  if (divisible) {
     timeStepCount = (int)data.size()/varCount;
     return 1;
   }
