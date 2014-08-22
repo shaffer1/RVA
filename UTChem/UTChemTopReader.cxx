@@ -15,8 +15,6 @@ PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
 
-#pragma warning( once: 4996 )
-#define _CRT_SECURE_NO_WARNINGS (1)
 #include "UTChemTopReader.h"
 #include "RVA_Util.h"
 

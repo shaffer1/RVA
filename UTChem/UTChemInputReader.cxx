@@ -36,7 +36,7 @@ PURPOSE.  See the above copyright notice for more information.
 
 
 UTChemInputReader::UTChemInputReader(const std::string& input)
-  : readParams(0), gridObject(NULL), objectType(0), xdim(NULL), ydim(NULL), zdim(NULL),
+  : gridObject(NULL), objectType(0), xdim(NULL), ydim(NULL), zdim(NULL),
   parseResult(UTChemInputReader::NO_FILE), points(NULL), top(NULL), cellVolume(NULL),
    N(0), r1(0), dx1(1), dy1(1), dz1(1), iads(0), ibio(0), icap(0), ickl(0), icnm(0), icoord(0), 
 	 icse(0), icumtm(0), icvis(0), icwm(0), idispc(0), idxyz(0), ieng(0), ifoamp(0), igas(0), 
@@ -49,7 +49,6 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 {
 	InputFile.open(input.c_str());
 	if (InputFile.is_open()) {
-		vtkOutputWindowDisplayErrorText("MVM: InputFile is open.");
 		parseResult = readFile();
 
 		// MVM: according to 9.3 user guide idepth should be {0, 1, 2}
@@ -63,9 +62,6 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 			input_copy.replace(found, key.length(), "TOP");
 			top = new UTChemTopReader(input_copy.c_str(), nx, ny);
 		}
-	}
-	else {
-		vtkOutputWindowDisplayErrorText("MVM: Inputfile is closed.");
 	}
 	
 	switch(parseResult) {
@@ -129,11 +125,6 @@ int UTChemInputReader::canReadFile() {
   return parseResult != NO_FILE;
 }
 
-void UTChemInputReader::readNextLine(std::string& str)
-{
-    std::getline(InputFile, str);
-}
-
 void UTChemInputReader::skipLines(int numLines)
 {
   std::string tmp;
@@ -141,12 +132,6 @@ void UTChemInputReader::skipLines(int numLines)
   for(int i = 0 ; i < numLines ; ++i) {
       std::getline(InputFile, tmp);
   }
-}
-
-// MVM: this is a candidate for deletion.
-char* UTChemInputReader::consumeProcessed(char* ptr)
-{
-  return (char*)skipNonWhiteSpace(skipWhiteSpace(ptr));
 }
 
 void UTChemInputReader::getCellCenter(int i, int j, int k, float * out)
@@ -242,13 +227,13 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   InputFile.seekg(0, std::ios_base::beg);
 
   // Read Title and Reservoir Decription Data section 3.1
-  if ((retval = readResvDesc(str)) != UTChemInputReader::SUCCESS) 
+  if ((retval = readResvDesc()) != UTChemInputReader::SUCCESS) 
   {
     return retval;
   }
 
   // Read Output Option Data section 3.2
-  if ((retval = readOutputOpts(str)) != UTChemInputReader::SUCCESS)
+  if ((retval = readOutputOpts()) != UTChemInputReader::SUCCESS)
   {
     return retval;
   }
@@ -271,9 +256,11 @@ UTChemInputReader::ParseState UTChemInputReader::readFile()
   return UTChemInputReader::SUCCESS;
 }
 
-UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
+UTChemInputReader::ParseState UTChemInputReader::readResvDesc()
 {
+	using std::getline;
   // Section #.#.# refers to section in UTCHEM User's Guide
+	std::string str;
   std::stringstream ss;
 
   // Header
@@ -287,7 +274,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
  
   // Section 3.1.3
   skipLines(3);   
-  readNextLine(str);
+  getline(InputFile, str);
 
   ss << str;
   ss >> imode >> imes >> idispc >> icwm 
@@ -296,7 +283,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
   // Section 3.1.4
   skipLines(3); 
-  readNextLine(str);
+  getline(InputFile, str);
 
   ss.clear();
   ss.str(str);
@@ -304,7 +291,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
   // Next set of sections depends on idxyz and icoord
   skipLines(3);  
-  readNextLine(str); // might want to move this read inside the branching...
+  getline(InputFile, str); // might want to move this read inside the branching...
   
   switch (idxyz) {
 	case 0:	
@@ -329,7 +316,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 			readCurvilinearXZ(str, xspace, zspace);
 
 			skipLines(2);
-			readNextLine(str);
+			getline(InputFile, str);
 
 			ss.clear();
 			ss.str(str);
@@ -359,12 +346,12 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
 			// Section 3.1.10
     		skipLines(3);
-    		readNextLine(str);
+    		getline(InputFile, str);
     		readRegionalCoords(str, yspace, ny);
 
 			// Section 3.1.11
     		skipLines(3);
-    		readNextLine(str);
+    		getline(InputFile, str);
     		readRegionalCoords(str, zspace, nz);
 
     		// Finally setup the coordinates
@@ -381,7 +368,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 			readCurvilinearXZ(str, xspace, zspace);
 			
 			skipLines(2);
-			readNextLine(str);
+			getline(InputFile, str);
 			readRegionalCoords(str, yspace, ny);
 			setupSGridCoords();
 		}
@@ -406,7 +393,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
 			// Section 3.1.17
 			skipLines(3);
-			readNextLine(str);
+			getline(InputFile, str);
 			ss.clear();
 			ss.str(str);
 			for (int i = 0; i < ny; i++) 
@@ -418,7 +405,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
 			// Section 3.1.19
 			skipLines(3);
-			readNextLine(str);
+			getline(InputFile, str);
 			ss.clear();
 			ss.str(str);
 			for (int i = 0; i < nz; i++)
@@ -446,7 +433,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
 			// Section 3.1.17
     		skipLines(2);
-    		readNextLine(str);
+    		getline(InputFile, str);
 			std::cout << "3.1.17 str: " << str << "\n";
 			ss.clear();
 			ss.str(str);
@@ -472,7 +459,7 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
 
   // User Guide section 3.1.23
   skipLines(3); 
-  readNextLine(str);
+  getline(InputFile, str);
   ss.clear();
   ss.str(str);
   ss >> N >> no >> ntw >> nta >> ngc >> ng >> noth; 
@@ -480,19 +467,19 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
   // Section 3.1.24 - this will vary in size
   skipLines(3);
   for (int i = 0 ; i < N ; ++i) {
-    readNextLine(str);
+    getline(InputFile, str);
 	species.push_back(str);
   }
 
   // Section 3.1.25 - only exists if NTW > 0 and ITREAC == 1?
   if (ntw > 0 && itreac == 1) {
 	skipLines(3);
-    readNextLine(str);
+    getline(InputFile, str);
   }
 
   // Section 3.1.26
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile, str);
   if (N != readIVarInLine(N, str.c_str(), icf)) {
     return UTChemInputReader::FAIL_HEADER;
   }
@@ -500,8 +487,9 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc(std::string& str)
   return UTChemInputReader::SUCCESS;
 }
 
-UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str)
+UTChemInputReader::ParseState UTChemInputReader::readOutputOpts()
 {
+	std::string str;
 	std::stringstream ss;
 
 	// skipping section header
@@ -509,14 +497,14 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
 
 	// Section 3.2.1
   	skipLines(3);
-  readNextLine(str);
+  getline(InputFile, str);
   ss.str(str);
   ss >> icumtm >> istop >> ioutgms;
 
   // Section 3.2.2
   // What is done with this section?
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.clear();
   ss.str(str);
   int tmp;
@@ -525,21 +513,21 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
 
   // Section 3.2.3
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.clear();
   ss.str(str);
   ss >> ippres >> ipsat >> ipctot >> ipbio >> ipcap >> ipgel >> ipalk >> iptemp >> ipobs;
 
   // Section 3.2.4
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.clear();
   ss.str(str);
   ss >> ickl >> icvis >> iper >> icnm >> icse >> ihystp >> ifoamp >> inoneq;
 
   // Section 3.2.5
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.clear();
   ss.str(str);
   ss >> iads >> ivel >> irkf >> iphse;
@@ -548,7 +536,7 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
   int nobs;
   if (ipobs == 1) {
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
 	  ss.clear();
 	  ss.str(str);
 	  ss >> nobs;
@@ -558,7 +546,7 @@ UTChemInputReader::ParseState UTChemInputReader::readOutputOpts(std::string& str
   if (ipobs == 1 && nobs > 0) 
   {
   	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
 
   return UTChemInputReader::SUCCESS;
@@ -573,20 +561,20 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
 
   // Section 3.3.1
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.str(str);
   ss >> tmax;
 
   // Section 3.3.2
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.clear();
   ss.str(str);
   ss >> compr >> pstand;
 
   // Section 3.3.3
 	skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.clear();
   ss.str(str);
   ss >> ipor1 >> ipermx >> ipermy >> ipermz >> imod;
@@ -595,12 +583,12 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
   if (ipor1 == 0) {
 	  // Section 3.3.4
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipor1 == 1) {
 	  // Section 3.3.5 1,nz
 	  skipLines(3);
-	  readNextLine(str); 
+	  getline(InputFile,str); 
 
   }
   else if (ipor1 == 2) {
@@ -617,12 +605,12 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
   if (ipermx == 0) {
 	  // Section 3.3.7
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipermx == 1) {
 	  // Section 3.3.8 1,nz
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipermx == 2) {
 	  // Section 3.3.9 1, nx*ny*nz
@@ -638,33 +626,33 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
   if (ipermy == 0 && icoord != 2) {
 	  // Section 3.3.10
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipermy == 1 && icoord != 2) {
       // Section 3.3.11 1, nz
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipermy == 2 && icoord != 2) {
 	  // Section 3.3.12 1,nx*ny*nz
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipermy == 3 && icoord != 2) {
 	  // Section 3.3.13
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
 
   if (ipermz == 0) {
 	  // Section 3.3.14
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipermz == 1) {
 	  // Section 3.3.15 1,nz
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   else if (ipermz == 2) {
 	  // Section 3.3.16 1,nx*ny*nz
@@ -679,12 +667,12 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
   else if (ipermz == 3) {
 	  // Section 3.3.17
 	  skipLines(3);
-	  readNextLine(str);
+	  getline(InputFile,str);
   }
   
   // Section 3.3.18
   skipLines(3);
-  readNextLine(str);
+  getline(InputFile,str);
   ss.clear();
   ss.str(str);
   ss >> idepth >> ipress >> iswi >> icwi;
@@ -700,7 +688,7 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
   std::stringstream ss;
   // MVM: seems to hunt for info in sections 3.7.6.a and ?  
   while(!InputFile.eof()) {
-    readNextLine(str);
+    getline(InputFile,str);
 
 	// MVM: The real problem is that there are multiple sections that start with "IDW"
 	// 3.7.6.a, what we want, and 3.7.2* where according to the User Guide it should be
@@ -712,7 +700,7 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
     // *----IDW   IW    JW    IFLAG    RW     SWELL  IDIR   IFIRST  ILAST  IPRF
 	
     if(str.find("*----IDW") != std::string::npos || str.find("*---- IDW") != std::string::npos) {
-      readNextLine(str);
+      getline(InputFile,str);
 	  ss.clear();
       ss.str(str);
       int idw, iw, jw, iflag, idir, kfirst, klast, iprf;
@@ -729,16 +717,16 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
       
       if(idir == 4) { // Deviated well
         // Skip until we find the information
-        while(!InputFile.eof() && str.find("*----IW") == std::string::npos) readNextLine(str);
+        while(!InputFile.eof() && str.find("*----IW") == std::string::npos) getline(InputFile,str);
 
-        readNextLine(str);
+        getline(InputFile,str);
 
         while(!InputFile.eof() && str.find("CC") == std::string::npos && str.find("cc") == std::string::npos) {
           WellData::DeviatedCoords coords;
           if(3 != sscanf(str.c_str(), " %d %d %d", &coords.i, &coords.j, &coords.k))
             return UTChemInputReader::FAIL_WELLINFO;
           deviated.push_back(coords);
-          readNextLine(str);
+          getline(InputFile,str);
         }
       }
 
@@ -852,7 +840,7 @@ void UTChemInputReader::readRegionalCoords(std::string& str, std::vector<double>
 	{
 		break;
 	}
-	readNextLine(str);
+	getline(InputFile,str);
   }
   std::cout << "container size: " << container.size() << std::endl;
   for (int i = 0; i < container.size(); i++) {
@@ -873,7 +861,7 @@ void UTChemInputReader::readCurvilinearXZ(std::string& str, std::vector<double>&
 		ss >> x >> z;
 		xcoords.push_back(x);
 		zcoords.push_back(z);
-		readNextLine(str);
+		getline(InputFile,str);
 	}
 }
 

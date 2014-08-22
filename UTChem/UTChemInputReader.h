@@ -85,19 +85,17 @@ private:
 	ParseState readFile();
 
 	// Keep things clean
-	ParseState readResvDesc(std::string& str);
-	ParseState readOutputOpts(std::string& str);
+	ParseState readResvDesc();
+	ParseState readOutputOpts();
 	ParseState readReservoirProperties();
 	ParseState readWellInformation();
 
 	// Helper functions
 	void skipLines(int numLines);
-	void readNextLine(std::string& str);
 	int readIVarInLine(int numVars, const char* str, std::vector<int>& container);
 	void readRegionalCoords(std::string& str, std::vector<double>& container, int numExpected=-1);
 	void readCurvilinearXZ(std::string&, std::vector<double>&, std::vector<double>&);
 
-	static char* consumeProcessed(char* ptr);
 
 	// Extra setup functions
 	void determineGridType();
@@ -106,7 +104,6 @@ private:
 	void calculateCellVolume();
 
 	std::ifstream InputFile;
-	int readParams;
 	int objectType; // 0 = Image Data, 1 = Rectilinear Grid
 	bool isValid;
 	vtkDataObject * gridObject;

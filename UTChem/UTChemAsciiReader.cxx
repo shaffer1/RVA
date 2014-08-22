@@ -241,17 +241,21 @@ const char* UTChemAsciiReader::fileExtensionToLabel(std::string&ext)
 }
 
 // MVM: what is this for? What names need to be sanitized?
-static std::string sanitizeName(const char* name)
+static std::string sanitizeName(std::string name)
 {
+  const char *cname = name.c_str();
   std::string ret;
-  if (isdigit(*name)) 
+  
+  // MVM add underscore if it starts with a numeral
+  if (isdigit(*cname)) 
   { 
     ret +='_';
   }
   
-  for(; *name ; name++)
+  // MVM replace spaces, pluses, or minuses with underscore
+  for(; *cname ; cname++)
   {
-    char c = *name;
+    char c = *cname;
     if (isalnum(c) || c == '_') 
     {
       ret += c;
@@ -267,9 +271,9 @@ static std::string sanitizeName(const char* name)
 
 // Sets floatarray's name using instance vars componentNames and phaseName
 void UTChemAsciiReader::setMeaningfulArrayName(vtkFloatArray* array,
-        int thePhase,char* arrName, bool absolutePhase)
+        int thePhase, std::string arrName, bool absolutePhase)
 {
-  if (arrName != NULL) 
+  if (!arrName.empty()) 
   {
     std::string niceName = sanitizeName(arrName);
     array->SetName(niceName.c_str());
@@ -541,7 +545,7 @@ void UTChemAsciiReader::readNXNYnumericalValuesIntoArray(float*output)
 
 // Uses current phase and layer state to find correct float array
 // Then calls readNXNYnumericalValuesIntoArray to perform the actual numerical parsing
-int UTChemAsciiReader::readLayerValues(char* name, bool absolutePhase)
+int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
 {
   unsigned arraySize = nx*ny*nz;
 

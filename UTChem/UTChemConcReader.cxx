@@ -155,8 +155,7 @@ int UTChemConcReader::parseAsAStandardPropertyline(const char* c_str)
   //VISCOSITY (CP) OF PHASE            1  IN LAYER            1
   char measure[100];
   char unit[100];
-  //MVM This gives a warning because measure and unit are not char *, they are char *[100]
-  if(4 !=  sscanf(c_str, "%99s %99s OF PHASE            %d  IN LAYER            %d",&measure,&unit, &phase, &layer))
+  if(4 !=  sscanf(c_str, "%99s %99s OF PHASE            %d  IN LAYER            %d",measure,unit, &phase, &layer))
     return 0;
   measure[sizeof(measure)-1] = unit[sizeof(unit)-1]='\0'; // paranoia for too large strings
   if(strlen(unit) <2 || unit[0] != '(' || unit[strlen(unit)-1] != ')') {
@@ -306,7 +305,7 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
   //TOTAL SURF.(SOAP+INJ) CONC. IN LAYER            1
   //TOTAL SURF.(GEN+INJ) CONC. IN LAYER            1
   //MVM: &comp is char*[30] not char *
-  if(2 != sscanf(c_str, "TOTAL SURF.%29s CONC. IN LAYER %d", &comp, &layer))
+  if(2 != sscanf(c_str, "TOTAL SURF.%29s CONC. IN LAYER %d", comp, &layer))
     return 0;
   strncat(name, comp, sizeof(name) - strlen(name));
   if(reverseMap.count(name) == 0)
