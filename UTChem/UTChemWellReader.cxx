@@ -389,6 +389,15 @@ int UTChemWellReader::parseAsProducerVariable()
           dataLabel.push_back("Upper Effective Salinity");
           dataLabel.push_back("Effective Salinity");
       }
+	  else if (contains(line, "AQUEOUS PHASE CONC. OF BIO SPECIES")) {
+		  std::string phaseLabel = "Aqueous phase conc. of bio species";
+		  std::stringstream ss;
+		  for (int i = 0; i < getVarRange(line); ++i) {
+			  ss << phaseLabel << i;
+		      dataLabel.push_back(ss.str());
+			  ss.clear();
+		  }
+	  }
 	  else if (contains(line, "CAQSP(KK) FOR KK=1,NIAQ")) {
           if ( (niaq = getVarRange(line)) < 1 ) {
               vtkErrorMacro(<<"Unexpected CAQSP format");
