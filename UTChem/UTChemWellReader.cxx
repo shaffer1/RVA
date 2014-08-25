@@ -318,145 +318,125 @@ static int getVarRange(const char* c_str)
 
 int UTChemWellReader::parseAsProducerVariable()
 {
-  while (true){
+    while (true) {
 
-    const char* line = readNextLine(false);
+        const char* line = readNextLine(false);
 
-    if (strlen(line) == 0)
-      continue; // skip blank lines
+        if (strlen(line) == 0) {
+            continue; // skip blank lines
+        }
 
-    if (contains(line, "1-PV, 2-DAYS")){
-
-      dataLabel.push_back("Cumulative Pore Volume");
-      dataLabel.push_back("Time");
-      dataLabel.push_back("Total Production");
-      dataLabel.push_back("Water/Oil Ratio");
-      dataLabel.push_back("Cumulative Oil Recovery");
-      dataLabel.push_back("Total Production Rate");
-
-    }else if (contains(line, "PHASE CUTS FOR EACH PHASE")){
-	  phaseCount = getVarRange(line);
-
-      if (phaseCount<3 || phaseCount>4){
-        vtkErrorMacro(<<"Unexpected phase cuts format");
-        return 0;
+        if (contains(line, "1-PV, 2-DAYS")) {
+            dataLabel.push_back("Cumulative Pore Volume");
+            dataLabel.push_back("Time");
+            dataLabel.push_back("Total Production");
+            dataLabel.push_back("Water/Oil Ratio");
+            dataLabel.push_back("Cumulative Oil Recovery");
+            dataLabel.push_back("Total Production Rate");
+        }
+		else if (contains(line, "PHASE CUTS FOR EACH PHASE")) {
+            phaseCount = getVarRange(line);
+            if (phaseCount<3 || phaseCount>4) {
+				vtkErrorMacro(<<"Unexpected phase cuts format");
+                return 0;
+            }
+            dataLabel.push_back("Phase Cut Water");
+            dataLabel.push_back("Phase Cut Oil");
+            dataLabel.push_back("Phase Cut Micoremultion");
+            if (phaseCount > 3) {
+                dataLabel.push_back("Phase Cut Gas");
+            }
+       }
+       else if (contains(line, "WELLBORE PRESSURE OF EACH WELLBLOCK")) {
+           if ((wellBlockCount = getVarRange(line)) < 1) {
+               vtkErrorMacro(<<"Unexpected wellbore pressure format");
+               return 0;
+           }
+           for (int i = 0; i < wellBlockCount; i++) {
+              char label[100];
+		      sprintf(label, "Wellbore pressure of block #%i", i+1);
+              dataLabel.push_back(label);
+           }
       }
-
-      dataLabel.push_back("Phase Cut Water");
-      dataLabel.push_back("Phase Cut Oil");
-      dataLabel.push_back("Phase Cut Micoremultion");
-
-      if (phaseCount > 3)
-        dataLabel.push_back("Phase Cut Gas");
-
-
-    }else if (contains(line, "WELLBORE PRESSURE OF EACH WELLBLOCK")){
-
-      if ((wellBlockCount = getVarRange(line)) < 1){
-        vtkErrorMacro(<<"Unexpected wellbore pressure format");
-        return 0;
+      else if (contains(line, "WELLBORE TEMPERATURE")) { 
+          dataLabel.push_back("Temperature");
       }
+	  else if (contains(line, "PHASE AND TOTAL CONC. FOR")) {
+          char componentPhase[200];
 
-      for (int i = 0; i < wellBlockCount; i++){
-        char label[100];
-		sprintf(label, "Wellbore pressure of block #%i", i+1);
-        dataLabel.push_back(label);
+		  // Skip to "COMPONENT" (may return NULL)
+          // The label we need is 13 characters after COMPONENT...
+          char * component = strstr((char*)line, "COMPONENT");
+          if (component == NULL || strlen(component) < 15 || component[12]!=' ') { 
+              vtkErrorMacro(<<"Unexpected component format");
+              return 0;
+          } 
+          component += 13; //assuming format "PHASE AND TOTAL CONC. FOR COMPONENT 1  WATER  "
+          removeTrailingChar(component, ' ');
+
+	      // see if we still have a reasonable component name
+	      if (strlen(component) >100 || *component=='\0') {
+		      return 0;
+	      }
+          for (int i = 0; i < 4; i++) {
+              sprintf(componentPhase,  i == 3 ? "%s total ": "%s phase %d", component, i+1);
+              dataLabel.push_back(componentPhase);
+          }
+          componentCount++;
       }
-
-    }else if (contains(line, "WELLBORE TEMPERATURE")){
-
-      dataLabel.push_back("Temperature");
-
-    }else if (contains(line, "PHASE AND TOTAL CONC. FOR")){
-
-      char componentPhase[200];
-
-      // Skip to "COMPONENT" (may return NULL)
-      // The label we need is 13 characters after COMPONENT...
-
-      char * component = strstr((char*)line, "COMPONENT");
-
-      if (component == NULL || strlen(component) < 15 || component[12]!=' '){
-        vtkErrorMacro(<<"Unexpected component format");
-        return 0;
+      else if (contains(line, "LOWER,UPPER, AND EFF. SALINITIES")) {
+          dataLabel.push_back("Lower Effective Salinity");
+          dataLabel.push_back("Upper Effective Salinity");
+          dataLabel.push_back("Effective Salinity");
       }
-
-      component += 13; //assuming format "PHASE AND TOTAL CONC. FOR COMPONENT 1  WATER  "
-      removeTrailingChar(component, ' ');
-
-	  // see if we still have a reasonable component name
-	  if(strlen(component) >100 || *component=='\0')
-		  return 0;
-
-      for (int i = 0; i < 4; i++){
-        sprintf(componentPhase,  i == 3 ? "%s total ": "%s phase %d", component, i+1);
-        dataLabel.push_back(componentPhase);
+	  else if (contains(line, "CAQSP(KK) FOR KK=1,NIAQ")) {
+          if ( (niaq = getVarRange(line)) < 1 ) {
+              vtkErrorMacro(<<"Unexpected CAQSP format");
+              return 0;
+          }
+          for (int i = 0; i < niaq; i++) {
+              char label[100];
+		      sprintf(label, "CAQSP#i", i+1);
+              dataLabel.push_back(label);
+          }
       }
-      componentCount++;
+      else if (contains(line, "CAQSP(KK) FOR KK=NIAQ+1,NFLD")) {
+          if ( (nfld = niaq + getVarRange(line)) <= niaq ) {
+              vtkErrorMacro(<<"Unexpected CAQSP format");
+              return 0;
+          }
+          for (int i = niaq; i < nfld; i++) {
+              char label[100];
+		      sprintf(label, "CAQSP#%i", i+1);
+              dataLabel.push_back(label);
+          }
+     }
+	 else if (contains(line, "PSURF(L)")) {
+		 dataLabel.push_back("PSURF#1");
+		 dataLabel.push_back("PSURF#2");
+		 dataLabel.push_back("PSURF#3");
+         dataLabel.push_back("TSURF");
+     }
+     else if (contains(line, "CSLDT(KK),KK=1,NSLD")) {
+        if ( (nsld = getVarRange(line)) < 1) {
+            vtkErrorMacro(<<"Unexpected CSLDT format");
+            return 0;
+        }
+        for (int i = 0; i < nsld; i++) {
+            char label[100];
+		    sprintf(label, "CSLDT#%i", i+1);
+            dataLabel.push_back(label);
+        }
 
-    }else if (contains(line, "LOWER,UPPER, AND EFF. SALINITIES")){
-
-      dataLabel.push_back("Lower Effective Salinity");
-      dataLabel.push_back("Upper Effective Salinity");
-      dataLabel.push_back("Effective Salinity");
-
-    }else if (contains(line, "CAQSP(KK) FOR KK=1,NIAQ")){
-
-      if ( (niaq = getVarRange(line)) < 1 ){
-        vtkErrorMacro(<<"Unexpected CAQSP format");
-        return 0;
-      }
-
-      for (int i = 0; i < niaq; i++){
-        char label[100];
-		sprintf(label, "CAQSP#i", i+1);
-        dataLabel.push_back(label);
-      }
-
-    }else if (contains(line, "CAQSP(KK) FOR KK=NIAQ+1,NFLD")){
-
-      if ( (nfld = niaq + getVarRange(line)) <= niaq ){
-        vtkErrorMacro(<<"Unexpected CAQSP format");
-        return 0;
-      }
-
-      for (int i = niaq; i < nfld; i++){
-        char label[100];
-		sprintf(label, "CAQSP#%i", i+1);
-        dataLabel.push_back(label);
-      }
-
-    }else if (contains(line, "PSURF(L)")){
-
-		dataLabel.push_back("PSURF#1");
-		dataLabel.push_back("PSURF#2");
-		dataLabel.push_back("PSURF#3");
-      dataLabel.push_back("TSURF");
-
-    }else if (contains(line, "CSLDT(KK),KK=1,NSLD")){
-
-      if ( (nsld = getVarRange(line)) < 1){
-        vtkErrorMacro(<<"Unexpected CSLDT format");
-        return 0;
-      }
-
-      for (int i = 0; i < nsld; i++){
-        char label[100];
-		sprintf(label, "CSLDT#%i", i+1);
-        dataLabel.push_back(label);
-      }
-
-    }else if (contains(line, "LOG(IFTMW), LOG(IFTMO)")){
-
-      dataLabel.push_back("LOG(IFTMW)");
-      dataLabel.push_back("LOG(IFTMO)");
-
-    }else if (contains(line, "TOTAL NO. OF VARIABLES")){
-
-      return parseAsEndVarSection(line);
-
-    }else{
-
+    }
+    else if (contains(line, "LOG(IFTMW), LOG(IFTMO)")) {
+        dataLabel.push_back("LOG(IFTMW)");
+        dataLabel.push_back("LOG(IFTMO)");
+    }
+    else if (contains(line, "TOTAL NO. OF VARIABLES")) {
+        return parseAsEndVarSection(line);
+    }
+    else {
       vtkErrorMacro(<<"Unexpected producer variable format");
       return 0;
     }
