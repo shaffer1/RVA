@@ -54,7 +54,6 @@ void ISATISReaderDelegate::SetDataObject(vtkInformationVector* outputVector, int
 {
   vtkInformation* info = outputVector->GetInformationObject(port);
   int extentType = output->GetExtentType();
-  output->SetPipelineInformation(info);
   output->Delete();
   vtkInformation* algInfo = source->GetOutputPortInformation(port);
   algInfo->Set(vtkDataObject::DATA_EXTENT_TYPE(), extentType);
