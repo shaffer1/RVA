@@ -98,6 +98,8 @@ int SumFilter::RequestData(vtkInformation *vtkNotUsed(request),
 	calculateSums(cellData, output);
 	calculateSums(pointData, output);
 
+	// MVM: For a VTK 5.6+ pipeline, not sure this is necessary.
+	/*
 	int extent[6];
   GetExtent(input, extent);
   // Without these lines, the output will appear real but will not work as the input to any other filters
@@ -105,7 +107,7 @@ int SumFilter::RequestData(vtkInformation *vtkNotUsed(request),
   SetExtent(output, extent);
   output->SetUpdateExtent(extent);
   output->SetWholeExtent(extent);
-
+  */
   return 1;
 }
 

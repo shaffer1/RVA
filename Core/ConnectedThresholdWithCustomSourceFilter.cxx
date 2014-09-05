@@ -189,12 +189,14 @@ int ConnectedThresholdWithCustomSourceFilter::doThreshold(vtkInformation* outInf
 	else
 		iterateOverStartingPoints(rawConnectivityArray,inScalars,inScalars2,input, input, true);
 
+  // MVM: with VTK 5.6 pipeline, not sure this is necessary
+  /*
   // Without these lines, the output will appear real but will not work as the input to any other filters
   outInfo->Set( vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extent, 6 );
   SetExtent(output, extent);
   output->SetUpdateExtent(extent);
   output->SetWholeExtent(extent);
-
+  */
   arr->Delete();
 
   return 1;
