@@ -19,9 +19,7 @@ PURPOSE.  See the above copyright notice for more information.
 #define _ConnectedThresholdWithCustomSourceGUIPanel_h
 
 #include "pqNamedObjectPanel.h"
-#include "pqComponentsExport.h"
 class pqDoubleRangeWidget;
-//PQCOMPONENTS_EXPORT 
 class ConnectedThresholdWithCustomSourceGUIPanel :
   public pqNamedObjectPanel
 {
