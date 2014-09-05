@@ -48,6 +48,7 @@
 #include "vtkSMRepresentationProxy.h"
 #include "vtkStructuredGrid.h"
 #include "vtkTransform.h"
+#include "vtkOutputWindow.h"
 
 // Simple macros for names
 #define XSPIN_NAME "XSpin"
@@ -56,8 +57,6 @@
 #define XDBLSPIN_NAME "XDoubleSpin"
 #define YDBLSPIN_NAME "YDoubleSpin"
 #define ZDBLSPIN_NAME "ZDoubleSpin"
-
-extern VTK_COMMON_EXPORT void vtkOutputWindowDisplayWarningText(const char*);
 
 //-----------------------------------------------------------------------------
 GeolocationPanel::GeolocationPanel(QObject* p)
