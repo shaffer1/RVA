@@ -111,7 +111,7 @@ int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output,GTXClient* client,vt
   // name[xxxxx]. Want to drop the [xxxxxx]
   vtkStdString baseName(vtkArrayName);
   size_t pos = baseName.find_last_of("[");
-  if(pos!=vtkstd::string::npos)
+  if(pos!=std::string::npos)
     baseName.resize(pos);
   // see GTXClient example browser.cpp
   const GTXStringArray columnNames =  client->GetMacroAlphaIndices();

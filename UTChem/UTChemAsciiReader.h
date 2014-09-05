@@ -98,7 +98,7 @@ protected:
   std::map<std::string,int> reverseMap;
 
   int nx, ny, nz;
-  vtkstd::string file_ext;
+  std::string file_ext;
   std::ifstream stream;
   int line_num;
   double fileLength;

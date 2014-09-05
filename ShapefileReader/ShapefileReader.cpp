@@ -457,7 +457,7 @@ static bool isFileBad(const char* fname, int extOffset, const char* upperExt){
   }
   
   //constructing uppercase extension
-  vtkstd::string upperExtFname = fname;
+  std::string upperExtFname = fname;
   upperExtFname.replace(extOffset, 4, upperExt);
   testStream.open(upperExtFname.c_str());
 
@@ -475,8 +475,8 @@ static bool isFileBad(const char* fname, int extOffset, const char* upperExt){
 bool ShapefileReader::incompleteSrcFiles(){
 
   //constructing files names ending with three extensions
-  vtkstd::string shxName = this->FileName;
-  vtkstd::string dbfName = this->FileName;
+  std::string shxName = this->FileName;
+  std::string dbfName = this->FileName;
   int extOffset = shxName.find_last_of(".");
 
   shxName.replace(extOffset, 4, ".shx");
