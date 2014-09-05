@@ -46,15 +46,6 @@ PURPOSE.  See the above copyright notice for more information.
 // --------------------------------------------------------
 vtkStandardNewMacro(UTChemWellReader);
 
-// Pure virtual function? - need to look this up
-// it is declared somewhere, but LNK error occurs on compile
-// @undefined reference - so here is a stub out
-void UTChemWellReader::CollectRevisions(ostream& os)
-{
-  os << "Version: 1.0"; //
-}
-
-
 // constructor
 UTChemWellReader::UTChemWellReader()
 {
