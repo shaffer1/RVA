@@ -21,14 +21,12 @@ PURPOSE.  See the above copyright notice for more information.
 
 #include "vtkUnstructuredGridAlgorithm.h"
 #include "vtkSmartPointer.h"
+#include "vtkTimeStamp.h"
+#include "vtkIdList.h"
+#include "vtkDataSet.h"
 
 #include <vector>
 #include <string>
-
-class vtkTimeStamp;
-class vtkIdList;
-class vtkDataSet;
-
 
 class VTK_EXPORT CutBetweenWellsFilter : public vtkUnstructuredGridAlgorithm {
 
@@ -36,7 +34,7 @@ class VTK_EXPORT CutBetweenWellsFilter : public vtkUnstructuredGridAlgorithm {
 public:
 
   static CutBetweenWellsFilter* New();
-  vtkTypeRevisionMacro(CutBetweenWellsFilter, vtkUnstructuredGridAlgorithm);
+  vtkTypeMacro(CutBetweenWellsFilter, vtkUnstructuredGridAlgorithm);
 
 protected:
 

@@ -34,7 +34,7 @@ public:
 
   static UTChemWellReader* New();
   virtual int CanReadFile(const char*);
-  vtkTypeRevisionMacro(UTChemWellReader, UTChemAsciiReader);
+  vtkTypeMacro(UTChemWellReader, UTChemAsciiReader);
 
 
 protected:

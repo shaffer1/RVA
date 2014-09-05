@@ -31,7 +31,7 @@ PURPOSE.  See the above copyright notice for more information.
 class VTK_EXPORT UTChemFluxReader : public UTChemAsciiReader {
 public:
   static UTChemFluxReader* New();
-  vtkTypeRevisionMacro(UTChemFluxReader, UTChemAsciiReader);
+  vtkTypeMacro(UTChemFluxReader, UTChemAsciiReader);
 
   virtual int CanReadFile(const char*);
 
