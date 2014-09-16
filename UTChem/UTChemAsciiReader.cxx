@@ -639,6 +639,7 @@ int UTChemAsciiReader::readFile()
   {
     return 0;
   }
+
   freeDataVectors(); // we reset our own parsing state here
 
   this->SetProgressText(FileName);
@@ -651,7 +652,7 @@ int UTChemAsciiReader::readFile()
   bool failed = false;
 
   try {
-	  
+  
     readHeader(); // gets valid nx,ny,nz or throws exception. Subclasses should also reset their state here
 
     while (true) 
@@ -660,32 +661,32 @@ int UTChemAsciiReader::readFile()
 
       if (stream.eof()) 
       {
-	      break;
-	  	}
+        break;
+      }
 
       while (*c_str == ' ') 
       {
         c_str++; // skip leading spaces
-	    }
+      }
 
       if (!*c_str) 
       {// empty line. Rinse and Repeat
         continue;
-	    }
+      }
 
       int parsed = parseLine(c_str);
 
       if (!parsed) 
       {
         vtkErrorMacro(<<"Could not parse line #"<<line_num<<":'"<<nextLine<<"'");
-        //throw std::exception("Parse failed");
-		    throw std::runtime_error("Parse failed");
+        throw std::runtime_error("Parse failed");
       }
     }// while
   } catch (const std::exception& e) {
     failed = true;
     vtkErrorMacro(<<"Exception :" <<e.what());
   }
+  
   try {
     stream.close();
   } catch (...) {}
@@ -706,7 +707,7 @@ int UTChemAsciiReader::readFile()
 
   vtkDebugMacro(<<" nx*ny*nz="<<(nx*ny*nz)<<" timeList size = "<<timeList.size()<<" data size = "<<allData.size() )
 
-	return !failed && validFileRead(); // to be valid we did not choke and read at least one time step
+  return !failed && validFileRead(); // to be valid we did not choke and read at least one time step
 }
 
 bool UTChemAsciiReader::validFileRead()
