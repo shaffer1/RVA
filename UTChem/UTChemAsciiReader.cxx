@@ -536,9 +536,27 @@ void UTChemAsciiReader::readNXNYnumericalValuesIntoArray(float*output)
   int i = 0;
   int expected = nx * ny;
  
+  std::stringstream ss;
+  std::string str;
+
   while (i < expected) 
   {
-	  stream >> output[i];
+	  // MVM: reading input file stream into string instead of directly
+	  // into float because ASCII "NaN" was causing an infinite loop, 
+	  // not entirely sure how.
+	  // Note that gfortran seems to output "NaN", unknown what other
+	  // compilers used for UTChem might output.
+	  stream >> str;
+	  ss.str(str);
+
+	  if (str != "NaN") {
+		ss >> output[i];
+	  }
+	  else {
+		vtkErrorMacro(<<"Note: input file contains NaNs");
+		output[i] = std::numeric_limits<float>::quiet_NaN();
+	  }
+	  ss.clear();
 	  i++;
   }
 }
