@@ -551,13 +551,11 @@ int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
 
   if (currentTimeStep == NULL || arraySize==0)
   {
-    //throw std::exception("Can't readLayerValues when there's no current time step (or proper dimensions)");
 	  throw std::runtime_error("Can't readLayerValues when there's no current time step (or proper dimensions)");
 	}
   
   if (phase<0) 
   {
-//    throw std::exception("Negative phase values are unsupported"); // meaningful name requires non-neg
 	  throw std::runtime_error("Negative phase values are unsupported"); 
   }
   
@@ -574,7 +572,6 @@ int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
   assert(layer>0 && layer<=nz);
   if (!oneGrid || layer<=0 || layer > nz) 
   {
-    //throw std::exception("Unexpected layer value");
 	  throw std::runtime_error("Unexpected layer value");
   }
   float* ptr = oneGrid+(nx*ny*(layer-1));
