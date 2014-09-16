@@ -536,9 +536,27 @@ void UTChemAsciiReader::readNXNYnumericalValuesIntoArray(float*output)
   int i = 0;
   int expected = nx * ny;
  
+  std::stringstream ss;
+  std::string str;
+
   while (i < expected) 
   {
-	  stream >> output[i];
+	  // MVM: reading input file stream into string instead of directly
+	  // into float because ASCII "NaN" was causing an infinite loop, 
+	  // not entirely sure how.
+	  // Note that gfortran seems to output "NaN", unknown what other
+	  // compilers used for UTChem might output.
+	  stream >> str;
+	  ss.str(str);
+
+	  if (str != "NaN") {
+		ss >> output[i];
+	  }
+	  else {
+		vtkErrorMacro(<<"Note: input file contains NaNs");
+		output[i] = std::numeric_limits<float>::quiet_NaN();
+	  }
+	  ss.clear();
 	  i++;
   }
 }
@@ -551,17 +569,15 @@ int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
 
   if (currentTimeStep == NULL || arraySize==0)
   {
-    //throw std::exception("Can't readLayerValues when there's no current time step (or proper dimensions)");
-	  throw std::runtime_error("Can't readLayerValues when there's no current time step (or proper dimensions)");
-	}
+    throw std::runtime_error("Can't readLayerValues when there's no current time step (or proper dimensions)");
+  }
   
   if (phase<0) 
   {
-//    throw std::exception("Negative phase values are unsupported"); // meaningful name requires non-neg
-	  throw std::runtime_error("Negative phase values are unsupported"); 
+    throw std::runtime_error("Negative phase values are unsupported"); 
   }
   
-  if ( !currentTimeStep->count(phase)) 
+  if (!currentTimeStep->count(phase)) 
   {
     vtkFloatArray* floatArray = vtkFloatArray::New();
     floatArray->SetNumberOfValues(arraySize);
@@ -572,11 +588,12 @@ int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
   oneGrid = (*currentTimeStep)[phase]->GetPointer(0);
   assert(oneGrid);
   assert(layer>0 && layer<=nz);
+  
   if (!oneGrid || layer<=0 || layer > nz) 
   {
-    //throw std::exception("Unexpected layer value");
-	  throw std::runtime_error("Unexpected layer value");
+    throw std::runtime_error("Unexpected layer value");
   }
+  
   float* ptr = oneGrid+(nx*ny*(layer-1));
 
   readNXNYnumericalValuesIntoArray(ptr); 
@@ -640,6 +657,7 @@ int UTChemAsciiReader::readFile()
   {
     return 0;
   }
+
   freeDataVectors(); // we reset our own parsing state here
 
   this->SetProgressText(FileName);
@@ -652,7 +670,7 @@ int UTChemAsciiReader::readFile()
   bool failed = false;
 
   try {
-	  
+  
     readHeader(); // gets valid nx,ny,nz or throws exception. Subclasses should also reset their state here
 
     while (true) 
@@ -661,32 +679,32 @@ int UTChemAsciiReader::readFile()
 
       if (stream.eof()) 
       {
-	      break;
-	  	}
+        break;
+      }
 
       while (*c_str == ' ') 
       {
         c_str++; // skip leading spaces
-	    }
+      }
 
       if (!*c_str) 
       {// empty line. Rinse and Repeat
         continue;
-	    }
+      }
 
       int parsed = parseLine(c_str);
 
       if (!parsed) 
       {
         vtkErrorMacro(<<"Could not parse line #"<<line_num<<":'"<<nextLine<<"'");
-        //throw std::exception("Parse failed");
-		    throw std::runtime_error("Parse failed");
+        throw std::runtime_error("Parse failed");
       }
     }// while
   } catch (const std::exception& e) {
     failed = true;
     vtkErrorMacro(<<"Exception :" <<e.what());
   }
+  
   try {
     stream.close();
   } catch (...) {}
@@ -707,7 +725,7 @@ int UTChemAsciiReader::readFile()
 
   vtkDebugMacro(<<" nx*ny*nz="<<(nx*ny*nz)<<" timeList size = "<<timeList.size()<<" data size = "<<allData.size() )
 
-	return !failed && validFileRead(); // to be valid we did not choke and read at least one time step
+  return !failed && validFileRead(); // to be valid we did not choke and read at least one time step
 }
 
 bool UTChemAsciiReader::validFileRead()

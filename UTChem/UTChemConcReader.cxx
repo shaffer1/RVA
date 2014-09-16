@@ -181,29 +181,42 @@ int UTChemConcReader::parseAsACONCENTRATIONline(const char* c_str)
 {
   //TOTAL FLUID CONC. OF COMP. NO.  1:WATER    IN LAYER   1
   // note Components can have spaces in their names!
-  if(1 != sscanf(c_str,"TOTAL FLUID CONC. OF COMP. NO.  %d",&phase))
+  if (1 != sscanf(c_str,"TOTAL FLUID CONC. OF COMP. NO.  %d",&phase)) {
     return 0;
+  }
 
   const char* inLayer_str= strstr(c_str,"IN LAYER");
-  if(!inLayer_str) return 0;
-  if(1 != sscanf(inLayer_str,"IN LAYER %d",&layer))
+  
+  if (!inLayer_str) {
+	  return 0;
+  }
+
+  if (1 != sscanf(inLayer_str,"IN LAYER %d",&layer)) {
     return 0;
-  if(componentNames.count(phase)  == 0) {
+  }
+  
+  if (componentNames.count(phase)  == 0) {
 
     //move inLayer_str until we hit the last letter of the name.
-    for(inLayer_str--; *inLayer_str==' '; inLayer_str--);
-    // move c_str forwards until we hit the colon just prior to the start of the name
-    while(*c_str && *c_str != ':') c_str ++;
+    for (inLayer_str--; *inLayer_str==' '; inLayer_str--)
+		;
+    
+	// move c_str forwards until we hit the colon just prior to the start of the name
+    while (*c_str && *c_str != ':') {
+		c_str ++;
+	}
 
     // Name is now after : to *inLayer_str
     std::string name;
-    do {
-      name +=(* (++c_str));
-    } while(c_str < inLayer_str);
+    
+	do {
+      name += (* (++c_str));
+    } while (c_str < inLayer_str);
 
     vtkDebugMacro(<<"Extracted name:'"<< name<<"' for component "<<phase)
     componentNames[phase] = name;
   }
+
   return readLayerValues();
 }
 
@@ -308,27 +321,27 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
 
 // Reads a UTChem data file (.CONC / .VISC etc )
 int UTChemConcReader::parseLine(const char* c_str) {
-      if( startsWith(c_str,"TIME ") )
+    std::cout << "MVM: c_str: " << c_str << std::endl;
+    if( startsWith(c_str,"TIME ") )
         return parseAsATIMEline(c_str);
-      else if(startsWith(c_str, "SAT. OF PHASE"))
+    else if(startsWith(c_str, "SAT. OF PHASE"))
         return parseAsASATPHASEline(c_str) ;
-      else if(startsWith(c_str, "PRESSURE") ||startsWith(c_str, "VISCOSITY" ) )
+    else if(startsWith(c_str, "PRESSURE") ||startsWith(c_str, "VISCOSITY" ) )
         return parseAsAStandardPropertyline(c_str);
-      else if(startsWith(c_str, "TOTAL FLUID CONC. OF COMP. NO."))
+    else if(startsWith(c_str, "TOTAL FLUID CONC. OF COMP. NO."))
         return parseAsACONCENTRATIONline(c_str);
-      else if(startsWith(c_str, "CONC. OF COMP. NO."))
+    else if(startsWith(c_str, "CONC. OF COMP. NO."))
         return parseAsCOMPPHASEline(c_str);
-	    else if(startsWith(c_str, "TEMPERATURE"))
-		    return parseAsTEMPERATUREline(c_str);
-      else if(startsWith(c_str, "X-PERMEABILITY"))
+    else if(startsWith(c_str, "TEMPERATURE"))
+        return parseAsTEMPERATUREline(c_str);
+    else if(startsWith(c_str, "X-PERMEABILITY"))
         return parseAsPERMEABILITYline(c_str);
-      else if(startsWith(c_str, "POROSITY"))
+    else if(startsWith(c_str, "POROSITY"))
         return parseAsPOROSITYline(c_str);
-      else if(startsWith(c_str, "FLUID CONCENTRATION OF") || startsWith(c_str, "ADSORBED CONCENTRATION OF") || startsWith(c_str, "SOLID CONCENTRATION OF"))
+    else if(startsWith(c_str, "FLUID CONCENTRATION OF") || startsWith(c_str, "ADSORBED CONCENTRATION OF") || startsWith(c_str, "SOLID CONCENTRATION OF"))
         return parseAsPCONCENTRATIONline("%19s CONCENTRATION OF  %d", c_str);
-      else if(startsWith(c_str, "TOTAL SURF."))
+    else if(startsWith(c_str, "TOTAL SURF."))
         return parseAsSURFACTANTline(c_str);
-	  return 0; //could not consume this line
+   
+   	return 0; //could not consume this line
 }
-     
-
