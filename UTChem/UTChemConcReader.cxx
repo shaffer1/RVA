@@ -189,29 +189,42 @@ int UTChemConcReader::parseAsACONCENTRATIONline(const char* c_str)
 {
   //TOTAL FLUID CONC. OF COMP. NO.  1:WATER    IN LAYER   1
   // note Components can have spaces in their names!
-  if(1 != sscanf(c_str,"TOTAL FLUID CONC. OF COMP. NO.  %d",&phase))
+  if (1 != sscanf(c_str,"TOTAL FLUID CONC. OF COMP. NO.  %d",&phase)) {
     return 0;
+  }
 
   const char* inLayer_str= strstr(c_str,"IN LAYER");
-  if(!inLayer_str) return 0;
-  if(1 != sscanf(inLayer_str,"IN LAYER %d",&layer))
+  
+  if (!inLayer_str) {
+	  return 0;
+  }
+
+  if (1 != sscanf(inLayer_str,"IN LAYER %d",&layer)) {
     return 0;
-  if(componentNames.count(phase)  == 0) {
+  }
+  
+  if (componentNames.count(phase)  == 0) {
 
     //move inLayer_str until we hit the last letter of the name.
-    for(inLayer_str--; *inLayer_str==' '; inLayer_str--);
-    // move c_str forwards until we hit the colon just prior to the start of the name
-    while(*c_str && *c_str != ':') c_str ++;
+    for (inLayer_str--; *inLayer_str==' '; inLayer_str--)
+		;
+    
+	// move c_str forwards until we hit the colon just prior to the start of the name
+    while (*c_str && *c_str != ':') {
+		c_str ++;
+	}
 
     // Name is now after : to *inLayer_str
     std::string name;
-    do {
-      name +=(* (++c_str));
-    } while(c_str < inLayer_str);
+    
+	do {
+      name += (* (++c_str));
+    } while (c_str < inLayer_str);
 
     vtkDebugMacro(<<"Extracted name:'"<< name<<"' for component "<<phase)
     componentNames[phase] = name;
   }
+
   return readLayerValues();
 }
 
