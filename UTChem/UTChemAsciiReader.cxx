@@ -551,15 +551,15 @@ int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
 
   if (currentTimeStep == NULL || arraySize==0)
   {
-	  throw std::runtime_error("Can't readLayerValues when there's no current time step (or proper dimensions)");
-	}
+    throw std::runtime_error("Can't readLayerValues when there's no current time step (or proper dimensions)");
+  }
   
   if (phase<0) 
   {
-	  throw std::runtime_error("Negative phase values are unsupported"); 
+    throw std::runtime_error("Negative phase values are unsupported"); 
   }
   
-  if ( !currentTimeStep->count(phase)) 
+  if (!currentTimeStep->count(phase)) 
   {
     vtkFloatArray* floatArray = vtkFloatArray::New();
     floatArray->SetNumberOfValues(arraySize);
@@ -570,10 +570,12 @@ int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
   oneGrid = (*currentTimeStep)[phase]->GetPointer(0);
   assert(oneGrid);
   assert(layer>0 && layer<=nz);
+  
   if (!oneGrid || layer<=0 || layer > nz) 
   {
-	  throw std::runtime_error("Unexpected layer value");
+    throw std::runtime_error("Unexpected layer value");
   }
+  
   float* ptr = oneGrid+(nx*ny*(layer-1));
 
   readNXNYnumericalValuesIntoArray(ptr); 
