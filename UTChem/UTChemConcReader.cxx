@@ -316,27 +316,27 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
 
 // Reads a UTChem data file (.CONC / .VISC etc )
 int UTChemConcReader::parseLine(const char* c_str) {
-      if( startsWith(c_str,"TIME ") )
+    std::cout << "MVM: c_str: " << c_str << std::endl;
+    if( startsWith(c_str,"TIME ") )
         return parseAsATIMEline(c_str);
-      else if(startsWith(c_str, "SAT. OF PHASE"))
+    else if(startsWith(c_str, "SAT. OF PHASE"))
         return parseAsASATPHASEline(c_str) ;
-      else if(startsWith(c_str, "PRESSURE") ||startsWith(c_str, "VISCOSITY" ) )
+    else if(startsWith(c_str, "PRESSURE") ||startsWith(c_str, "VISCOSITY" ) )
         return parseAsAStandardPropertyline(c_str);
-      else if(startsWith(c_str, "TOTAL FLUID CONC. OF COMP. NO."))
+    else if(startsWith(c_str, "TOTAL FLUID CONC. OF COMP. NO."))
         return parseAsACONCENTRATIONline(c_str);
-      else if(startsWith(c_str, "CONC. OF COMP. NO."))
+    else if(startsWith(c_str, "CONC. OF COMP. NO."))
         return parseAsCOMPPHASEline(c_str);
-	    else if(startsWith(c_str, "TEMPERATURE"))
-		    return parseAsTEMPERATUREline(c_str);
-      else if(startsWith(c_str, "X-PERMEABILITY"))
+    else if(startsWith(c_str, "TEMPERATURE"))
+        return parseAsTEMPERATUREline(c_str);
+    else if(startsWith(c_str, "X-PERMEABILITY"))
         return parseAsPERMEABILITYline(c_str);
-      else if(startsWith(c_str, "POROSITY"))
+    else if(startsWith(c_str, "POROSITY"))
         return parseAsPOROSITYline(c_str);
-      else if(startsWith(c_str, "FLUID CONCENTRATION OF") || startsWith(c_str, "ADSORBED CONCENTRATION OF") || startsWith(c_str, "SOLID CONCENTRATION OF"))
+    else if(startsWith(c_str, "FLUID CONCENTRATION OF") || startsWith(c_str, "ADSORBED CONCENTRATION OF") || startsWith(c_str, "SOLID CONCENTRATION OF"))
         return parseAsPCONCENTRATIONline("%19s CONCENTRATION OF  %d", c_str);
-      else if(startsWith(c_str, "TOTAL SURF."))
+    else if(startsWith(c_str, "TOTAL SURF."))
         return parseAsSURFACTANTline(c_str);
-	  return 0; //could not consume this line
+   
+   	return 0; //could not consume this line
 }
-     
-
