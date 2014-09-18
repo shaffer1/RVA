@@ -123,7 +123,6 @@ int UTChemFluxReader::parseAsLayerIdent(const char* c_str){ // 1 for success
 	int parsedLayerIndex= 1==sscanf(c_str,"D E T A I L S   O F   L A Y E R   N U M B E R     %d",&layerIndex);
 	
 	if(!parsedLayerIndex || layerIndex<1 || layerIndex > nz) {
-	//	throw std::exception("Failed to read layer number");
 		throw std::runtime_error("Failed to read layer number");
 	}
 	this->layer = layerIndex - 1;
@@ -135,7 +134,6 @@ int UTChemFluxReader::parseAsFluxHeader(const char* c_str){
 
 	if( 3!=sscanf(c_str,"%99s PHASE %c-FLUX  (%255s",this->phaseName,&directionChar,fluxUnits)) {
 		vtkErrorMacro(<<"Could not parse PHASE FLUX :'"<<nextLine<<"'")
-			//throw std::exception("Failed to read phase flux heading");
 			throw std::runtime_error("Failed to read phase flux heading");
 
 	}
@@ -147,7 +145,6 @@ int UTChemFluxReader::parseAsFluxHeader(const char* c_str){
 	this->directionXYZ = directionChar-'X';
 	if(!*phaseName || !*fluxUnits || directionXYZ<0 || directionXYZ>2) {
 		vtkErrorMacro(<<"Unexpected PHASE FLUX values :'"<<nextLine<<"'")
-//			throw std::exception("Unexpected values found in phase flux heading");
 		throw std::runtime_error("Unexpected values found in phase flux heading");
 	}
 	std::string phaseNameString(phaseName);
@@ -180,7 +177,6 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 
 		const char* c_str = readNextLine(true); 
 		if(!contains(c_str,"J/I=")) {
-		//	throw std::exception("Expected J/I= data");
 			throw std::runtime_error("Expected J/I= data");
 		}
 		int numColsExpected=0;
@@ -192,7 +188,6 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 			int jthIndex = (int)strtod(c_str, (char**) &next_ptr);
 			
 			if(jthIndex<1 || jthIndex>ny || jthIndex != j+1 || next_ptr == c_str) {
-				//throw std::exception("Invalid j index");
 				throw std::runtime_error("Invalid j index");
 			}
 
@@ -205,7 +200,6 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 			if( ! array || idx<0 
 				|| (long)idx + (nx-numColsParsedEarlier)> (long)array->GetNumberOfTuples() 
 				|| directionXYZ <0 || directionXYZ>= (int)array->GetNumberOfComponents()){
-				//throw std::exception("Invalid internal state");
 				throw std::runtime_error("Invalid internal state");
 			}
 			while(true) {
@@ -222,11 +216,9 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
         c_str = next_ptr;
 
 				if(i>=nx) {
-					//throw std::exception("Too many columns read");
 					throw std::runtime_error("Too many columns read");
 				}
 				if(remainNumValues<=0) {
-					//throw std::exception("Too many values read");
 					throw std::runtime_error("Too many values read");
 				}
 
@@ -240,19 +232,16 @@ int UTChemFluxReader::readFluxDataTable() { // 1 for success
 			if(j==0) {
 				numColsExpected = columnCount;
 				if(columnCount<1) {
-					//throw std::exception("Expected at least one data column");
 					throw std::runtime_error("Expected at least one data column");
 				}
 			}
 			else if(columnCount != numColsExpected) {
-		//				throw std::exception("Incorrect number of columns in J/I data");
 				throw std::runtime_error("Incorrect number of columns in J/I data");
 			}
 		} // for all rows of data
 		numColsParsedEarlier += numColsExpected;
 	} // while
 	if(remainNumValues!=0) {
-//		throw std::exception("Incorrect number of values read");
 		throw std::runtime_error("Incorrect number of values read");
 	}
 
@@ -276,11 +265,9 @@ vtkFloatArray* UTChemFluxReader::getCurrentFloatArray() {
   unsigned arraySize = nx*ny*nz;
 
   if(currentTimeStep == NULL || arraySize==0) {
-    //throw std::exception("Can't readLayerValues when there's no current time step (or proper dimensions)");
 	throw std::runtime_error("Can't readLayerValues when there's no current time step (or proper dimensions)");
   }
   if(phase<0) {
-    //throw std::exception("Negative phase values are unsupported"); // meaningful name requires non-neg
 	throw std::runtime_error("Negative phase values are unsupported");
   }
 
