@@ -254,21 +254,17 @@ int UTChemWellReader::parseAsWellVariables(const char* c_str)
 int UTChemWellReader::parseAsWellTable(const char* c_str)
 {
   std::string token;
-  size_t len = strlen(c_str);
-
- // Note we i goes to len not len-1 so that we can capture any previously built number inside preProc
-  for (unsigned i = 0; i <= len; i++){
-    if (i==len || c_str[i] == ','){
-      if(token.size()>0) {
-		// MVM: cast or proper use of stream extraction should get rid of this
-      	data.push_back(convertXToY<std::string, float>(token));
-        token.clear();
-      }
-    } else if (c_str[i] != ' '){
-      token += c_str[i];
-    } // else we just skip over spaces
+  std::stringstream line(c_str);
+  float f;
+  std::stringstream ss;
+  while (std::getline(line, token , ',')) {
+	  ss.str(token);
+	  ss >> f;
+	  std::cout << "float data: " << f << std::endl;
+	  data.push_back(f);
+	  ss.clear();
   }
-
+   
   return 1;
 }
 
