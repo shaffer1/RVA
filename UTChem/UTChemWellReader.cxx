@@ -524,10 +524,7 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
   float** positions = InputInfo->getCellCenters();
   vtkIdType id = 0;
 
-  // MVM: I think this is actually using toUpperCaseFileExtension just
-  // to grab the extension.
-  
-  int fileWellId = atoi(std::string(toUpperCaseFileExtension(FileName)).substr(4,2).c_str());
+  int fileWellId = atoi(file_ext.substr(4,2).c_str());
 
   UTChemInputReader::WellData well = InputInfo->wellInfo[fileWellId];
 
