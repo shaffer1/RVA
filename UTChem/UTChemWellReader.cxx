@@ -158,6 +158,8 @@ int UTChemWellReader::RequestInformation(
 }
 
 
+// MVM: if this is used as an initializer/resetter, then this is
+// a horrible name.
 // Note this method is called by the constructor to reset our internal state
 void UTChemWellReader::readHeader()
 {
@@ -521,9 +523,13 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
   vtkPolyLine* line = vtkPolyLine::New();
   float** positions = InputInfo->getCellCenters();
   vtkIdType id = 0;
-  int wellId = atoi(std::string(toUpperCaseFileExtension(FileName)).substr(4,2).c_str());
 
-  UTChemInputReader::WellData well = InputInfo->wellInfo[wellId];
+  // MVM: I think this is actually using toUpperCaseFileExtension just
+  // to grab the extension.
+  
+  int fileWellId = atoi(std::string(toUpperCaseFileExtension(FileName)).substr(4,2).c_str());
+
+  UTChemInputReader::WellData well = InputInfo->wellInfo[fileWellId];
 
   int numPts = well.ilast - well.ifirst + 1;
   vtkIdList* ptIds = line->GetPointIds();
