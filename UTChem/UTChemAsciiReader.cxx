@@ -606,7 +606,7 @@ int UTChemAsciiReader::readLayerValues(std::string name, bool absolutePhase)
 // 1=Good stream (and file extension and length of file is known)
 int UTChemAsciiReader::initializeStream()
 {
-  this->file_ext = toUpperCaseFileExtension(FileName);
+  this->file_ext = getFileExtension(FileName);
   if (file_ext.empty()) 
   {
     vtkErrorMacro(<<"File extension not found:"<<FileName)

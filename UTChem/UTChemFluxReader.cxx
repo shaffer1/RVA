@@ -63,7 +63,7 @@ int UTChemFluxReader::CanReadFile(const char* filename)
 	  return 0;
   }
   
-  std::string ext = toUpperCaseFileExtension(filename);
+  std::string ext = getFileExtension(filename);
 	if (ext != "PROF") 
   {
     return 0;

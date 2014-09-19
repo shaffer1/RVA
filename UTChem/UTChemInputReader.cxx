@@ -699,7 +699,7 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
     // CC WELL ID,LOCATIONS,AND FLAG FOR SPECIFYING WELL TYPE, WELL RADIUS, SKIN
     // *----IDW   IW    JW    IFLAG    RW     SWELL  IDIR   IFIRST  ILAST  IPRF
 	
-    if(str.find("*----IDW") != std::string::npos || str.find("*---- IDW") != std::string::npos) {
+    if(str.find("*----IDW   IW") != std::string::npos || str.find("*---- IDW   IW") != std::string::npos) {
       getline(InputFile,str);
 	  ss.clear();
       ss.str(str);

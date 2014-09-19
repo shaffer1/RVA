@@ -74,7 +74,7 @@ int UTChemConcReader::CanReadFile(const char* filename)
 	  return 0;
   }
 
-  std::string ext = toUpperCaseFileExtension(filename);
+  std::string ext = getFileExtension(filename);
 
   if (strlen(fileExtensionToLabel(ext)) == 0) 
   { 

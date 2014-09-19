@@ -22,7 +22,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include <cstring>
 #include <cstdlib>
 
-static std::string toUpperCaseFileExtension(const char* theFileName)
+static std::string getFileExtension(const char* theFileName)
 {
   std::string result;
   const char* chrptr = strrchr(theFileName ? theFileName : "",'.'); //finds last period, or Null
