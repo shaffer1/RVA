@@ -61,26 +61,26 @@ int UTChemFluxReader::CanReadFile(const char* filename)
 	if (!filename) 
 	{
 	  return 0;
-  }
+	}
   
-  std::string ext = getFileExtension(filename);
+	std::string ext = getFileExtension(filename);
 	if (ext != "PROF") 
-  {
-    return 0;
-  }
+	{
+		return 0;
+	}
   
   // Check that ivel data is available
-  try {
+	try {
 		// MVM: why reload the entire INPUT file just to find one var?
 		// should be cataloged on first go through.
-	  reloadInputFile(filename);
+		reloadInputFile(filename);
 		// MVM: same with this, should be stored
-	  std::string inputFileName(getInputFileFromFileName(filename));
-    return InputInfo->canReadFile() && InputInfo->ivel != 0;
-  } catch (std::exception& e) {
-    e; // avoid compiler warning of unused var
-    return 0;
-  }
+		std::string inputFileName(getInputFileFromFileName(filename));
+		return InputInfo->canReadFile() && InputInfo->ivel != 0;
+	} catch (std::exception& e) {
+		e; // avoid compiler warning of unused var
+		return 0;
+	}
 }
 
 const char* UTChemFluxReader::fileExtensionToLabel(std::string&ext) {
