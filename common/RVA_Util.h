@@ -28,11 +28,6 @@ static std::string getFileExtension(const char* theFileName)
   return extension.substr(extension.rfind(".") + 1);
 }
 
-static int startsWith(const char* s, const char* sub)
-{
-  return s && sub && 0==strncmp(s,sub,strlen(sub));
-}
-
 static int contains(const char* s, const char* sub)
 {
   return s && sub && NULL!=strstr(s,sub);
