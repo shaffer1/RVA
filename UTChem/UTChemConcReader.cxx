@@ -321,26 +321,39 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
 
 // Reads a UTChem data file (.CONC / .VISC etc )
 int UTChemConcReader::parseLine(const char* c_str) {
-    if( startsWith(c_str,"TIME ") )
-        return parseAsATIMEline(c_str);
-    else if(startsWith(c_str, "SAT. OF PHASE"))
-        return parseAsASATPHASEline(c_str) ;
-    else if(startsWith(c_str, "PRESSURE") ||startsWith(c_str, "VISCOSITY" ) )
+	std::string line(c_str);
+	std::cout << "MVM: line: " << line << std::endl;
+	if (line.find("TIME") == 0) {
+		return parseAsATIMEline(c_str);
+	}
+	else if (line.find("SAT. OF PHASE") == 0) {
+        return parseAsASATPHASEline(c_str);
+	}
+    else if (line.find("PRESSURE") == 0 || line.find("VISCOSITY") == 0) {
         return parseAsAStandardPropertyline(c_str);
-    else if(startsWith(c_str, "TOTAL FLUID CONC. OF COMP. NO."))
+	}
+    else if (line.find("TOTAL FLUID CONC. OF COMP. NO.") == 0) {
         return parseAsACONCENTRATIONline(c_str);
-    else if(startsWith(c_str, "CONC. OF COMP. NO."))
+	}
+    else if (line.find("CONC. OF COMP. NO.") == 0) {
         return parseAsCOMPPHASEline(c_str);
-    else if(startsWith(c_str, "TEMPERATURE"))
+	}
+    else if (line.find("TEMPERATURE") == 0) {
         return parseAsTEMPERATUREline(c_str);
-    else if(startsWith(c_str, "X-PERMEABILITY"))
+	}
+    else if (line.find("X-PERMEABILITY") == 0) {
         return parseAsPERMEABILITYline(c_str);
-    else if(startsWith(c_str, "POROSITY"))
+	}
+    else if (line.find("POROSITY") == 0) {
         return parseAsPOROSITYline(c_str);
-    else if(startsWith(c_str, "FLUID CONCENTRATION OF") || startsWith(c_str, "ADSORBED CONCENTRATION OF") || startsWith(c_str, "SOLID CONCENTRATION OF"))
+	}
+    else if (line.find("FLUID CONCENTRATION OF") == 0 || 
+			line.find("ADSORBED CONCENTRATION OF") == 0 || 
+			line.find("SOLID CONCENTRATION OF") == 0) {
         return parseAsPCONCENTRATIONline("%19s CONCENTRATION OF  %d", c_str);
-    else if(startsWith(c_str, "TOTAL SURF."))
+	}
+    else if (line.find("TOTAL SURF.") == 0) {
         return parseAsSURFACTANTline(c_str);
-   
+	}
    	return 0; //could not consume this line
 }
