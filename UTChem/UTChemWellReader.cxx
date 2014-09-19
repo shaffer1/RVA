@@ -64,6 +64,8 @@ int UTChemWellReader::CanReadFile(const char* filename)
   if(!filename)
     return 0;
 
+  // MVM: at this point, has UTChemAsciiReader grabbed the 
+  // extension? if not, why not? 
   std::string ext = toUpperCaseFileExtension(filename);
 
   if(ext.substr(0,4) != "HIST")
