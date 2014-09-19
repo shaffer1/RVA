@@ -28,17 +28,6 @@ static std::string getFileExtension(const char* theFileName)
   return extension.substr(extension.rfind(".") + 1);
 }
 
-static float makeExponential(float base, char** ptr)
-{
-  if(ptr == NULL)
-    return 0.f;
-
-  char* startptr = *ptr;
-  int exp = strtod(startptr, ptr);
-
-  return (float)(pow(10.f, exp) * base);
-}
-
 static int startsWith(const char* s, const char* sub)
 {
   return s && sub && 0==strncmp(s,sub,strlen(sub));
