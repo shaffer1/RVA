@@ -47,6 +47,10 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 	 tmax(0), compr(0), pstand(0), ipor1(0), ipermx(0), ipermy(0), ipermz(0), imod(0), 
 	 itranz(0), intg(0), idepth(0), ipress(0), iswi(0), icwi(0)
 {
+	// MVM: NO_FILE is perhaps a misnomer, as due to how this ctor gets called
+	// often it will result in a parseResult of NO_FILE, even though there is
+	// an INPUT file in the directory. Actual checking for INPUT's existence
+	// should perhaps go to UTChemAsciiReader.
 	InputFile.open(input.c_str());
 	if (InputFile.is_open()) {
 		parseResult = readFile();
@@ -75,10 +79,6 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 			break;
 		case UTChemInputReader::FAIL_WELLINFO :
 			vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading well information");
-			isValid = false;
-			break;
-		case UTChemInputReader::NO_FILE:
-			vtkOutputWindowDisplayErrorText("No readable INPUT file in directory.");
 			isValid = false;
 			break;
 		default:
