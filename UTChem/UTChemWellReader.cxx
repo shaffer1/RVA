@@ -264,7 +264,6 @@ int UTChemWellReader::parseAsWellTable(const char* c_str)
   while (std::getline(line, token , ',')) {
 	  ss.str(token);
 	  ss >> f;
-	  std::cout << "float data: " << f << std::endl;
 	  data.push_back(f);
 	  ss.clear();
   }

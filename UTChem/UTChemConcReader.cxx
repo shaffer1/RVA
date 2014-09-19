@@ -321,7 +321,6 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
 
 // Reads a UTChem data file (.CONC / .VISC etc )
 int UTChemConcReader::parseLine(const char* c_str) {
-    std::cout << "MVM: c_str: " << c_str << std::endl;
     if( startsWith(c_str,"TIME ") )
         return parseAsATIMEline(c_str);
     else if(startsWith(c_str, "SAT. OF PHASE"))

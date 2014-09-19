@@ -63,7 +63,7 @@ UTChemInputReader::UTChemInputReader(const std::string& input)
 			top = new UTChemTopReader(input_copy.c_str(), nx, ny);
 		}
 	}
-	
+
 	switch(parseResult) {
 		case UTChemInputReader::FAIL_HEADER :
 			vtkOutputWindowDisplayErrorText("Could not read INPUT file (perhaps invalid format?)\nFailed reading Reservoir Description");
@@ -434,7 +434,6 @@ UTChemInputReader::ParseState UTChemInputReader::readResvDesc()
 			// Section 3.1.17
     		skipLines(2);
     		getline(InputFile, str);
-			std::cout << "3.1.17 str: " << str << "\n";
 			ss.clear();
 			ss.str(str);
 
@@ -845,10 +844,6 @@ void UTChemInputReader::readRegionalCoords(std::string& str, std::vector<double>
 		break;
 	}
 	getline(InputFile,str);
-  }
-  std::cout << "container size: " << container.size() << std::endl;
-  for (int i = 0; i < container.size(); i++) {
-	  std::cout << container[i] << std::endl;
   }
 }
 
