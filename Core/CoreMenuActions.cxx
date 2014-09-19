@@ -311,7 +311,7 @@ void CoreMenuActions::SetTitle()
     return;
 
   title.append(" - RVA @ UIUC (build ");
-  title.append(RVA_BUILD_NUMBER);
+  title.append(QString::number(RVA_BUILD_NUMBER));
   title.append(")");
 
   mainWindow->setWindowTitle(title);
