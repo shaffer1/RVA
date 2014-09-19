@@ -24,12 +24,8 @@ PURPOSE.  See the above copyright notice for more information.
 
 static std::string getFileExtension(const char* theFileName)
 {
-  std::string result;
-  const char* chrptr = strrchr(theFileName ? theFileName : "",'.'); //finds last period, or Null
-  if(chrptr) // null if no period. Skip over period, then add upper case character
-    for(chrptr++; *chrptr; chrptr++)
-      result.push_back( toupper(*chrptr) );
-  return result;
+  std::string extension(theFileName);
+  return extension.substr(extension.rfind(".") + 1);
 }
 
 static float makeExponential(float base, char** ptr)
