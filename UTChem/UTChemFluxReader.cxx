@@ -57,7 +57,9 @@ UTChemFluxReader::~UTChemFluxReader()
 
 int UTChemFluxReader::CanReadFile(const char* filename)
 {
-	
+	// MVM: trying to imagine a scenario where this would 
+	// ever be called 1) without a filename and 2) for anything
+	// but PROF files.
 	if (!filename) 
 	{
 	  return 0;
@@ -68,17 +70,13 @@ int UTChemFluxReader::CanReadFile(const char* filename)
 	{
 		return 0;
 	}
-  
-  // Check that ivel data is available
-	try {
-		// MVM: why reload the entire INPUT file just to find one var?
-		// should be cataloged on first go through.
-		reloadInputFile(filename);
-		// MVM: same with this, should be stored
-		std::string inputFileName(getInputFileFromFileName(filename));
-		return InputInfo->canReadFile() && InputInfo->ivel != 0;
-	} catch (std::exception& e) {
-		e; // avoid compiler warning of unused var
+ 
+   	reloadInputFile(filename);
+	if (InputInfo->ivel) {
+		return InputInfo->canReadFile();
+	}
+	else {
+		vtkOutputWindowDisplayErrorText("No phase vel. in .PROF file, IVEL equals 0.");
 		return 0;
 	}
 }
