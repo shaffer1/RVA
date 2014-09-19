@@ -140,6 +140,7 @@ int UTChemFluxReader::parseAsFluxHeader(const char* c_str){
 	
 	removeTrailingChar(fluxUnits,')');
 
+	// MVM: is this really doing char arithmetic?!
 	this->directionXYZ = directionChar-'X';
 	if(!*phaseName || !*fluxUnits || directionXYZ<0 || directionXYZ>2) {
 		vtkErrorMacro(<<"Unexpected PHASE FLUX values :'"<<nextLine<<"'")
@@ -157,92 +158,87 @@ int UTChemFluxReader::parseAsFluxHeader(const char* c_str){
 }
 
 int UTChemFluxReader::readFluxDataTable() { // 1 for success
-	/*
-	J/I=      1           2           3           4           5           6           7           8           9          10
-	1    0.3190E-04 -0.2744E-03 -0.1391E-02 -0.2250E-02 -0.2514E-02 -0.2076E-02 -0.1026E-02 -0.4039E-04 -0.4210E-03 -0.4351E-02
-	...
-	19   -0.4549E-04 -0.3691E-03 -0.1620E-02 -0.2440E-02 -0.2298E-02 -0.1453E-02 -0.4252E-03 -0.3005E-03 -0.2422E-02 -0.2868E-02
-	J/I=     11          12          13          14          15          16          17          18          19
-	1   -0.6442E-02 -0.5613E-02 -0.2082E-02  0.3315E-02  0.5734E-02  0.4268E-02  0.2975E-03 -0.3321E-03   0.000    
-	...
-	19   -0.1317E-02  0.2871E-02  0.9110E-02  0.1158E-01  0.6804E-02 -0.2480E-02 -0.1810E-02 -0.7650E-03   0.000    
-	*/
+	std::stringstream ss;
+	
 	vtkFloatArray* array = getCurrentFloatArray();
 
 	int numColsParsedEarlier = 0;
-	size_t remainNumValues = nx*ny;
-	while(numColsParsedEarlier < nx) {
 
+	// What about reading this number of values directly?
+	size_t remainNumValues = nx * ny;
+	while (numColsParsedEarlier < nx) {
+
+		std::vector<int> indices;
 		const char* c_str = readNextLine(true); 
-		if(!contains(c_str,"J/I=")) {
-			throw std::runtime_error("Expected J/I= data");
+		ss.str(c_str);
+		std::string str;
+		ss >> str;
+		if (str != "J/I=") {
+			std::cerr << "Not a table header row: " << str << std::endl;
 		}
-		int numColsExpected=0;
-		for(int j=0;j<ny;j++) {
+		int column;
+		while (ss >> column) {
+			indices.push_back(column);
+		}
+		ss.clear();
+		
+	    // MVM: naming - why would one expect 0 columns?	
+		int numColsExpected = 0;
 
+		// MVM: read ny rows of actual data.
+		for (int j = 0; j < ny; j++) {
+
+			// MVM: read first line of data
 			c_str = readNextLine(true);
+			ss.str(c_str);
+		
+		    // MVM: first col contains the J index	
+			int jthIndex;
+			ss >> jthIndex;
 
-			const char *next_ptr=c_str;
-			int jthIndex = (int)strtod(c_str, (char**) &next_ptr);
-			
-			if(jthIndex<1 || jthIndex>ny || jthIndex != j+1 || next_ptr == c_str) {
+			if (jthIndex < 1 || jthIndex > ny || jthIndex != j+1) {
 				throw std::runtime_error("Invalid j index");
 			}
 
-			c_str =  next_ptr;
-
-			int columnCount = 0;
-			int i = numColsParsedEarlier;
 			vtkIdType idx = this->layer*nx*ny + j*nx + numColsParsedEarlier;
+
 			// sanity check: paranoia because SetComponent performs no bounds checking
-			if( ! array || idx<0 
-				|| (long)idx + (nx-numColsParsedEarlier)> (long)array->GetNumberOfTuples() 
-				|| directionXYZ <0 || directionXYZ>= (int)array->GetNumberOfComponents()){
+			if ( !array || idx < 0 
+				|| (long)idx + (nx-numColsParsedEarlier) > (long)array->GetNumberOfTuples() 
+				|| directionXYZ < 0 || directionXYZ >= (int)array->GetNumberOfComponents())
+			{
 				throw std::runtime_error("Invalid internal state");
 			}
-			while(true) {
-
-				const char *next_ptr=c_str;
-				double val = strtod(c_str, (char**) &next_ptr);
-				if(next_ptr == c_str)
-					break; // no data left
-				
-        // don't expect 0.123123-232 style numbers with E missing
-//        assert(next_ptr && *next_ptr != '-' && *next_ptr != '+');
-        if(next_ptr && (*next_ptr == '-' || *next_ptr == '+'))
-          val = makeExponential(val, (char**)&next_ptr);
-        c_str = next_ptr;
-
-				if(i>=nx) {
-					throw std::runtime_error("Too many columns read");
-				}
-				if(remainNumValues<=0) {
-					throw std::runtime_error("Too many values read");
-				}
-
-				array->SetComponent(idx,directionXYZ,val);
+		
+			std::vector<int>::const_iterator it;
+			int columnCount = 0;
+			float f;
+			for (it = indices.begin(); it != indices.end(); ++it) {
+				ss >> f;
+				array->SetComponent(idx, directionXYZ, f);
 				columnCount++;
 				remainNumValues--;
-				i++;
 				idx++;
-			} // while more data values on the line
+			}
+			ss.clear();
+
 			// sanity check that all remaining rows also have a reasonable column count - 
-			if(j==0) {
+			if (j == 0) {
 				numColsExpected = columnCount;
-				if(columnCount<1) {
+				if (columnCount < 1) {
 					throw std::runtime_error("Expected at least one data column");
 				}
 			}
-			else if(columnCount != numColsExpected) {
+			else if (columnCount != numColsExpected) {
 				throw std::runtime_error("Incorrect number of columns in J/I data");
 			}
 		} // for all rows of data
+		indices.clear();
 		numColsParsedEarlier += numColsExpected;
 	} // while
-	if(remainNumValues!=0) {
+	if (remainNumValues != 0) {
 		throw std::runtime_error("Incorrect number of values read");
 	}
-
 	return 1; // Success
 }
 
