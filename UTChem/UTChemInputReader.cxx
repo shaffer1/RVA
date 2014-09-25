@@ -702,11 +702,11 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
       getline(InputFile,str);
 	  ss.clear();
       ss.str(str);
-      int idw, iw, jw, iflag, idir, kfirst, klast, iprf;
+      int idw, iw, jw, iflag, idir, ifirst, ilast, iprf;
       float rw, swell;
       std::vector<WellData::DeviatedCoords> deviated;
 
-	  if (!(ss >> idw >> iw >> jw >> iflag >> rw >> swell >> idir >> kfirst >> klast >> iprf)) {
+	  if (!(ss >> idw >> iw >> jw >> iflag >> rw >> swell >> idir >> ifirst >> ilast >> iprf)) {
 		return UTChemInputReader::FAIL_WELLINFO;
 	  }
       
@@ -729,7 +729,7 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
         }
       }
 
-      WellData x = { idw, iw, jw, iflag, rw, swell, idir, kfirst, klast, iprf, deviated };
+      WellData x = { idw, iw, jw, iflag, rw, swell, idir, ifirst, ilast, iprf, deviated };
       wellInfo[idw] = x;
     }
   }
