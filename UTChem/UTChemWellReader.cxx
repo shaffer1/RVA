@@ -209,6 +209,7 @@ int UTChemWellReader::parseAsWellHeader(const char *c_str)
 
 int UTChemWellReader::parseAsWellHistoryData(const char *c_str)
 {
+    // MVM: sigh.
     std::string name(100, ' ');
 
     // MVM: would like to use 'id' and 'iflag' but want to avoid shadowing
@@ -265,14 +266,12 @@ int UTChemWellReader::parseAsEndVarSection(const char* c_str)
     varCount = 0;
     int read = sscanf(c_str, " TOTAL NO. OF VARIABLES FOR %*s %*s %*s %*s %i ", &varCount);
 
-    if (1!=read) {
+    if (1 != read) {
         vtkErrorMacro(<<"Unexpected variable count format");
         return 0;
     }
-
     return 1;
 }
-
 
 // Helper method to determine the number of entries
 // e.g. 4- 6 would return 3
@@ -430,52 +429,41 @@ int UTChemWellReader::parseAsProducerVariable()
 int UTChemWellReader::parseAsInjectorVariable()
 {
     while (true) {
-
         const char* line = readNextLine(false);
 
-        if (strlen(line) == 0)
+        if (strlen(line) == 0) {
             continue; // skip blank lines
+        }
 
-        if (contains(line, "1-PV, 2-DAYS")){
-
+        if (contains(line, "1-PV, 2-DAYS")) {
             dataLabel.push_back("Cumulative Pore Volume");
             dataLabel.push_back("Time");
             dataLabel.push_back("Total Injection");
             dataLabel.push_back("Total Injection Rate");
-
         }
-        else if (contains(line, "WELLBORE PRESSURE FOR EACH WELLBLOCK")){
-
-            if ((wellBlockCount = getVarRange(line)) < 0){
+        else if (contains(line, "WELLBORE PRESSURE FOR EACH WELLBLOCK")) {
+            if ((wellBlockCount = getVarRange(line)) < 0) {
                 vtkErrorMacro(<<"Unexpected wellbore pressure format");
                 return 0;
             }
 
-            for (int i = 0; i < wellBlockCount; i++){
+            for (int i = 0; i < wellBlockCount; i++) {
                 char label[100];
-
                 sprintf(label,"Wellbore Pressure of block #%i", i+1);
                 dataLabel.push_back(label);
             }
-
         }
-        else if (contains(line, "PRESSURE DROP FOR EACH WELLBLOCK")){
-
-            for (int i = 0; i < wellBlockCount; i++){
+        else if (contains(line, "PRESSURE DROP FOR EACH WELLBLOCK")) {
+            for (int i = 0; i < wellBlockCount; i++) {
                 char label[100];
-
                 sprintf(label,"Pressure Drop of block #%i", i+1);
                 dataLabel.push_back(label);
             }
-
         }
-        else if (contains(line,"TOTAL NO. OF VARIABLES")){
-
+        else if (contains(line,"TOTAL NO. OF VARIABLES")) {
             return parseAsEndVarSection(line);
-
         }
         else {
-
             vtkErrorMacro(<<"Unexpected injector variable format");
             return 0;
         }
