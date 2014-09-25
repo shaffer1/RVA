@@ -707,11 +707,7 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
       std::vector<WellData::DeviatedCoords> deviated;
 
 	  if (!(ss >> idw >> iw >> jw >> iflag >> rw >> swell >> idir >> kfirst >> klast >> iprf)) {
-		// MVM: This probably is not an error in reading, but rather that IDW is being
-		// used as an identifier in a different section.
-		
-		// This will have to be completely redone!
-		//return UTChemInputReader::FAIL_WELLINFO;
+		return UTChemInputReader::FAIL_WELLINFO;
 	  }
       
       if(idir == 4) { // Deviated well
