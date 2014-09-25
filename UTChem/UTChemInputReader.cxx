@@ -709,7 +709,7 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
 		return UTChemInputReader::FAIL_WELLINFO;
 	  }
      
-      WellData x = { idw, iw, jw, iflag, rw, swell, idir, ifirst, ilast, iprf, deviated };
+      WellData x = { idw, iw, jw, iflag, rw, swell, idir, ifirst, ilast, iprf };
       wellInfo[idw] = x;
     }
   }

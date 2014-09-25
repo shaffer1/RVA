@@ -44,11 +44,9 @@ struct UTChemInputReader
 	// Well data information
 	struct WellData
 	{
-	struct DeviatedCoords { int i, j, k; };
 	int idw, iw, jw, iflag;
 	float rw, swell;
 	int idir, ifirst, ilast, iprf;
-	std::vector<DeviatedCoords> deviated; // Holds values for deviated wells
 	};
 
 	// Giant list of public variables for use later
