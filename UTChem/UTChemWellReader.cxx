@@ -209,22 +209,24 @@ int UTChemWellReader::parseAsWellHeader(const char *c_str)
 
 int UTChemWellReader::parseAsWellHistoryData(const char *c_str)
 {
-    char wellNameChars[100];
-    int a=0, b=0;
+    std::string name(100, ' ');
 
-    int read = sscanf(c_str, " HISTORY DATA FOR WELL: ID = %i IFLAG = %i NAME = %99s ", &a, &b, wellNameChars);
-    wellNameChars[sizeof(wellNameChars)-1]='\0'; //Paranoia
+    // MVM: would like to use 'id' and 'iflag' but want to avoid shadowing
+    int a = 0; 
+    int b = 0;
+
+    int read = sscanf(c_str, " HISTORY DATA FOR WELL: ID = %i IFLAG = %i NAME = %99s ", &a, &b, &name[0]);
 
     if (read != 3) {
         vtkErrorMacro(<<"Unexpected history data format");
         return 0;
     }
 
-    removeTrailingChar(wellNameChars, ' ');
+    name = name.substr(name.find_last_not_of(" "));
 
     wellId = a;
     wellType = b;
-    wellName = wellNameChars;
+    wellName = name.c_str();
 
     return 1;
 }
