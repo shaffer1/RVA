@@ -160,59 +160,59 @@ void UTChemInputReader::getCellCenter(int i, int j, int k, float * out)
 
 float** UTChemInputReader::getCellCenters()
 {
-  if(cellCenters == NULL) {
-    int id = 0;
-    cellCenters = new float*[3];
-    cellCenters[0] = new float[nx];
-    cellCenters[1] = new float[ny];
-    cellCenters[2] = new float[nz];
+    if (cellCenters == NULL) {
+        int id = 0;
+        cellCenters = new float*[3];
+        cellCenters[0] = new float[nx];
+        cellCenters[1] = new float[ny];
+        cellCenters[2] = new float[nz];
 
-    if(getObjectType() == 0) { // Image data
-      int curr = 0;
-      for(int i = 0 ; i < nx ; ++i) {
-        int next = curr + dx1;
-        cellCenters[0][i] = (curr + next) / 2;
-        curr = next;
-      }
+        if (getObjectType() == 0) { // Image data
+            int curr = 0;
+            for (int i = 0 ; i < nx ; ++i) {
+                int next = curr + dx1;
+                cellCenters[0][i] = (curr + next) / 2;
+                curr = next;
+            }
 
-      curr = 0;
-      for(int i = 0 ; i < ny ; ++i) {
-        int next = curr + dy1;
-        cellCenters[1][i] = (curr + next) / 2;
-        curr = next;
-      }
+            curr = 0;
+            for (int i = 0 ; i < ny ; ++i) {
+                int next = curr + dy1;
+                cellCenters[1][i] = (curr + next) / 2;
+                curr = next;
+            }
 
-      curr = 0;
-      for(int i = 0 ; i < nz ; ++i) {
-        int next = curr + dz1;
-        cellCenters[2][i] = (curr + next) / 2;
-        curr = next;
-      }
-    } else { // Rectilinear Grid
-      int curr = 0;
-      for(int i = 0 ; i < nx ; ++i) {
-        int next = curr + xspace[i];
-        cellCenters[0][i] = (curr + next) / 2;
-        curr = next;
-      }
+            curr = 0;
+            for (int i = 0 ; i < nz ; ++i) {
+                int next = curr + dz1;
+                cellCenters[2][i] = (curr + next) / 2;
+                curr = next;
+            }
+        } 
+        else { // Rectilinear Grid
+            int curr = 0;
+            for (int i = 0 ; i < nx ; ++i) {
+                int next = curr + xspace[i];
+                cellCenters[0][i] = (curr + next) / 2;
+                curr = next;
+            }
 
-      curr = 0;
-      for(int i = 0 ; i < ny ; ++i) {
-        int next = curr + yspace[i];
-        cellCenters[1][i] = (curr + next) / 2;
-        curr = next;
-      }
+            curr = 0;
+            for (int i = 0 ; i < ny ; ++i) {
+                int next = curr + yspace[i];
+                cellCenters[1][i] = (curr + next) / 2;
+                curr = next;
+            }
 
-      curr = 0;
-      for(int i = 0 ; i < nz ; ++i) {
-        int next = curr + zspace[i];
-        cellCenters[2][i] = (curr + next) / 2;
-        curr = next;
-      }
+            curr = 0;
+            for (int i = 0 ; i < nz ; ++i) {
+                int next = curr + zspace[i];
+                cellCenters[2][i] = (curr + next) / 2;
+                curr = next;
+            }
+        }
     }
-  }
-
-  return cellCenters;
+    return cellCenters;
 }
 
 UTChemInputReader::ParseState UTChemInputReader::readFile()
