@@ -19,13 +19,11 @@ PURPOSE.  See the above copyright notice for more information.
 #define __UTChemWellReader_h
 
 #include "vtkImageAlgorithm.h"
-
 #include "UTChemAsciiReader.h"
+#include "vtkPolyData.h"
 
 #include <vector>
 #include <string>
-
-class vtkPolyData;
 
 class VTK_EXPORT UTChemWellReader : public UTChemAsciiReader {
 
