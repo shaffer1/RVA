@@ -698,37 +698,17 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
     // CC WELL ID,LOCATIONS,AND FLAG FOR SPECIFYING WELL TYPE, WELL RADIUS, SKIN
     // *----IDW   IW    JW    IFLAG    RW     SWELL  IDIR   IFIRST  ILAST  IPRF
 	
-    if(str.find("*----IDW   IW") != std::string::npos || str.find("*---- IDW   IW") != std::string::npos) {
+    if (str.find("*----IDW   IW") != std::string::npos || str.find("*---- IDW   IW") != std::string::npos) {
       getline(InputFile,str);
 	  ss.clear();
       ss.str(str);
       int idw, iw, jw, iflag, idir, ifirst, ilast, iprf;
       float rw, swell;
-      std::vector<WellData::DeviatedCoords> deviated;
 
 	  if (!(ss >> idw >> iw >> jw >> iflag >> rw >> swell >> idir >> ifirst >> ilast >> iprf)) {
 		return UTChemInputReader::FAIL_WELLINFO;
 	  }
-      
-      if(idir == 4) { // Deviated well
-        // Skip until we find the information
-        while(!InputFile.eof() && str.find("*----IW") == std::string::npos) getline(InputFile,str);
-
-        getline(InputFile,str);
-
-        while(!InputFile.eof() && str.find("CC") == std::string::npos && str.find("cc") == std::string::npos) {
-          WellData::DeviatedCoords coords;
-          ss.clear();
-		  ss.str(str);
-		  if (!(ss >> coords.i >> coords.j >> coords.k)) {
-			  return UTChemInputReader::FAIL_WELLINFO;
-		  } 
-          
-		  deviated.push_back(coords);
-          getline(InputFile,str);
-        }
-      }
-
+     
       WellData x = { idw, iw, jw, iflag, rw, swell, idir, ifirst, ilast, iprf, deviated };
       wellInfo[idw] = x;
     }
