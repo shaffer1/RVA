@@ -495,8 +495,10 @@ bool UTChemWellReader::validFileRead()
 void UTChemWellReader::buildWell(vtkPolyData* data)
 {
     vtkPoints * points = vtkPoints::New();
-
+    vtkPolyLine* line = vtkPolyLine::New();
+    vtkCellArray* connectivity = vtkCellArray::New();
     float** positions = InputInfo->getCellCenters();
+
     vtkIdType id = 0;
 
     int fileWellId = atoi(file_ext.substr(4,2).c_str());
@@ -510,8 +512,6 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
         //   "Possible Values: Between 1 and the number of gridblocks in the
         //    pertinent direction, inclusive"
         
-        vtkCellArray * lines = vtkCellArray::New();
-        vtkPolyLine* line = vtkPolyLine::New();
         for (int i = 0 ; i < numPts ; ++i) {
             switch (well.idir) {
                 default: // Ignore bad cases
@@ -530,14 +530,16 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
                     break;
             }
         }
-        lines->InsertNextCell(line);
-        line->Delete();
-        data->SetLines(lines);
-        lines->Delete();
     }
     else {
         // single Vertex goes here
     }
+
+    connectivity->InsertNextCell(line);
+    line->Delete();
+
+    data->SetLines(connectivity);
+    connectivity->Delete();
 
     data->SetPoints(points);
     points->Delete();
