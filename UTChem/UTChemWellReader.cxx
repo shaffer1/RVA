@@ -38,6 +38,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkTable.h"
 #include "vtkSmartPointer.h"
+#include "vtkVertex.h"
 
 #include <RVA_Util.h>
 
@@ -498,6 +499,7 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkPolyLine> line = vtkSmartPointer<vtkPolyLine>::New();
     vtkSmartPointer<vtkCellArray> connectivity = vtkSmartPointer<vtkCellArray>::New();
+    vtkSmartPointer<vtkVertex> vertex = vtkSmartPointer<vtkVertex>::New();
     float** positions = InputInfo->getCellCenters();
 
     vtkIdType id = 0;
@@ -519,26 +521,32 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
                     break;
                 case 1: // Parallel to x-axis
                     points->InsertNextPoint(positions[0][i], positions[1][well.iw - 1], positions[2][well.jw - 1]);
-                    line->GetPointIds()->InsertNextId(id++);
                     break;
                 case 2: // Parallel to y-axis
                     points->InsertNextPoint(positions[0][well.iw - 1], positions[1][i], positions[2][well.jw - 1]);
-                    line->GetPointIds()->InsertNextId(id++);
                     break;
                 case 3: // Parallel to z-axis
                     points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][i]);
-                    line->GetPointIds()->InsertNextId(id++);
                     break;
             }
+            line->GetPointIds()->InsertNextId(id++);
         }
+        connectivity->InsertNextCell(line);
+        data->SetLines(connectivity);
     }
     else {
-        // single Vertex goes here
+        if (well.idir == 1) {
+            points->InsertNextPoint(positions[0][0], positions[1][well.iw - 1], positions[2][well.jw - 1]);
+        }
+        else if (well.idir == 2) {
+            points->InsertNextPoint(positions[0][well.iw - 1], positions[1][0], positions[2][well.jw - 1]);
+        }
+        else if (well.idir == 3) {
+            points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][0]);
+        }
+        vertex->GetPointIds()->InsertNextId(0);
+        connectivity->InsertNextCell(vertex);
+        data->SetVerts(connectivity);
     }
-
-    connectivity->InsertNextCell(line);
-
-    data->SetLines(connectivity);
-
     data->SetPoints(points);
 }
