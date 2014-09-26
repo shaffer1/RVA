@@ -37,6 +37,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkPolyLine.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkTable.h"
+#include "vtkSmartPointer.h"
 
 #include <RVA_Util.h>
 
@@ -494,9 +495,9 @@ bool UTChemWellReader::validFileRead()
 
 void UTChemWellReader::buildWell(vtkPolyData* data)
 {
-    vtkPoints * points = vtkPoints::New();
-    vtkPolyLine* line = vtkPolyLine::New();
-    vtkCellArray* connectivity = vtkCellArray::New();
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkSmartPointer<vtkPolyLine> line = vtkSmartPointer<vtkPolyLine>::New();
+    vtkSmartPointer<vtkCellArray> connectivity = vtkSmartPointer<vtkCellArray>::New();
     float** positions = InputInfo->getCellCenters();
 
     vtkIdType id = 0;
@@ -536,11 +537,8 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
     }
 
     connectivity->InsertNextCell(line);
-    line->Delete();
 
     data->SetLines(connectivity);
-    connectivity->Delete();
 
     data->SetPoints(points);
-    points->Delete();
 }
