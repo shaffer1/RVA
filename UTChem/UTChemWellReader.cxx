@@ -310,7 +310,7 @@ int UTChemWellReader::parseAsProducerVariable()
         }
         else if (contains(line, "PHASE CUTS FOR EACH PHASE")) {
             phaseCount = getVarRange(line);
-            if (phaseCount<3 || phaseCount>4) {
+            if (phaseCount < 3 || phaseCount > 4) {
                 vtkErrorMacro(<<"Unexpected phase cuts format");
                 return 0;
             }
@@ -328,7 +328,7 @@ int UTChemWellReader::parseAsProducerVariable()
             }
             for (int i = 0; i < wellBlockCount; i++) {
                 char label[100];
-                sprintf(label, "Wellbore pressure of block #%i", i+1);
+                sprintf(label, "Wellbore pressure of block #%i", i + 1);
                 dataLabel.push_back(label);
             }
         }
@@ -341,7 +341,7 @@ int UTChemWellReader::parseAsProducerVariable()
             // Skip to "COMPONENT" (may return NULL)
             // The label we need is 13 characters after COMPONENT...
             char * component = strstr((char*)line, "COMPONENT");
-            if (component == NULL || strlen(component) < 15 || component[12]!=' ') { 
+            if (component == NULL || strlen(component) < 15 || component[12] != ' ') { 
                 vtkErrorMacro(<<"Unexpected component format");
                 return 0;
             } 
@@ -349,11 +349,11 @@ int UTChemWellReader::parseAsProducerVariable()
             removeTrailingChar(component, ' ');
 
             // see if we still have a reasonable component name
-            if (strlen(component) >100 || *component=='\0') {
+            if (strlen(component) > 100 || *component == '\0') {
                 return 0;
             }
             for (int i = 0; i < 4; i++) {
-                sprintf(componentPhase,  i == 3 ? "%s total ": "%s phase %d", component, i+1);
+                sprintf(componentPhase,  i == 3 ? "%s total ": "%s phase %d", component, i + 1);
                 dataLabel.push_back(componentPhase);
             }
             componentCount++;
@@ -494,9 +494,11 @@ bool UTChemWellReader::validFileRead()
 
 void UTChemWellReader::buildWell(vtkPolyData* data)
 {
+    // MVM: Change to use vtkSmartPointer
     vtkCellArray * lines = vtkCellArray::New();
     vtkPoints * points = vtkPoints::New();
     vtkPolyLine* line = vtkPolyLine::New();
+
     float** positions = InputInfo->getCellCenters();
     vtkIdType id = 0;
 
@@ -521,6 +523,7 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
                 ptIds->InsertNextId(id++);
                 break;
             case 2: // Parallel to y-axis
+                // MVM: This gives wildly incorrect well positions!
                 points->InsertNextPoint(positions[0][well.iw - 1], positions[1][i], positions[2][well.jw - 1]);
                 ptIds->InsertNextId(id++);
                 break;
