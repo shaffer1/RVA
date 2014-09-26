@@ -494,10 +494,7 @@ bool UTChemWellReader::validFileRead()
 
 void UTChemWellReader::buildWell(vtkPolyData* data)
 {
-    // MVM: Change to use vtkSmartPointer
-    vtkCellArray * lines = vtkCellArray::New();
     vtkPoints * points = vtkPoints::New();
-    vtkPolyLine* line = vtkPolyLine::New();
 
     float** positions = InputInfo->getCellCenters();
     vtkIdType id = 0;
@@ -508,36 +505,40 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
 
     int numPts = well.ilast - well.ifirst + 1;
 
-    // Need to subtract 1 from UTChem indices since they appear to be
-    // from [1, nx] ... [1, nz] while ours are [0, nx), etc.
-    // From UTChem docs:
-    //   "Possible Values: Between 1 and the number of gridblocks in the
-    //    pertinent direction, inclusive"
-    for (int i = 0 ; i < numPts ; ++i) {
-        switch (well.idir) {
-            default: // Ignore bad cases
-                break;
-            case 1: // Parallel to x-axis
-                points->InsertNextPoint(positions[0][i], positions[1][well.iw - 1], positions[2][well.jw - 1]);
-                line->GetPointIds()->InsertNextId(id++);
-                break;
-            case 2: // Parallel to y-axis
-                points->InsertNextPoint(positions[0][well.iw - 1], positions[1][i], positions[2][well.jw - 1]);
-                line->GetPointIds()->InsertNextId(id++);
-                break;
-            case 3: // Parallel to z-axis
-                points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][i]);
-                line->GetPointIds()->InsertNextId(id++);
-                break;
+    if (numPts > 1) {
+        // From UTChem docs:
+        //   "Possible Values: Between 1 and the number of gridblocks in the
+        //    pertinent direction, inclusive"
+        
+        vtkCellArray * lines = vtkCellArray::New();
+        vtkPolyLine* line = vtkPolyLine::New();
+        for (int i = 0 ; i < numPts ; ++i) {
+            switch (well.idir) {
+                default: // Ignore bad cases
+                    break;
+                case 1: // Parallel to x-axis
+                    points->InsertNextPoint(positions[0][i], positions[1][well.iw - 1], positions[2][well.jw - 1]);
+                    line->GetPointIds()->InsertNextId(id++);
+                    break;
+                case 2: // Parallel to y-axis
+                    points->InsertNextPoint(positions[0][well.iw - 1], positions[1][i], positions[2][well.jw - 1]);
+                    line->GetPointIds()->InsertNextId(id++);
+                    break;
+                case 3: // Parallel to z-axis
+                    points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][i]);
+                    line->GetPointIds()->InsertNextId(id++);
+                    break;
+            }
         }
+        lines->InsertNextCell(line);
+        line->Delete();
+        data->SetLines(lines);
+        lines->Delete();
+    }
+    else {
+        // single Vertex goes here
     }
 
-    lines->InsertNextCell(line);
-    line->Delete();
-
     data->SetPoints(points);
-    data->SetLines(lines);
-
-    lines->Delete();
     points->Delete();
 }
