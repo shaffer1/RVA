@@ -160,7 +160,9 @@ void UTChemInputReader::getCellCenter(int i, int j, int k, float * out)
 
 float** UTChemInputReader::getCellCenters()
 {
+    std::cout << "getCellCenters()" << std::endl;
     if (cellCenters == NULL) {
+        std::cout << "cellCenters is not NULL" << std::endl;
         int id = 0;
         cellCenters = new float*[3];
         cellCenters[0] = new float[nx];
@@ -168,17 +170,20 @@ float** UTChemInputReader::getCellCenters()
         cellCenters[2] = new float[nz];
 
         if (getObjectType() == 0) { // Image data
+            std::cout << "image data" << std::endl;
             int curr = 0;
             for (int i = 0 ; i < nx ; ++i) {
                 int next = curr + dx1;
                 cellCenters[0][i] = (curr + next) / 2;
                 curr = next;
+                std::cout << "center x: " << cellCenters[0][i] << std::endl;
             }
 
             curr = 0;
             for (int i = 0 ; i < ny ; ++i) {
                 int next = curr + dy1;
                 cellCenters[1][i] = (curr + next) / 2;
+                std::cout << "center y: " << cellCenters[1][i] << std::endl;
                 curr = next;
             }
 
@@ -186,10 +191,12 @@ float** UTChemInputReader::getCellCenters()
             for (int i = 0 ; i < nz ; ++i) {
                 int next = curr + dz1;
                 cellCenters[2][i] = (curr + next) / 2;
+                std::cout << "center z: " << cellCenters[2][i] << std::endl;
                 curr = next;
             }
         } 
         else { // Rectilinear Grid
+            std::cout << "rectilinear data" << std::endl;
             int curr = 0;
             for (int i = 0 ; i < nx ; ++i) {
                 int next = curr + xspace[i];
@@ -212,6 +219,7 @@ float** UTChemInputReader::getCellCenters()
             }
         }
     }
+
     return cellCenters;
 }
 
@@ -683,22 +691,18 @@ UTChemInputReader::ParseState UTChemInputReader::readReservoirProperties()
 UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
 {
   std::string str;
-  // Section 3.7
+  // Section 3.7.6.a
   std::stringstream ss;
-  // MVM: seems to hunt for info in sections 3.7.6.a and ?  
   while(!InputFile.eof()) {
     getline(InputFile,str);
 
-	// MVM: The real problem is that there are multiple sections that start with "IDW"
-	// 3.7.6.a, what we want, and 3.7.2* where according to the User Guide it should be
-	// "ID" but is really "IDW".
-	// What we really want here is a regexp matching
-
+    // MVM: note that in practice 'IFIRST' and 'ILAST' are often labeled
+    // differently inside INPUT, e.g., 'KFIRST', 'zLAST'
     // CC
     // CC WELL ID,LOCATIONS,AND FLAG FOR SPECIFYING WELL TYPE, WELL RADIUS, SKIN
     // *----IDW   IW    JW    IFLAG    RW     SWELL  IDIR   IFIRST  ILAST  IPRF
-	
-    if (str.find("*----IDW   IW") != std::string::npos || str.find("*---- IDW   IW") != std::string::npos) {
+
+    if (str.find("*----IDW") != std::string::npos) {
       getline(InputFile,str);
 	  ss.clear();
       ss.str(str);
