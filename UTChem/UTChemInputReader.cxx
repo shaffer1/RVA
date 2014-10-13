@@ -134,30 +134,6 @@ void UTChemInputReader::skipLines(int numLines)
   }
 }
 
-void UTChemInputReader::getCellCenter(int i, int j, int k, float * out)
-{
-	if(objectType==0)
-	{
-		out[0] = dx1*(i+0.5);
-		out[1] = dy1*(j+0.5);
-		out[2] = dz1*(k+0.5);
-		return;
-	}
-	if(objectType==1 || objectType==2)
-	{
-		out[0] = (xdim->GetValue(i)+xdim->GetValue(i+1))/2;
-		out[1] = (ydim->GetValue(j)+ydim->GetValue(j+1))/2;
-		out[2] = (zdim->GetValue(k)+zdim->GetValue(k+1))/2;
-	
-		if(objectType==2)
-			out[2] = out[2] + top->topdim[i+j*nx];
-
-		return;
-	}
-	else
-		vtkOutputWindowDisplayErrorText("Unsupported object type");
-}
-
 float** UTChemInputReader::getCellCenters()
 {
     std::cout << "getCellCenters()" << std::endl;
@@ -169,21 +145,19 @@ float** UTChemInputReader::getCellCenters()
         cellCenters[1] = new float[ny];
         cellCenters[2] = new float[nz];
 
-        if (getObjectType() == 0) { // Image data
-            std::cout << "image data" << std::endl;
+        if (getObjectType() == 0) { 
+            // constant Cartesian
             int curr = 0;
             for (int i = 0 ; i < nx ; ++i) {
                 int next = curr + dx1;
                 cellCenters[0][i] = (curr + next) / 2;
                 curr = next;
-                std::cout << "center x: " << cellCenters[0][i] << std::endl;
             }
 
             curr = 0;
             for (int i = 0 ; i < ny ; ++i) {
                 int next = curr + dy1;
                 cellCenters[1][i] = (curr + next) / 2;
-                std::cout << "center y: " << cellCenters[1][i] << std::endl;
                 curr = next;
             }
 
@@ -191,12 +165,11 @@ float** UTChemInputReader::getCellCenters()
             for (int i = 0 ; i < nz ; ++i) {
                 int next = curr + dz1;
                 cellCenters[2][i] = (curr + next) / 2;
-                std::cout << "center z: " << cellCenters[2][i] << std::endl;
                 curr = next;
             }
         } 
-        else { // Rectilinear Grid
-            std::cout << "rectilinear data" << std::endl;
+        else if (getObjectType() == 1) { 
+            // variable Cartesian
             int curr = 0;
             for (int i = 0 ; i < nx ; ++i) {
                 int next = curr + xspace[i];
@@ -217,6 +190,19 @@ float** UTChemInputReader::getCellCenters()
                 cellCenters[2][i] = (curr + next) / 2;
                 curr = next;
             }
+        }
+        else if (getObjectType() == 2) {
+            // Curvilinear
+            // MVM: This will require getting the cell corners and finding the centroid.
+            // I believe this to be the intersection of the diagonals, as is the 
+            // case with quadrilaterals.
+            vtkOutputWindowDisplayErrorText("Wells not supported for curvilinear grids.");
+            return NULL;
+            
+        }
+        else {
+            vtkOutputWindowDisplayErrorText("Well history files not supported for this grid type.");
+            return NULL;
         }
     }
 

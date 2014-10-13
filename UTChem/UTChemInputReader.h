@@ -75,7 +75,6 @@ struct UTChemInputReader
 
 	int canReadFile();
 	float** getCellCenters();
-	void getCellCenter(int i, int j, int k, float * out);
 
 	UTChemTopReader * top;
 
