@@ -136,9 +136,7 @@ void UTChemInputReader::skipLines(int numLines)
 
 float** UTChemInputReader::getCellCenters()
 {
-    std::cout << "getCellCenters()" << std::endl;
     if (cellCenters == NULL) {
-        std::cout << "cellCenters is not NULL" << std::endl;
         int id = 0;
         cellCenters = new float*[3];
         cellCenters[0] = new float[nx];
@@ -146,51 +144,52 @@ float** UTChemInputReader::getCellCenters()
         cellCenters[2] = new float[nz];
 
         if (getObjectType() == 0) { 
-            // constant Cartesian
-            int curr = 0;
+            // constant Cartesian (or Radial)
+            float curr = 0.0f;
             for (int i = 0 ; i < nx ; ++i) {
-                int next = curr + dx1;
-                cellCenters[0][i] = (curr + next) / 2;
+                float next = curr + dx1;
+                cellCenters[0][i] = (curr + next) / 2.0f;
                 curr = next;
             }
 
-            curr = 0;
+            curr = 0.0f;
             for (int i = 0 ; i < ny ; ++i) {
-                int next = curr + dy1;
-                cellCenters[1][i] = (curr + next) / 2;
+                float next = curr + dy1;
+                cellCenters[1][i] = (curr + next) / 2.0f;
                 curr = next;
             }
 
-            curr = 0;
+            curr = 0.0f;
             for (int i = 0 ; i < nz ; ++i) {
-                int next = curr + dz1;
-                cellCenters[2][i] = (curr + next) / 2;
+                float next = curr + dz1;
+                cellCenters[2][i] = (curr + next) / 2.0f;
                 curr = next;
             }
         } 
-        else if (getObjectType() == 1) { 
-            // variable Cartesian
-            int curr = 0;
+        else if (getObjectType() == 1 || getObjectType() == 2) { 
+            // variable Cartesian (or Radial)
+            float curr = 0.0f;
             for (int i = 0 ; i < nx ; ++i) {
-                int next = curr + xspace[i];
-                cellCenters[0][i] = (curr + next) / 2;
+                float next = curr + xspace[i];
+                cellCenters[0][i] = (curr + next) / 2.0f;
                 curr = next;
             }
 
-            curr = 0;
+            curr = 0.0f;
             for (int i = 0 ; i < ny ; ++i) {
-                int next = curr + yspace[i];
-                cellCenters[1][i] = (curr + next) / 2;
+                float next = curr + yspace[i];
+                cellCenters[1][i] = (curr + next) / 2.0f;
                 curr = next;
             }
 
-            curr = 0;
+            curr = 0.0f;
             for (int i = 0 ; i < nz ; ++i) {
-                int next = curr + zspace[i];
-                cellCenters[2][i] = (curr + next) / 2;
+                float next = curr + zspace[i];
+                cellCenters[2][i] = (curr + next) / 2.0f;
                 curr = next;
             }
         }
+        /*
         else if (getObjectType() == 2) {
             // Curvilinear
             // MVM: This will require getting the cell corners and finding the centroid.
@@ -200,6 +199,7 @@ float** UTChemInputReader::getCellCenters()
             return NULL;
             
         }
+        */
         else {
             vtkOutputWindowDisplayErrorText("Well history files not supported for this grid type.");
             return NULL;
@@ -845,6 +845,9 @@ vtkDataObject * UTChemInputReader::getObject(vtkInformation* info)
 
 void UTChemInputReader::determineGridType()
 {
+  //MVM: This needs to be rethought because of how objectType is used,
+  // particularly in methods like getCellCenters()
+
   if (gridObject) {
     gridObject->Delete();
   }
@@ -858,7 +861,6 @@ void UTChemInputReader::determineGridType()
     objectType = 2;
     gridObject = vtkStructuredGrid::New();
   }
-  //else if (idxyz == 0 && (icoord == 1 || icoord == 2)) { 
   else if (idxyz == 0 && icoord == 1) {
   // constant Cartesian or Radial
     objectType = 0;
