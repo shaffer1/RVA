@@ -33,6 +33,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkStructuredGrid.h"
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
+#include "vtkCellCenters.h"
 
 
 UTChemInputReader::UTChemInputReader(const std::string& input)
@@ -832,6 +833,8 @@ void UTChemInputReader::calculateCellVolume()
 
 float** UTChemInputReader::getCellCenters()
 {
+
+
     if (cellCenters == NULL) {
         int id = 0;
         cellCenters = new float*[3];
