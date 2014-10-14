@@ -33,8 +33,6 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkStructuredGrid.h"
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
-#include "vtkCellCenters.h"
-
 
 UTChemInputReader::UTChemInputReader(const std::string& input)
   : gridObject(NULL), objectType(0), xdim(NULL), ydim(NULL), zdim(NULL),
@@ -633,6 +631,10 @@ UTChemInputReader::ParseState UTChemInputReader::readWellInformation()
   return UTChemInputReader::SUCCESS;
 }
 
+vtkDataObject* UTChemInputReader::getGridObject() {
+    return gridObject;
+}
+
 void UTChemInputReader::setupRGridCoords()
 {
 	// MVM: change to use smartpointers
@@ -833,8 +835,6 @@ void UTChemInputReader::calculateCellVolume()
 
 float** UTChemInputReader::getCellCenters()
 {
-
-
     if (cellCenters == NULL) {
         int id = 0;
         cellCenters = new float*[3];
@@ -893,10 +893,8 @@ float** UTChemInputReader::getCellCenters()
             float curr = xspace[0];
             for (int i = 1; i < nx; ++i) {
                 cellCenters[0][i-1] = (curr + xspace[i]) / 2.0f;
-                std::cout << "MVM: curr: " << curr << " xspace[i]: " << xspace[i] << " cellCenters: " << cellCenters[0][i-1] << std::endl;
                 curr = xspace[i];
             }
-            // MVM, I forget, is there yspace for curviliner
             curr = yspace[0];
             for (int i = 1; i < ny; ++i) {
                 cellCenters[1][i-1] = (curr + yspace[i]) / 2.0f;
