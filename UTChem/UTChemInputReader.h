@@ -78,6 +78,8 @@ struct UTChemInputReader
 
 	UTChemTopReader * top;
 
+    vtkDataObject* getGridObject();
+
 private:
 	ParseState readFile();
 
