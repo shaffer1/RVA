@@ -134,80 +134,6 @@ void UTChemInputReader::skipLines(int numLines)
   }
 }
 
-float** UTChemInputReader::getCellCenters()
-{
-    if (cellCenters == NULL) {
-        int id = 0;
-        cellCenters = new float*[3];
-        cellCenters[0] = new float[nx];
-        cellCenters[1] = new float[ny];
-        cellCenters[2] = new float[nz];
-
-        if (getObjectType() == 0) { 
-            // constant Cartesian (or Radial)
-            float curr = 0.0f;
-            for (int i = 0 ; i < nx ; ++i) {
-                float next = curr + dx1;
-                cellCenters[0][i] = (curr + next) / 2.0f;
-                curr = next;
-            }
-
-            curr = 0.0f;
-            for (int i = 0 ; i < ny ; ++i) {
-                float next = curr + dy1;
-                cellCenters[1][i] = (curr + next) / 2.0f;
-                curr = next;
-            }
-
-            curr = 0.0f;
-            for (int i = 0 ; i < nz ; ++i) {
-                float next = curr + dz1;
-                cellCenters[2][i] = (curr + next) / 2.0f;
-                curr = next;
-            }
-        } 
-        else if (getObjectType() == 1 || getObjectType() == 2) { 
-            // variable Cartesian (or Radial)
-            float curr = 0.0f;
-            for (int i = 0 ; i < nx ; ++i) {
-                float next = curr + xspace[i];
-                cellCenters[0][i] = (curr + next) / 2.0f;
-                curr = next;
-            }
-
-            curr = 0.0f;
-            for (int i = 0 ; i < ny ; ++i) {
-                float next = curr + yspace[i];
-                cellCenters[1][i] = (curr + next) / 2.0f;
-                curr = next;
-            }
-
-            curr = 0.0f;
-            for (int i = 0 ; i < nz ; ++i) {
-                float next = curr + zspace[i];
-                cellCenters[2][i] = (curr + next) / 2.0f;
-                curr = next;
-            }
-        }
-        /*
-        else if (getObjectType() == 2) {
-            // Curvilinear
-            // MVM: This will require getting the cell corners and finding the centroid.
-            // I believe this to be the intersection of the diagonals, as is the 
-            // case with quadrilaterals.
-            vtkOutputWindowDisplayErrorText("Wells not supported for curvilinear grids.");
-            return NULL;
-            
-        }
-        */
-        else {
-            vtkOutputWindowDisplayErrorText("Well history files not supported for this grid type.");
-            return NULL;
-        }
-    }
-
-    return cellCenters;
-}
 
 UTChemInputReader::ParseState UTChemInputReader::readFile()
 {
@@ -903,3 +829,90 @@ void UTChemInputReader::calculateCellVolume()
 			cellVolume->InsertNextValue(volume);
 	}
 }
+
+float** UTChemInputReader::getCellCenters()
+{
+    if (cellCenters == NULL) {
+        int id = 0;
+        cellCenters = new float*[3];
+        cellCenters[0] = new float[nx];
+        cellCenters[1] = new float[ny];
+        cellCenters[2] = new float[nz];
+
+        if (getObjectType() == 0) { 
+            // constant Cartesian (or Radial)
+            float curr = 0.0f;
+            for (int i = 0 ; i < nx ; ++i) {
+                float next = curr + dx1;
+                cellCenters[0][i] = (curr + next) / 2.0f;
+                curr = next;
+            }
+
+            curr = 0.0f;
+            for (int i = 0 ; i < ny ; ++i) {
+                float next = curr + dy1;
+                cellCenters[1][i] = (curr + next) / 2.0f;
+                curr = next;
+            }
+
+            curr = 0.0f;
+            for (int i = 0 ; i < nz ; ++i) {
+                float next = curr + dz1;
+                cellCenters[2][i] = (curr + next) / 2.0f;
+                curr = next;
+            }
+        } 
+        else if (getObjectType() == 1)  { 
+            // variable Cartesian (or Radial)
+            float curr = 0.0f;
+            for (int i = 0 ; i < nx ; ++i) {
+                float next = curr + xspace[i];
+                cellCenters[0][i] = (curr + next) / 2.0f;
+                curr = next;
+            }
+
+            curr = 0.0f;
+            for (int i = 0 ; i < ny ; ++i) {
+                float next = curr + yspace[i];
+                cellCenters[1][i] = (curr + next) / 2.0f;
+                curr = next;
+            }
+
+            curr = 0.0f;
+            for (int i = 0 ; i < nz ; ++i) {
+                float next = curr + zspace[i];
+                cellCenters[2][i] = (curr + next) / 2.0f;
+                curr = next;
+            }
+        }
+        else if (getObjectType() == 2) {
+            // Curvilinear
+            float curr = xspace[0];
+            for (int i = 1; i < nx; ++i) {
+                cellCenters[0][i-1] = (curr + xspace[i]) / 2.0f;
+                std::cout << "MVM: curr: " << curr << " xspace[i]: " << xspace[i] << " cellCenters: " << cellCenters[0][i-1] << std::endl;
+                curr = xspace[i];
+            }
+            // MVM, I forget, is there yspace for curviliner
+            curr = yspace[0];
+            for (int i = 1; i < ny; ++i) {
+                cellCenters[1][i-1] = (curr + yspace[i]) / 2.0f;
+                curr = yspace[i];
+            }
+
+            curr = zspace[0];
+            for (int i = 1; i < nz; ++i) {
+                cellCenters[2][i-1] = (curr + zspace[i]) / 2.0f;
+                curr = zspace[i];
+            }
+
+        }
+        else {
+            vtkOutputWindowDisplayErrorText("Well history files not supported for this grid type.");
+            return NULL;
+        }
+    }
+
+    return cellCenters;
+}
+
