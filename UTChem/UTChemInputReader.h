@@ -25,13 +25,12 @@ PURPOSE.  See the above copyright notice for more information.
 #include <map>
 
 #include "vtkObject.h"
-
-class vtkDataObject;
-class vtkInformation;
-class vtkDoubleArray;
-class vtkPoints;
-class vtkFloatArray;
-class UTChemTopReader;
+#include "vtkDataObject.h"
+#include "vtkInformation.h"
+#include "vtkDoubleArray.h"
+#include "vtkPoints.h"
+#include "vtkFloatArray.h"
+#include "UTChemTopReader.h"
 
 struct UTChemInputReader
 {
