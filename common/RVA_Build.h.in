@@ -18,10 +18,8 @@ PURPOSE.  See the above copyright notice for more information.
 #ifndef _RVA_BUILD_H_
 #define _RVA_BUILD_H_
 
-#cmakedefine RVA_BUILD_MAJOR @RVA_BUILD_MAJOR@
-#cmakedefine RVA_BUILD_MINOR @RVA_BUILD_MINOR@
-#cmakedefine RVA_BUILD_RELEASE @RVA_BUILD_RELEASE@
-#cmakedefine RVA_BUILD_NUMBER @RVA_BUILD_NUMBER@
-#cmakedefine RVA_BUILD_DATE @RVA_BUILD_DATE@
+#define RVA_VERSION_MAJOR @RVA_VERSION_MAJOR@
+#define RVA_VERSION_MINOR @RVA_VERSION_MINOR@
+#define RVA_VERSION_PATCH @RVA_VERSION_PATCH@
 
 #endif // _RVA_BUILD_H_
