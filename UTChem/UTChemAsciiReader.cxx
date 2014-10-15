@@ -137,13 +137,13 @@ int UTChemAsciiReader::RequestInformation(vtkInformation *vtkNotUsed(request),
   }
   else 
   {
-	  int success = readFile(); // 0 if failed, 1 if successful
-	  
-	  if (!success) 
+    int success = readFile(); // 0 if failed, 1 if successful
+  
+    if (!success) 
     {
-		  vtkErrorMacro("File parsing failed");
-		  return 0; // Fail
-	  }
+	  vtkErrorMacro("File parsing failed");
+	  return 0; // Fail
+    }
   }
   
   vtkInformation * outInfo  = outVec->GetInformationObject(0);
@@ -200,7 +200,7 @@ int UTChemAsciiReader::RequestData(vtkInformation *vtkNotUsed(request),
     return 0; // Failure
   }
   assert(timeList.size() == allData.size());
-	assert(InputInfo);
+  assert(InputInfo);
 
   return buildVTKObject(bestidx, outInfo);
 }
@@ -410,7 +410,7 @@ int UTChemAsciiReader::buildVTKObject(const unsigned& bestidx, vtkInformation* o
     return 0;
   }
 
-	vtkDataSet * dataSet = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkDataSet * dataSet = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
   currentTimeStep = allData[bestidx];
   assert(currentTimeStep);
@@ -435,23 +435,23 @@ int UTChemAsciiReader::buildVTKObject(const unsigned& bestidx, vtkInformation* o
     case 1:
       ret = buildRGridData(dataSet);
       break;
-		case 2:
-			ret = buildSGridData(dataSet);
-			break;
+    case 2:
+      ret = buildSGridData(dataSet);
+    break;
     default:
       break;
   }
-	
+
   if (ret)
-	{
-		dataSet->GetInformation()->Set(vtkDataObject::DATA_TIME_STEPS(), &timeList[bestidx], 1);
-		IntegerTovtkFloatArrayMap_it it = currentTimeStep->begin(), end = currentTimeStep->end();
-		for (; it != end; it++) 
+  {
+    dataSet->GetInformation()->Set(vtkDataObject::DATA_TIME_STEPS(), &timeList[bestidx], 1);
+    IntegerTovtkFloatArrayMap_it it = currentTimeStep->begin(), end = currentTimeStep->end();
+    for (; it != end; it++) 
     {
-			vtkFloatArray* array = (*it).second;
-			dataSet->GetCellData()->AddArray(array);
-		}
-		dataSet->GetCellData()->AddArray(InputInfo->cellVolume);
+      vtkFloatArray* array = (*it).second;
+      dataSet->GetCellData()->AddArray(array);
+    }
+    dataSet->GetCellData()->AddArray(InputInfo->cellVolume);
   }
   return ret;
 }
@@ -464,14 +464,14 @@ int UTChemAsciiReader::buildImageData(vtkDataSet * dataSet)
   imgData->Initialize();
 
   if (InputInfo->icoord == 1) {
-  	imgData->SetDimensions(nx+1, ny+1, nz+1); // For CellData of nx*ny*nz cells
-  	imgData->SetSpacing(InputInfo->dx1,InputInfo->dy1,InputInfo->dz1);
+    imgData->SetDimensions(nx+1, ny+1, nz+1); // For CellData of nx*ny*nz cells
+    imgData->SetSpacing(InputInfo->dx1,InputInfo->dy1,InputInfo->dz1);
   }
   else if (InputInfo->icoord == 2) {
-	imgData->SetDimensions(nx+1, 1, nz+1);
-  	imgData->SetSpacing(InputInfo->dx1, 0, InputInfo->dz1);
+    imgData->SetDimensions(nx+1, 1, nz+1);
+    imgData->SetSpacing(InputInfo->dx1, 0, InputInfo->dz1);
   }
-	
+
 
   return 1;
 }
@@ -490,24 +490,24 @@ int UTChemAsciiReader::buildRGridData(vtkDataSet * dataSet)
   //
   // nx..z is the number of cells and we have cell-centered data
 
-  	rgrid->SetDimensions(nx+1, ny+1, nz+1); // For CellData of nx*ny*nz cells
+   rgrid->SetDimensions(nx+1, ny+1, nz+1); // For CellData of nx*ny*nz cells
 
-  	assert(InputInfo->xdim &&InputInfo->ydim &&InputInfo->zdim);
-  	if(InputInfo->xdim &&InputInfo->ydim &&InputInfo->zdim ) {
-    	rgrid->SetXCoordinates((vtkDataArray*)InputInfo->xdim);
-    	rgrid->SetYCoordinates((vtkDataArray*)InputInfo->ydim);
-    	rgrid->SetZCoordinates((vtkDataArray*)InputInfo->zdim);
-  	}
+   assert(InputInfo->xdim &&InputInfo->ydim &&InputInfo->zdim);
+   if (InputInfo->xdim &&InputInfo->ydim &&InputInfo->zdim ) {
+    rgrid->SetXCoordinates((vtkDataArray*)InputInfo->xdim);
+    rgrid->SetYCoordinates((vtkDataArray*)InputInfo->ydim);
+    rgrid->SetZCoordinates((vtkDataArray*)InputInfo->zdim);
+  }
   
-	/*
-	else {
-	  vtkDoubleArray *y = vtkDoubleArray::New();
-	  y->InsertNextValue(0.0);
-	  rgrid->SetDimensions(nx+1, 1, nz+1);
-	  rgrid->SetXCoordinates((vtkDataArray*)InputInfo->xdim);
-	  rgrid->SetYCoordinates((vtkDataArray*)y);
-	  rgrid->SetZCoordinates((vtkDataArray*)InputInfo->zdim);
-	  y->Delete();
+/*
+else {
+  vtkDoubleArray *y = vtkDoubleArray::New();
+  y->InsertNextValue(0.0);
+  rgrid->SetDimensions(nx+1, 1, nz+1);
+  rgrid->SetXCoordinates((vtkDataArray*)InputInfo->xdim);
+  rgrid->SetYCoordinates((vtkDataArray*)y);
+  rgrid->SetZCoordinates((vtkDataArray*)InputInfo->zdim);
+  y->Delete();
   }*/
 
   return 1;
@@ -522,10 +522,10 @@ int UTChemAsciiReader::buildSGridData(vtkDataSet * dataSet)
 
   sgrid->SetDimensions(nx+1, ny+1, nz+1); // For CellData of nx*ny*nz cells
 
-	assert(InputInfo->points && InputInfo->points->GetNumberOfPoints()==(nx+1)*(ny+1)*(nz+1));
-	if (InputInfo->points) 
+  assert(InputInfo->points && InputInfo->points->GetNumberOfPoints()==(nx+1)*(ny+1)*(nz+1));
+  if (InputInfo->points) 
   {
-		sgrid->SetPoints(InputInfo->points);
+    sgrid->SetPoints(InputInfo->points);
   }
 
   return 1;
@@ -541,23 +541,23 @@ void UTChemAsciiReader::readNXNYnumericalValuesIntoArray(float*output)
 
   while (i < expected) 
   {
-	  // MVM: reading input file stream into string instead of directly
-	  // into float because ASCII "NaN" was causing an infinite loop, 
-	  // not entirely sure how.
-	  // Note that gfortran seems to output "NaN", unknown what other
-	  // compilers used for UTChem might output.
-	  stream >> str;
-	  ss.str(str);
+  // MVM: reading input file stream into string instead of directly
+  // into float because ASCII "NaN" was causing an infinite loop, 
+  // not entirely sure how.
+  // Note that gfortran seems to output "NaN", unknown what other
+  // compilers used for UTChem might output.
+  stream >> str;
+  ss.str(str);
 
-	  if (str != "NaN") {
-		ss >> output[i];
-	  }
-	  else {
-		vtkErrorMacro(<<"Note: input file contains NaNs");
-		output[i] = std::numeric_limits<float>::quiet_NaN();
-	  }
-	  ss.clear();
-	  i++;
+  if (str != "NaN") {
+    ss >> output[i];
+  }
+  else {
+    vtkErrorMacro(<<"Note: input file contains NaNs");
+    output[i] = std::numeric_limits<float>::quiet_NaN();
+  }
+  ss.clear();
+  i++;
   }
 }
 
@@ -639,15 +639,14 @@ int UTChemAsciiReader::initializeStream()
 }
 
 const char* UTChemAsciiReader::readNextLine(bool mustBeNonEmpty) {
-	  std::getline(stream, nextLine);
-	  if (mustBeNonEmpty && 0 == nextLine.length()) 
+  std::getline(stream, nextLine);
+  if (mustBeNonEmpty && 0 == nextLine.length()) 
     {
-//		  throw std::exception("Expected to read non-blank line from file");
-		  throw std::runtime_error("Expected to read non-blank line from file");
-	  }
+    throw std::runtime_error("Expected to read non-blank line from file");
+    }
     const char* c_str= nextLine.c_str();
     line_num++;
-	  return c_str;
+    return c_str;
 }
 
 // Reads a UTChem data file (.CONC / .VISC etc )
