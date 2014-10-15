@@ -889,24 +889,10 @@ float** UTChemInputReader::getCellCenters()
             }
         }
         else if (getObjectType() == 2) {
-            // Curvilinear
-            float curr = xspace[0];
-            for (int i = 1; i < nx; ++i) {
-                cellCenters[0][i-1] = (curr + xspace[i]) / 2.0f;
-                curr = xspace[i];
-            }
-            curr = yspace[0];
-            for (int i = 1; i < ny; ++i) {
-                cellCenters[1][i-1] = (curr + yspace[i]) / 2.0f;
-                curr = yspace[i];
-            }
-
-            curr = zspace[0];
-            for (int i = 1; i < nz; ++i) {
-                cellCenters[2][i-1] = (curr + zspace[i]) / 2.0f;
-                curr = zspace[i];
-            }
-
+            // Curvilinear 
+            // MVM: This is currently handled directly in UTChemWellReader.cxx because
+            // the above strategy is only valid for ortho-normal grids. 
+            return NULL;
         }
         else {
             vtkOutputWindowDisplayErrorText("Well history files not supported for this grid type.");
