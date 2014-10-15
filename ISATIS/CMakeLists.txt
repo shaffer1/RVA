@@ -27,8 +27,8 @@ IF(PARAVIEW_BUILD_QT_GUI)
 
   # Includes are relative from source directory
   # Linking is relative to build directory		    
-  set(GTXSERVER_INCLUDE_DIR "C:/RVA/GTXserver-2011.5/include" CACHE PATH "GTX Server include directory")
-  set(GTXSERVER_LIB_DIR "C:/RVA/GTXserver-2011.5/lib" CACHE PATH "GTX Server include directory")
+  set(GTXSERVER_INCLUDE_DIR "" CACHE PATH "GTX Server include directory")
+  set(GTXSERVER_LIB_DIR "" CACHE PATH "GTX Server include directory")
 
   include_directories(${GTXSERVER_INCLUDE_DIR})
 
@@ -56,15 +56,7 @@ IF(PARAVIEW_BUILD_QT_GUI)
       ISATISReaderPolygon.cxx
       ISATISFaultProcessor.cxx
   WRAP_EXCLUDE)
-
-  # Important for Build information
-  SET(RVA_BUILD_MAJOR "\"1\"")
-  SET(RVA_BUILD_MINOR "\"1\"")
-  SET(RVA_BUILD_RELEASE "\"2\"")
-  SET(RVA_BUILD_NUMBER "\"20140703.01\"")
-  SET(RVA_BUILD_DATE "\"20140703\"")
-  CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/common/RVA_Build.h.cmake ${CMAKE_SOURCE_DIR}/common/RVA_Build.h)
-
+  
   # Now crete a plugin for the toolbar. Here we pass IFACES and IFACE_SRCS
   # which are filled up by the above macro with relevant entries
   ADD_PARAVIEW_PLUGIN(RVA_ISATIS_Plugin "RC 1.0"
