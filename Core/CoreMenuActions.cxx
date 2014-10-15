@@ -15,7 +15,7 @@ PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
 
-#include "RVA_Build.h"
+#include "../common/RVA_Build.h"
 #include "RVA_Util.h"
 #include "CoreMenuActions.h"
 
@@ -241,7 +241,7 @@ void CoreMenuActions::AboutBox()
   AboutImage->setPixmap(file);
   AboutImage->setAlignment(Qt::AlignCenter);
 
-  QFont font("Cursive",10,QFont::Normal);
+  QFont font("SansSerif",10,QFont::Normal);
 
   Tab1scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   Tab1scrollArea->setBackgroundRole(QPalette::Light);
@@ -310,10 +310,10 @@ void CoreMenuActions::SetTitle()
   if(title.contains("RVA")) // Avoid an infinite loop
     return;
 
-  title.append(" - RVA @ UIUC (build ");
-  title.append(QString::number(RVA_BUILD_NUMBER));
-  title.append(")");
-
+  title.append(" - RVA @ UIUC version ");
+  QString version = QString::number(RVA_VERSION_MAJOR) + "." + QString::number(RVA_VERSION_MINOR) + "." + QString::number(RVA_VERSION_PATCH);
+  title.append(version);
+  
   mainWindow->setWindowTitle(title);
 }
 
