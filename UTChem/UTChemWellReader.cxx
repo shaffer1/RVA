@@ -39,7 +39,8 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkTable.h"
 #include "vtkSmartPointer.h"
 #include "vtkVertex.h"
-
+#include "vtkStructuredGrid.h"
+#include "vtkCellCenters.h"
 #include <RVA_Util.h>
 
 // --------------------------------------------------------
@@ -510,6 +511,26 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
 
     int numPts = well.ilast - well.ifirst + 1;
 
+    // MVM: waiting for additional test files with idir 1, 3 to complete
+    // this section.
+    if (InputInfo->getObjectType() == 2 && well.idir == 2) {
+        // Curvilinear and parallel to Y
+        vtkSmartPointer<vtkStructuredGrid> sgrid = vtkSmartPointer<vtkStructuredGrid>::New();
+        sgrid->SetDimensions(InputInfo->nx + 1, InputInfo->ny + 1, InputInfo->nz + 1);
+        sgrid->SetPoints(InputInfo->points);
+        vtkSmartPointer<vtkCellCenters> centers = vtkSmartPointer<vtkCellCenters>::New();
+        centers->SetInput(sgrid);
+        centers->Update();
+        for (int i = well.ifirst - 1; i < well.ilast; ++i) {
+            int index = (well.iw - 1) +  InputInfo->nx * i + (InputInfo->nx * InputInfo->ny * (well.jw - 1));
+            points->InsertNextPoint(centers->GetOutput()->GetPoints()->GetPoint(index));
+            line->GetPointIds()->InsertNextId(id++);
+            connectivity->InsertNextCell(line);
+        }
+        data->SetLines(connectivity);
+        data->SetPoints(points);
+    }
+    else {
     if (numPts > 1) {
         // From UTChem docs:
         //   "Possible Values: Between 1 and the number of gridblocks in the
@@ -549,4 +570,5 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
         data->SetVerts(connectivity);
     }
     data->SetPoints(points);
+    }
 }
