@@ -50,7 +50,6 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkDoubleArray.h"
 #include "vtkCellArray.h"
 
-#include <RVA_Util.h>
 
 // --------------------------------------------------------
 vtkStandardNewMacro(CutBetweenWellsFilter);
