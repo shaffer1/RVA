@@ -16,7 +16,6 @@ PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
 
 #include "../common/RVA_Build.h"
-#include "RVA_Util.h"
 #include "CoreMenuActions.h"
 
 #include "pqApplicationCore.h"
