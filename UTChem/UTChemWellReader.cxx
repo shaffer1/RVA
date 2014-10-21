@@ -339,6 +339,8 @@ int UTChemWellReader::parseAsProducerVariable()
             dataLabel.push_back("Temperature");
         }
         else if (contains(line, "PHASE AND TOTAL CONC. FOR")) {
+            
+            // MVM: change this to use std::string
             char componentPhase[200];
 
             // Skip to "COMPONENT" (may return NULL)
@@ -473,8 +475,6 @@ int UTChemWellReader::parseAsInjectorVariable()
     }
 }
 
-
-
 // overloaded function, verifying that the file read
 // contains only valid data, after its read entirely
 bool UTChemWellReader::validFileRead()
@@ -511,64 +511,89 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
 
     int numPts = well.ilast - well.ifirst + 1;
 
-    // MVM: waiting for additional test files with idir 1, 3 to complete
-    // this section.
-    if (InputInfo->getObjectType() == 2 && well.idir == 2) {
-        // Curvilinear and parallel to Y
+    if (InputInfo->getObjectType() == 2) {
         vtkSmartPointer<vtkStructuredGrid> sgrid = vtkSmartPointer<vtkStructuredGrid>::New();
         sgrid->SetDimensions(InputInfo->nx + 1, InputInfo->ny + 1, InputInfo->nz + 1);
         sgrid->SetPoints(InputInfo->points);
         vtkSmartPointer<vtkCellCenters> centers = vtkSmartPointer<vtkCellCenters>::New();
         centers->SetInput(sgrid);
         centers->Update();
-        for (int i = well.ifirst - 1; i < well.ilast; ++i) {
-            int index = (well.iw - 1) +  InputInfo->nx * i + (InputInfo->nx * InputInfo->ny * (well.jw - 1));
-            points->InsertNextPoint(centers->GetOutput()->GetPoints()->GetPoint(index));
-            line->GetPointIds()->InsertNextId(id++);
-            connectivity->InsertNextCell(line);
+        int index;
+        if (numPts > 1) {
+            // Curvilinear (vtkStructuredGrid) with well that extends multiple cells.
+            for (int i = well.ifirst - 1; i < well.ilast; ++i) {
+                if (well.idir == 1) {
+                    // Parallel to X
+                    index = i + InputInfo->nx * (well.iw - 1) + (InputInfo->nx * InputInfo->ny * (well.jw - 1));
+                }
+                else if (well.idir == 2) {
+                    // Parallel to Y
+                    index = (well.iw - 1) + InputInfo->nx * i + (InputInfo->nx * InputInfo->ny * (well.jw - 1));
+                }
+                else if (well.idir == 3) {
+                    // Parallel to Z
+                    index = (well.iw - 1) + InputInfo->nx * (well.jw - 1) + (InputInfo->nx * InputInfo->ny * i);
+                }
+                points->InsertNextPoint(centers->GetOutput()->GetPoints()->GetPoint(index));
+                line->GetPointIds()->InsertNextId(id++);
+                connectivity->InsertNextCell(line);
+            }
+            data->SetLines(connectivity);
         }
-        data->SetLines(connectivity);
+        else {
+            // Curvilinear grid with single cell well
+            if (well.idir == 1) {
+                index = (well.ifirst - 1) + InputInfo->nx * (well.iw - 1) + InputInfo->nx * InputInfo->ny * (well.jw - 1); 
+            }
+            else if (well.idir == 2) {
+                index = (well.iw - 1) + InputInfo->nx * (well.ifirst - 1) + InputInfo->nx * InputInfo->ny * (well.jw - 1);
+            }
+            else if (well.idir == 3) {
+                index = (well.iw - 1) + InputInfo->nx * (well.jw - 1) + InputInfo->nx * InputInfo->ny * (well.ifirst - 1);
+            }
+            points->InsertNextPoint(centers->GetOutput()->GetPoints()->GetPoint(index));
+            vertex->GetPointIds()->InsertNextId(0);
+            connectivity->InsertNextCell(vertex);
+            data->SetVerts(connectivity); 
+        }        
         data->SetPoints(points);
     }
     else {
-    if (numPts > 1) {
-        // From UTChem docs:
-        //   "Possible Values: Between 1 and the number of gridblocks in the
-        //    pertinent direction, inclusive"
-        
-        for (int i = 0 ; i < numPts ; ++i) {
-            switch (well.idir) {
-                default: // Ignore bad cases
-                    break;
-                case 1: // Parallel to x-axis
-                    points->InsertNextPoint(positions[0][i], positions[1][well.iw - 1], positions[2][well.jw - 1]);
-                    break;
-                case 2: // Parallel to y-axis
-                    points->InsertNextPoint(positions[0][well.iw - 1], positions[1][i], positions[2][well.jw - 1]);
-                    break;
-                case 3: // Parallel to z-axis
-                    points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][i]);
-                    break;
+        // vtkImageData and vtkRectilinearGrid types (should work for Radial when those are added.)
+        if (numPts > 1) {
+            for (int i = 0 ; i < numPts ; ++i) {
+                switch (well.idir) {
+                    default: // Ignore bad cases
+                        break;
+                    case 1: // Parallel to x-axis
+                        points->InsertNextPoint(positions[0][i], positions[1][well.iw - 1], positions[2][well.jw - 1]);
+                        break;
+                    case 2: // Parallel to y-axis
+                        points->InsertNextPoint(positions[0][well.iw - 1], positions[1][i], positions[2][well.jw - 1]);
+                        break;
+                    case 3: // Parallel to z-axis
+                        points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][i]);
+                        break;
+                }
+                line->GetPointIds()->InsertNextId(id++);
             }
-            line->GetPointIds()->InsertNextId(id++);
+            connectivity->InsertNextCell(line);
+            data->SetLines(connectivity);
         }
-        connectivity->InsertNextCell(line);
-        data->SetLines(connectivity);
-    }
-    else {
-        if (well.idir == 1) {
-            points->InsertNextPoint(positions[0][0], positions[1][well.iw - 1], positions[2][well.jw - 1]);
+        else {
+            if (well.idir == 1) {
+                points->InsertNextPoint(positions[0][well.ifirst - 1], positions[1][well.iw - 1], positions[2][well.jw - 1]);
+            }
+            else if (well.idir == 2) {
+                points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.ifirst - 1], positions[2][well.jw - 1]);
+            }
+            else if (well.idir == 3) {
+                points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][well.ifirst - 1]);
+            }
+            vertex->GetPointIds()->InsertNextId(0);
+            connectivity->InsertNextCell(vertex);
+            data->SetVerts(connectivity);
         }
-        else if (well.idir == 2) {
-            points->InsertNextPoint(positions[0][well.iw - 1], positions[1][0], positions[2][well.jw - 1]);
-        }
-        else if (well.idir == 3) {
-            points->InsertNextPoint(positions[0][well.iw - 1], positions[1][well.jw - 1], positions[2][0]);
-        }
-        vertex->GetPointIds()->InsertNextId(0);
-        connectivity->InsertNextCell(vertex);
-        data->SetVerts(connectivity);
-    }
-    data->SetPoints(points);
+        data->SetPoints(points);
     }
 }
