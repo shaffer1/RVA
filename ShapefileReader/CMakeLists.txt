@@ -36,6 +36,11 @@ ADD_PARAVIEW_PLUGIN(
 
 TARGET_LINK_LIBRARIES(ShapefileReader)
 
+install(TARGETS ShapefileReader
+    RUNTIME DESTINATION . COMPONENT ShapefileReader
+    LIBRARY DESTINATION lib
+    )
+
 IF(WIN32)
 	TARGET_LINK_LIBRARIES(ShapefileReader Version.lib) 
 	# Version.lib: _GetFileVersionInfoSize used in _st_get_exe_version
