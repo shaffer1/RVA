@@ -1,0 +1,4 @@
+<ParaViewReaders>
+    <Reader name="ZMapPlusReader" extensions="" file_description="ZMapPlus GRID reader">
+    </Reader>
+</ParaViewReaders>
