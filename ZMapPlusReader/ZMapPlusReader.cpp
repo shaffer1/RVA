@@ -4,6 +4,7 @@
 #include <limits>
 
 #include "ZMapPlusReader.h"
+#include "vtkObjectFactory.h"
 #include "vtkImageData.h"
 #include "vtkFloatArray.h"
 #include "vtkSmartPointer.h"
