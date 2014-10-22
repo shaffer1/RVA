@@ -128,7 +128,7 @@ int ZMapPlusReader::RequestData(vtkInformation*,
         for (int row = NumberOfRows - 1; row >=0; --row) {
             int index = col + NumberOfColumns * row;
             if (data.at(i) == NullValue) {
-                data.at(i) = std::numeric_limits<float>::quiet_NaN()
+                data.at(i) = std::numeric_limits<float>::quiet_NaN();
             }
             heights->InsertTuple1(index, data.at(i));
             i++;
