@@ -68,8 +68,8 @@ int ZMapPlusReader::RequestData(vtkInformation*,
     vtkDebugMacro("Reading ZMapPlus file: " << this->FileName);
 
     while (true) {
-        zmapfile.getline(line);
-        if (!line) {
+        std::getline(zmapfile, line);
+        if (line.size() == 0) {
             break;
         }
         else if (line.at(0) == '!') {
@@ -79,13 +79,13 @@ int ZMapPlusReader::RequestData(vtkInformation*,
             // The header is comma delimited
             sscanf(line.c_str(), "@%s, %s, %d", &UserText[0], &ZMapType[0], &NumColsPerLine);
             if (ZMapType == "GRID") {
-                zmapfile.getline(line);
-                sscanf(line.c_str(), "%d, %d, %f, %s, %d, %d", &FieldWidth, 
+                getline(zmapfile, line);
+                sscanf(line.c_str(), "%d, %f, %s, %d, %d", &FieldWidth, 
                                                                &NullValue, 
                                                                &NullText[0], 
                                                                &Decimals, 
                                                                &StartColumn); 
-                zmapfile.getline(line);
+                getline(zmapfile, line);
                 sscanf(line.c_str(), "%d, %d, %f, %f, %f, %f", &NumberOfRows,
                                                                &NumberOfColumns,
                                                                &Xmin,
@@ -93,9 +93,9 @@ int ZMapPlusReader::RequestData(vtkInformation*,
                                                                &Ymin,
                                                                &Ymax);
                 // irrelevant line of zeros
-                zmapfile.getline(line);
+                getline(zmapfile, line);
                 // line of just '@'
-                zmapfile.getline(line);
+                getline(zmapfile, line);
             }
             else {
                 vtkErrorMacro("Not a GRID file, type is: " << ZMapType);
