@@ -17,12 +17,19 @@ OPTION(ParaviewGeo "Build ParaviewGeo" OFF)
 OPTION(ISATIS "Build ISATIS Readers" ON)
 OPTION(UTChem "Build UTChem Readers" ON)
 OPTION(ShapefileReader "Build Shapefile Reader" ON)
+option(ZMapPlusReader "Build ZMapPlus GRID Reader" ON)
 OPTION(Paraview "Pack with paraview" OFF)
+
 
 SET(COMPONENTS_STRING "")
 
 ADD_SUBDIRECTORY(Core)
 SET(COMPONENTS_STRING "${COMPONENTS_STRING}Core;")
+
+if(ZMapPlusReader)
+    add_subdirectory(ZMapPlusReader)
+    set(COMPONENTS_STRING "${COMPONENTS_STRING}ZMapPlusReader;")
+endif(ZMapPlusReader)
 
 IF(ShapefileReader)
 	ADD_SUBDIRECTORY(ShapefileReader)
