@@ -1,0 +1,20 @@
+<ServerManagerConfiguration>
+    <ProxGroup name="sources">
+        <SourceProxy name="ZMapPlusReader" class="ZMapPlusReader" label="ZMapPlus Reader">
+            <Documentation
+                long_help = "Read a ZMapPlus GRID file. CNTR and DATA files are not supported."
+                short_help = "Read a ZMapPlus GRID file.">
+            </Documentation>
+            <StringVectorProperty
+                name="FileName"
+                animateable="0"
+                command="SetFileName"
+                number_of_elements="1">
+              <FileListDomain name="files" />
+              <Documentation>
+                This property specifies the file name for the ZMapPlus GRID reader.
+              </Documentation>
+            </StringVectorProperty>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
