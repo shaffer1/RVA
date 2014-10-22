@@ -9,27 +9,27 @@
 #include "vtkSmartPointer.h"
 #include "vtkPointData.h"
 
-vtkStandardNewMacro(ZMapFileReader);
+vtkStandardNewMacro(ZMapPlusReader);
 
-ZMapFileReader::ZMapFileReader()
+ZMapPlusReader::ZMapPlusReader()
 {
     this->FileName = 0;
     this->SetNumberOfInputPorts(0);
 }
 
-ZMapFileReader::~ZMapFileReader()
+ZMapPlusReader::~ZMapPlusReader()
 {
     this->SetFileName(0);
 }
 
-void ZMapFileReader::PrintSelf(ostream& os, vtkIndent indent)
+void ZMapPlusReader::PrintSelf(ostream& os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os,indent);
     os << indent << "FileName: " 
         << (this->FileName ? this->FileName : "(none)") << "\n";
 }
 
-int ZMapFileReader::RequestData(vtkInformation*,
+int ZMapPlusReader::RequestData(vtkInformation*,
                                 vtkInformationVector**,
                                 vtkInformationVector* outputVector)
 {
