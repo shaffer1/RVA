@@ -1,5 +1,5 @@
 <ServerManagerConfiguration>
-    <ProxGroup name="sources">
+    <ProxyGroup name="sources">
         <SourceProxy name="ZMapPlusReader" class="ZMapPlusReader" label="ZMapPlus Reader">
             <Documentation
                 long_help = "Read a ZMapPlus GRID file. CNTR and DATA files are not supported."
