@@ -23,10 +23,24 @@ protected:
     ~ZMapPlusReader();
    
     char* FileName;
+   
+    float NullValue;
 
-    virtual int RequestData(vtkInformation* request,
-            vtkInformationVector** inputVector,
-            vtkInformationVector* outputVector);
+    int NumberOfColumns;
+    int NumberOfRows;
+    float Xmin;
+    float Xmax;
+    float Ymin;
+    float Ymax;    
+
+    int pos; // for skipping header
+
+    int ReadHeader();
+
+    virtual int RequestData(vtkInformation*, vtkInformationVector **, vtkInformationVector *); 
+    virtual int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+
+    
 
 private:
     ZMapPlusReader(const ZMapPlusReader&); // Not implemented.
