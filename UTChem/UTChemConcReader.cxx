@@ -53,6 +53,7 @@ UTChemConcReader::~UTChemConcReader()
 {
 }
 
+// MVM: is this necessary, isn't this handled by the servermanager xml?
 // Supported File Types
 // Returns empty string for non-supported types
 static const char* fileExtensionToLabel(std::string&ext)
@@ -322,7 +323,6 @@ int UTChemConcReader::parseAsSURFACTANTline(const char* c_str)
 // Reads a UTChem data file (.CONC / .VISC etc )
 int UTChemConcReader::parseLine(const char* c_str) {
 	std::string line(c_str);
-	std::cout << "MVM: line: " << line << std::endl;
 	if (line.find("TIME") == 0) {
 		return parseAsATIMEline(c_str);
 	}
