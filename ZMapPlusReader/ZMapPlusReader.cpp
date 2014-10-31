@@ -110,7 +110,7 @@ int ZMapPlusReader::ReadHeader() {
         else if (line.at(0) == '!') {
             continue;
         }
-        else if (line.at(0) == '@' and line.size() > 1) {
+        else if (line.at(0) == '@' && line.size() > 1) {
             // The header is comma delimited and there may be an arbitrary amount
             // of whitespace for each item in the list. Also, some items may be
             // blank or missing. 
