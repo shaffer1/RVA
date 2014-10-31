@@ -26,7 +26,7 @@ ZMapPlusReader::ZMapPlusReader()
 
 ZMapPlusReader::~ZMapPlusReader()
 {
-    this->SetFileName(0);
+    SetFileName(0);
 }
 
 void ZMapPlusReader::PrintSelf(ostream& os, vtkIndent indent)
