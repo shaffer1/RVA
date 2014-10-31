@@ -5,6 +5,8 @@ Portions (Z scale functionality) copyright Visual Technology Services Ltd. All r
 
 ParaViewGeo Copyright (c) 2012, Objectivity Inc. All rights reserved. 
 
+Shapelib Copyright (c) 1999, Frank Warmerdam
+
 Developed by: Reservoir Visualization and Analytics
               CSE, University of Illinois at Urbana-Champaign
               Illinois State Geological Survey
