@@ -13,7 +13,6 @@ IF(NOT ParaView_BINARY_DIR)
   INCLUDE(${PARAVIEW_USE_FILE})
 ENDIF(NOT ParaView_BINARY_DIR)
 
-OPTION(ParaviewGeo "Build ParaviewGeo" OFF)
 OPTION(ISATIS "Build ISATIS Readers" ON)
 OPTION(UTChem "Build UTChem Readers" ON)
 OPTION(ShapefileReader "Build Shapefile Reader" ON)
@@ -46,9 +45,6 @@ IF(UTChem)
 	SET(COMPONENTS_STRING "${COMPONENTS_STRING}UTChem;")
 ENDIF(UTChem)
 
-IF(ParaviewGeo)
-	ADD_SUBDIRECTORY(ParaviewGeo)
-ENDIF(ParaviewGeo)
 
 IF(Paraview)
   SET(COMPONENTS_STRING "${COMPONENTS_STRING}ParaView;")
