@@ -1,5 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>OracleReaderGUI.xml</file>
-	</qresource>
-</RCC>

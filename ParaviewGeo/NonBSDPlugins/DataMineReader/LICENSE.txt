@@ -1,1 +1,0 @@
-See dmfile.h for license and usage information.

@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="3DECReader"
-    extensions="3dec"
-    file_description="3DEC File">
-  </Reader>
-</ParaViewReaders>

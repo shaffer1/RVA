@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/PVGReaders" >
-        <file>pq3DECReader.ui</file>
-    </qresource>
-</RCC>

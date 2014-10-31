@@ -1,8 +1,0 @@
-user=codelco
-pass=codelco
-connection=192.168.22.106:1521/xe
-table=TABLE1
-x=IESTE_LOCAL
-y=INORTE_LOCAL
-z=ICOTA_LOCAL
-property=CSONDAJE

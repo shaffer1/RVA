@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>ODBCReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

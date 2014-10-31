@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="ODBCReader"
-    extensions="ODBC"
-    file_description="ODBC Database">
-  </Reader>
-</ParaViewReaders>

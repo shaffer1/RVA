@@ -1,6 +1,0 @@
-<ParaViewFilters>
- <Category name="Objectivity">
-  <Filter name="String Array To Index"/>
-  <Filter name="DUMMY_FILTER"/>
- </Category>
-</ParaViewFilters>

@@ -1,9 +1,0 @@
-<RCC>
-	<qresource prefix="/PVGReaders">
-		<file>DataMineReader/pqDMWireFrameReader.ui</file>
-	</qresource>
-	<qresource prefix="/PVGFilters" >
-		<file>ComputeVolumes/pqComputeVolumes.ui</file> 
-		<file>tetgen/pqTetgen.ui</file>
-	</qresource>
-</RCC>

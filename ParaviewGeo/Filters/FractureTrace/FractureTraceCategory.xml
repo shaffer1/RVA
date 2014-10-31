@@ -1,6 +1,0 @@
-<ParaViewFilters>
- <Category name="Objectivity">
-  <Filter name="Fracture Trace"/>
-  <Filter name="DUMMY_FILTER"/>
- </Category>
-</ParaViewFilters>

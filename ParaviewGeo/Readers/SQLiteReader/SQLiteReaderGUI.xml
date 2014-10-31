@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="SQLiteReader"
-    extensions="codelcoDB"
-    file_description="Codelco Database File">
-  </Reader>
-</ParaViewReaders>

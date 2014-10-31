@@ -1,8 +1,0 @@
-<ParaViewFilters>
-	<Category name="Objectivity">
-		<!-- Keep this in alphabetical order -->
-		<Filter name="Annotate Volume"/>
-		<Filter name="Compute Volumes"/>
-		<Filter name="Volumique Tetrahedralization"/>
-	</Category>
-</ParaViewFilters>

@@ -1,8 +1,0 @@
-PROJECT(StringArrayToIndex)
-FIND_PACKAGE(ParaView REQUIRED)
-INCLUDE(${PARAVIEW_USE_FILE})
- 
-ADD_PARAVIEW_PLUGIN(StringArrayToIndexSMPlugin "1.0"
-	SERVER_MANAGER_XML StringArrayToIndex.xml
-	SERVER_MANAGER_SOURCES vtkStringArrayToIndex.cpp
-	GUI_RESOURCE_FILES StringArrayToIndexCategory.xml)
