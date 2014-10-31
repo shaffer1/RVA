@@ -19,3 +19,7 @@ install(TARGETS ZMapPlusReader
     RUNTIME DESTINATION . COMPONENT ZMapPlusReader
     LIBRARY DESTINATION lib
 )
+
+if(WIN32)
+    target_link_libraries(ZMapPlusReader Version.lib)
+endif(WIN32)
