@@ -8,7 +8,7 @@
 #include "vtkSmartPointer.h"
 #include <string>
 
-class VTK_IO_EXPORT ZMapPlusReader : public vtkImageAlgorithm
+class VTK_EXPORT ZMapPlusReader : public vtkImageAlgorithm
 {
 public:
     static ZMapPlusReader *New();
