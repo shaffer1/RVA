@@ -5,7 +5,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 # MVM: cmake_policy is core CMake 3.0
 if(COMMAND cmake_policy)
       cmake_policy(SET CMP0003 NEW)
-    endif(COMMAND cmake_policy)
+endif(COMMAND cmake_policy)
 
 # MVM: why is this looking for binary directory instead of source?
 IF(NOT ParaView_BINARY_DIR)
