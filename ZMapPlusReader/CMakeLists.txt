@@ -11,6 +11,7 @@ add_paraview_plugin(
     SERVER_MANAGER_XML ZMapPlusReader.xml
     SERVER_MANAGER_SOURCES ZMapPlusReader.cpp
     GUI_RESOURCE_FILES ZMapPlusReaderGUI.xml
+    SOURCES ZMapPlusReader.h ZMapPlusReader.cpp
 )
 
 target_link_libraries(ZMapPlusReader)
