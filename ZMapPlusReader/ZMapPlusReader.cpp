@@ -167,6 +167,8 @@ int ZMapPlusReader::ReadHeader() {
         }
         return 1;
     }
+    // possible empty header or unexpected newline.
+    return 0;
 }
 
 int ZMapPlusReader::RequestData(vtkInformation* vtkNotUsed(request),
