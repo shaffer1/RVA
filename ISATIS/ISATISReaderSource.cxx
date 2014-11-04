@@ -134,7 +134,7 @@ void ISATISReaderSource::PrintSelf(ostream& os, vtkIndent indent)
 void ISATISReaderSource::SetGTXLengthUnit(vtkStdString unit)
 {
   // unit var must either be empty string or a valid unit. e.g. "cm (blah)"
-  int pos =0;
+  size_t pos = 0;
   if(!unit.empty()) {
     pos = unit.find( " (" , 0 );
     assert(pos>0);
