@@ -239,8 +239,6 @@ void CutBetweenWellsFilter::constructLineSegs(vtkInformationVector **inputVector
 
   int i = 0;
   int t = 0;
-  double longer[3];
-  double shorter[3];
   lineSegs = new double* [ptCountLonger];
   lineSegsCount = ptCountLonger;
   
