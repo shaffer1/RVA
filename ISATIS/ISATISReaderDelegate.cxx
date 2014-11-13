@@ -54,6 +54,7 @@ void ISATISReaderDelegate::SetDataObject(vtkInformationVector* outputVector, int
 {
   vtkInformation* info = outputVector->GetInformationObject(port);
   int extentType = output->GetExtentType();
+  output->SetPipelineInformation(info);
   output->Delete();
   vtkInformation* algInfo = source->GetOutputPortInformation(port);
   algInfo->Set(vtkDataObject::DATA_EXTENT_TYPE(), extentType);
@@ -140,6 +141,7 @@ int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output,GTXClient* client,vt
   for (int i = 0; i<columnIndexCount; i++) {
     int index = columnIndices.GetValue(i);
     char temp[32];
+    // MVM: this generates a warning. C++11 has snprintf. What about a stringstream?
     sprintf(temp,"[%d]",index);
 
     vtkStdString colName(baseName);
