@@ -84,30 +84,31 @@ protected:
 
   // Description:
   // Read all variables of a data set. Function relies on readOneVariable.
-  void readAllVariables(vtkDataSet* output,vtkAlgorithm*source, GTXClient*client, vtkIdType dim[3]);
+  void readAllVariables(vtkDataSet* output, vtkAlgorithm*source, GTXClient*client, vtkIdType dim[3]);
 
   // Description:
   // Read a single specified variable of a data set and store its values in
   // an appropriate array type.
-  void readOneVariable(vtkDataSet* output,GTXClient*client, vtkIdType dim[3], const char* name);
+  void readOneVariable(vtkDataSet* output, GTXClient*client, vtkIdType dim[3], const char* name);
 
   // Description:
   // Creates points to create a VTK object based on appropriate
   // ISATIS input data from GTXserver. Returns 1 for success otherwise 0 for
   // failure.
-  int createPoints(vtkPointSet* data,GTXClient* client,const vtkIdType expectedSize, const char* names[3]);
+  int createPoints(vtkPointSet* data, GTXClient* client, const vtkIdType expectedSize, const char* names[3]);
 
   // Description:
   // Creates lines to create a VTK object based on appropriate
   // ISATIS input data from GTXserver. Returns 1 for success otherwise 0 for
   // failure.
-  int createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLines, vtkIdType numSamples, const char* relativename, const char* linenumname);
+  int createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLines, vtkIdType numSamples, 
+          const char* relativename, const char* linenumname);
 
   // Description:
   // Finds the unique identifiers for X, Y, Z coordinates.
   // Method is used for retrieving appropriate X, Y, Z coordinates
   // from GTXserver. Returns 1 for success otherwise 0 for failure.
-  int findXYZVarNames(GTXClient*, vtkStdString* x,vtkStdString* y,vtkStdString* z);
+  int findXYZVarNames(GTXClient*, vtkStdString* x, vtkStdString* y, vtkStdString* z);
 
   ISATISReaderDelegate();
   virtual ~ISATISReaderDelegate();
@@ -120,33 +121,29 @@ private:
   // Copy a macro variable array from ISATIS format to
   // a valid VTK array for use in ParaView. Returns
   // 1 on success otherwise 0 for failure.
-  int copyMacroArray(vtkDataSet* output,GTXClient* client,vtkIdType nx,vtkIdType ny,vtkIdType nz,vtkIdType expectedSize,const char* vtkArrayName);
+  int copyMacroArray(vtkDataSet* output, GTXClient* client, vtkIdType nx, vtkIdType ny, vtkIdType nz,
+          vtkIdType expectedSize, const char* vtkArrayName);
 
   // Description:
   // Copy a variable array from ISATIS format to
   // a valid VTK array for use in ParaView. Returns
   // 1 on success otherwise 0 for failure.
-  int copyArray(int varType,vtkDataSet* output,GTXClient* client,vtkIdType nx,vtkIdType ny,vtkIdType nz,vtkIdType expectedSize,const char* vtkArrayName);
+  int copyArray(int varType,vtkDataSet* output, GTXClient* client, vtkIdType nx, vtkIdType ny, vtkIdType nz,
+          vtkIdType expectedSize, const char* vtkArrayName);
 
   // Description:
   // Creates a character array for use in ParaView.
   // Returns a pointer to the newly created array.
   // Returns a null pointer (0) on failure.
-  vtkAbstractArray* createCharArray(GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize,const char* name);
+  vtkAbstractArray* createCharArray(GTXClient*client, vtkIdType nx, vtkIdType ny, vtkIdType nz, 
+          vtkIdType expectedSize, const char* name);
 
   // Description:
   // Creates a numeric array for use in ParaView.
   // Returns a pointer to the newly created array.
   // Returns a null pointer (0) on failure.
-  vtkAbstractArray* createNumericArray(GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize,const char* name);
-
-  
+  vtkAbstractArray* createNumericArray(GTXClient*client, vtkIdType nx, vtkIdType ny, vtkIdType nz, 
+          vtkIdType expectedSize, const char* name);
 
 }; // ISATISReaderDelegate
-
-
-
-
-
-
 #endif
