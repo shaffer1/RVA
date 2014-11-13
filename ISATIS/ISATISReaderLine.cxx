@@ -86,7 +86,7 @@ int  ISATISReaderLine::RequestData(
 
   assert(xcoordname && ycoordname && zcoordname && relativename && linenumname);
 
-  cchar xyznames[3] = {xcoordname,ycoordname,zcoordname};
+  const char* xyznames[3] = {xcoordname,ycoordname,zcoordname};
 
   if(numSamples<=0 || numLines<=0) {
     vtkErrorMacro(<<"Line had zero (or negative) samples or no lines defined - ignoring");

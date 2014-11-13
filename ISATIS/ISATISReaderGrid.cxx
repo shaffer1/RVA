@@ -108,7 +108,7 @@ int ISATISReaderGrid::RequestData(
   if((found&3) != 3) { // Make sure we have at least X and Y since x means found |= 1 and y means found |= 2
     return 0;
   }
-  cchar xyznames[3] = {x,y,z};
+  const char* xyznames[3] = {x,y,z};
 
   return createPoints(sgrid,client,expectedSize,xyznames); // 1 = success
 }
