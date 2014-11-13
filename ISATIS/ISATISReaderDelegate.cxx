@@ -60,7 +60,9 @@ void ISATISReaderDelegate::SetDataObject(vtkInformationVector* outputVector, int
   algInfo->Set(vtkDataObject::DATA_EXTENT_TYPE(), extentType);
   // From vtkDataObject.h / VTK docs...
   //"The ExtentType will be left as VTK_PIECES_EXTENT for data objects such as vtkPolyData and vtkUnstructuredGrid.
-  // The ExtentType will be changed to VTK_3D_EXTENT for data objects with 3D structure such as vtkImageData (and its subclass vtkStructuredPoints), vtkRectilinearGrid, and vtkStructuredGrid. The default is the have an extent in pieces, with only one piece (no streaming possible).
+  // The ExtentType will be changed to VTK_3D_EXTENT for data objects with 3D structure such as vtkImageData 
+  // (and its subclass vtkStructuredPoints), vtkRectilinearGrid, and vtkStructuredGrid. The default is the have an 
+  // extent in pieces, with only one piece (no streaming possible).
   // Reimplemented in vtkImageData, vtkRectilinearGrid, vtkStructuredGrid, vtkTemporalDataSet, and vtkImageStencilData."
 
 
@@ -106,7 +108,8 @@ void ISATISReaderDelegate::readOneVariable(vtkDataSet* output,GTXClient*client, 
 
 }
 
-int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output,GTXClient* client,vtkIdType nx,vtkIdType ny,vtkIdType nz,vtkIdType expectedSize,const char* vtkArrayName)
+int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output, GTXClient* client, vtkIdType nx, vtkIdType ny, vtkIdType nz,
+        vtkIdType expectedSize, const char* vtkArrayName)
 {
   // name[xxxxx]. Want to drop the [xxxxxx]
   vtkStdString baseName(vtkArrayName);
@@ -155,7 +158,8 @@ int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output,GTXClient* client,vt
 }
 
 
-int ISATISReaderDelegate::copyArray(int varType,vtkDataSet* output,GTXClient* client,vtkIdType nx,vtkIdType ny,vtkIdType nz,vtkIdType expectedSize,const char* vtkArrayName)
+int ISATISReaderDelegate::copyArray(int varType, vtkDataSet* output, GTXClient* client,
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* vtkArrayName)
 {
   assert(vtkArrayName);
   vtkAbstractArray *result = 0;
@@ -192,7 +196,8 @@ int ISATISReaderDelegate::copyArray(int varType,vtkDataSet* output,GTXClient* cl
 }
 
 
-vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize, const char*name)
+vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient* client, 
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* name)
 {
   const GTXCharData stringArray = client->ReadCharVariable(false); // false = no compress
   const gtx_long  count = stringArray.GetCount();
@@ -203,7 +208,8 @@ vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient*client, vtkId
 
   if(count != expectedSize) {
     vtkArray->Delete(); // result->Delete won't be happening for this array
-    vtkErrorMacro(<<"Ignoring "<< (name?name:"<unknown>") <<": Expected "<<expectedSize<<" values but only found "<<count<<" values.");
+    vtkErrorMacro(<<"Ignoring "<< (name?name:"<unknown>") 
+            <<": Expected "<<expectedSize<<" values but only found "<<count<<" values.");
     return 0; // failed
   }
   gtx_long gtxIndex = -1;
@@ -223,7 +229,8 @@ vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient*client, vtkId
 
 template<class Tprimitive,class Tvtk>
 static
-vtkAbstractArray *createTypedArray(Tvtk* vtkArray, GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize,const char*name)
+vtkAbstractArray *createTypedArray(Tvtk* vtkArray, GTXClient*client, 
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* name)
 {
   const GTXDoubleData doubleData = client->ReadDoubleVariable(false); // false = no compress
   const gtx_long  count = doubleData.GetCount();
@@ -257,7 +264,8 @@ vtkAbstractArray *createTypedArray(Tvtk* vtkArray, GTXClient*client, vtkIdType n
   return vtkArray;
 }
 
-vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize, const char*name)
+vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client, 
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* name)
 {
 
   GTXVariableInfo vinfo = client->GetVariableInfo();
@@ -274,7 +282,7 @@ vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client, vtk
 
 
 
-int ISATISReaderDelegate::createPoints(vtkPointSet* data,GTXClient* client,const vtkIdType expectedSize, const char** names)
+int ISATISReaderDelegate::createPoints(vtkPointSet* data, GTXClient* client, const vtkIdType expectedSize, const char** names)
 {
   assert(names && names[0] && names[1] && names[2]);
   assert(data && data->GetPointData());
@@ -351,12 +359,14 @@ int  ISATISReaderDelegate:: findXYZVarNames(GTXClient* client, vtkStdString* x,v
   return ok; // did we find X,Y and Z ?
 }
 
-int ISATISReaderDelegate::createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLines, vtkIdType numSamples, const char*relativename, const char* linenumname)
+int ISATISReaderDelegate::createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLines, 
+        vtkIdType numSamples, const char* relativename, const char* linenumname)
 {
   assert(ugrid && relativename && linenumname);
   vtkDoubleArray* relativeArray = vtkDoubleArray::SafeDownCast(ugrid->GetPointData()->GetAbstractArray(relativename));
   vtkDoubleArray* lineArray = vtkDoubleArray::SafeDownCast(ugrid->GetPointData()->GetAbstractArray(linenumname));
-  if( ! relativeArray || ! lineArray || relativeArray->GetNumberOfTuples() != numSamples || lineArray->GetNumberOfTuples() != numSamples ) {
+  if( ! relativeArray || ! lineArray || relativeArray->GetNumberOfTuples() != numSamples 
+          || lineArray->GetNumberOfTuples() != numSamples ) {
     vtkErrorMacro(<<"Could not find arrays of correct size "<< relativename << "," <<linenumname);
     return 0;
 
@@ -369,7 +379,8 @@ int ISATISReaderDelegate::createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLi
   vtkPolyLine * line = 0;
   vtkIdList* pointIds = 0;
 
-  // Phase 1. Determine number of points per line and also check our assumptions about how the points are organized (based on our sample data)
+  // Phase 1. Determine number of points per line and also check our assumptions 
+  // about how the points are organized (based on our sample data)
   vtkSmartPointer<vtkIdList> histogram = vtkSmartPointer<vtkIdList>::New();
   histogram->SetNumberOfIds(numLines);
 
