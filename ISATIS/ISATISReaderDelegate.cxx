@@ -34,6 +34,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkMath.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
+#include "vtkCellData.h"
 #include "vtkPolyLine.h"
 #include "vtkSmartPointer.h"
 #include "vtkStringArray.h"
@@ -98,8 +99,10 @@ void ISATISReaderDelegate::readOneVariable(vtkDataSet* output,GTXClient*client, 
   GTXVariableInfo varInfo = client->GetVariableInfo();
   GTXVariableInfo::VariableType varType = varInfo.GetVariableType();
 
-  const vtkIdType nx = dim[0], ny = dim[1], nz = dim[2];
-  const gtx_long  expectedSize = dim[0]*dim[1]*dim[2];
+  // At this point, dim[] contains VTK style point-based dims
+  // subtract 1 to get Isatis cell-based dims
+  const vtkIdType nx = dim[0]-1, ny = dim[1]-1, nz = dim[2]-1;
+  const gtx_long  expectedSize = nx * ny * nz;
 
   if(varType == GTXVariableInfo::VAR_TYPE_MACRO)
     copyMacroArray(output,client, nx, ny, nz, expectedSize,name); //// multiple scalars to copy
@@ -186,8 +189,12 @@ int ISATISReaderDelegate::copyArray(int varType, vtkDataSet* output, GTXClient* 
     result->SetName(vtkArrayName);
 
     if(expectedSize == result->GetNumberOfTuples())
-      output->GetPointData()->AddArray(result);
+      // MVM: think I just have to change this to ->GetCellData()
+      // output->GetPointData()->AddArray(result);
+      output->GetCellData()->AddArray(result);
     else
+      // MVM: but I'm not sure about this. Do I need to associate
+      // field data with cells explictly?
       output->GetFieldData()->AddArray(result);
 
     result->Delete();
@@ -282,35 +289,52 @@ vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client,
 
 
 
-int ISATISReaderDelegate::createPoints(vtkPointSet* data, GTXClient* client, const vtkIdType expectedSize, const char** names)
+int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* client, 
+        const vtkIdType expectedNumCells, const vtkIdType expectedNumPts, const char** names, const double deltas[3])
 {
+  // MVM: Not sure what's going on here, when it's called, the first parameter is a vtkStructuredGrid,
+  // why is that being cast to a vtkPointSet? Because he's being clever and reusing this for 
+  // the line instance, which is an unstructured grid. But I need the dimensions to create the missing 
+  // coords!
+  // All of the GetPointData will have to be changed to GetCellData?
   assert(names && names[0] && names[1] && names[2]);
-  assert(data && data->GetPointData());
+  //assert(data && data->GetPointData()); // Just checking for existence
+  assert(data && data->GetCellData());
   const char *zzz = names[2];
-  vtkPointData* pointData=data->GetPointData();
-  vtkDoubleArray* xarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[0]));
-  vtkDoubleArray* yarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[1]));
-  vtkDoubleArray* zarray= strlen(names[2])>0 ? vtkDoubleArray::SafeDownCast( pointData->GetArray(names[2])) : NULL;
+
+  // MVM: So, the x,y,z coordinates are given for the cell centers in ISATIS.
+  // Is there a way to create a vtkStructuredGrid from that? Do I have dx, dy, dz? Are they constant?
+  /*
+  vtkPointData* pointData = data->GetPointData();
+  vtkDoubleArray* xarray = vtkDoubleArray::SafeDownCast(pointData->GetArray(names[0]));
+  vtkDoubleArray* yarray = vtkDoubleArray::SafeDownCast(pointData->GetArray(names[1]));
+  vtkDoubleArray* zarray = strlen(names[2]) > 0 ? vtkDoubleArray::SafeDownCast(pointData->GetArray(names[2])) : NULL;
+  */
+
+  // Isatis coordinates are for cell, "node", centers.
+  vtkCellData* cellData = data->GetCellData();
+  vtkDoubleArray* xarray = vtkDoubleArray::SafeDownCast(cellData->GetArray(names[0]));
+  vtkDoubleArray* yarray = vtkDoubleArray::SafeDownCast(cellData->GetArray(names[1]));
+  vtkDoubleArray* zarray = strlen(names[2]) > 0 ? vtkDoubleArray::SafeDownCast(cellData->GetArray(names[2])) : NULL;
+
 
   vtkPoints *points = vtkPoints::New();
   points->SetNumberOfPoints(0);
 
-  data->SetPoints(points);
-  points->Delete();
 
   if(!xarray || !yarray ) {
     vtkErrorMacro("No X,Y coordinate arrays!");
     return 0;
   }
-  if(xarray->GetNumberOfTuples() != expectedSize && yarray->GetNumberOfTuples() != expectedSize &&
-      (zarray && zarray->GetNumberOfTuples() != expectedSize)) {
+  if(xarray->GetNumberOfTuples() != expectedNumCells && yarray->GetNumberOfTuples() != expectedNumCells &&
+      (zarray && zarray->GetNumberOfTuples() != expectedNumCells)) {
     vtkErrorMacro("Coordinate arrays are != expectedSize");
     return 0;
   }
 
-  points->SetNumberOfPoints(expectedSize);
+  points->SetNumberOfPoints(expectedNumPts);
 
-  vtkDebugMacro(<<"Creating "<<expectedSize<<" points");
+  vtkDebugMacro(<<"Creating "<<expectedNumPts<<" points");
 
   const double* x = xarray->GetPointer(0);
   const double* y = yarray->GetPointer(0);
@@ -320,14 +344,88 @@ int ISATISReaderDelegate::createPoints(vtkPointSet* data, GTXClient* client, con
 
   double ZDEFAULT = 0; // no Z values. This could be a parameter
 
-  for(vtkIdType i=0; i<expectedSize; i++){
-    double zValue = z!=NULL ? z[i] : ZDEFAULT;
-    points->SetPoint(i,x[i],y[i],zValue);
+  // however, here we are dealing with point dimensions so expectedSize is 
+  // going to be smaller. We do have the dims of the vtkPointSet, though.
+  // but... the x[], y[], z[] arrays are only expectedNumCells in size.
+  // have to manufacture the furthest boundary planes. Much easier if
+  // we loop over the nx, ny, nz of the 
+ /*
+  for (vtkIdType i = 0; i < expectedNumPts; i++) {
+    double zValue = z!=NULL ? z[i]-deltas[2]/2.0 : ZDEFAULT-deltas[2]/2.0;
+    points->SetPoint(i,x[i]-deltas[0]/2.0,y[i]-deltas[1]/2.0,zValue);
     
     maxZ = (zValue > maxZ || i ==0) ? zValue : maxZ;
     minZ = (zValue < minZ || i ==0) ? zValue : minZ;
   }
+*/
+  // These are the pt-based dims.
+  int ncoords[3]; 
+  data->GetDimensions(ncoords);
+  int ptindex = 0;
+  int cellindex = 0;
+  double xcoord, ycoord, zcoord;
+  for (vtkIdType k = 0; k < ncoords[2]; k++) {
+     for (vtkIdType j = 0; j < ncoords[1]; j++) {
+        for (vtkIdType i = 0; i < ncoords[0]; i++) {
+           // thinking out loud, ncoords[0] == 37
+           // loop 0 to 36
+           // at 0 to 35, I shift down dx
+           // at 36 I shift up dx 
+            
+            if (i < ncoords[0] - 1) {
+               xcoord = x[cellindex] - deltas[0] * 0.5;
+            }
+            else {
+                xcoord = x[cellindex] + deltas[0] * 0.5;
+            }
+           
+            if (j < ncoords[1] - 1) {
+                ycoord = y[cellindex] - deltas[1] * 0.5;
+            }
+            else {
+                ycoord = y[cellindex] + deltas[1] * 0.5;
 
+            }
+
+            if (k < ncoords[2] - 1) {
+                if (z) {
+                    zcoord = z[cellindex] - deltas[2] * 0.5;
+                }
+                else {
+                    zcoord = ZDEFAULT - deltas[2] * 0.5;
+                }
+            }
+            else {
+                if (z) {
+                    zcoord = z[cellindex] + deltas[2] * 0.5;
+                }
+                else {
+                    zcoord = ZDEFAULT + deltas[2] * 0.5;
+                }
+            }
+            if (ptindex > 160000 ) {
+            std::cout << "MVM debugging: " << ptindex << " " << cellindex << " " << xcoord 
+                << " " << ycoord << " " << zcoord << std::endl;
+            }
+            points->SetPoint(ptindex, xcoord, ycoord, zcoord);
+            ptindex++; 
+            if (i < ncoords[0] - 2) {
+                cellindex++;
+            }
+        }
+        cellindex++;
+        if (j == ncoords[1] - 2) { 
+            cellindex -= (ncoords[0] - 1);
+        }
+     }
+     if (k == ncoords[2] - 2) {
+         cellindex -= (ncoords[0] - 1) * (ncoords[1] - 1);
+     }
+  } 
+
+
+  data->SetPoints(points);
+  points->Delete();
   return 1;
 }
 
