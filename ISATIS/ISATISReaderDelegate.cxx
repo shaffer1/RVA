@@ -34,6 +34,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkMath.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
+#include "vtkCellData.h"
 #include "vtkPolyLine.h"
 #include "vtkSmartPointer.h"
 #include "vtkStringArray.h"
@@ -60,7 +61,9 @@ void ISATISReaderDelegate::SetDataObject(vtkInformationVector* outputVector, int
   algInfo->Set(vtkDataObject::DATA_EXTENT_TYPE(), extentType);
   // From vtkDataObject.h / VTK docs...
   //"The ExtentType will be left as VTK_PIECES_EXTENT for data objects such as vtkPolyData and vtkUnstructuredGrid.
-  // The ExtentType will be changed to VTK_3D_EXTENT for data objects with 3D structure such as vtkImageData (and its subclass vtkStructuredPoints), vtkRectilinearGrid, and vtkStructuredGrid. The default is the have an extent in pieces, with only one piece (no streaming possible).
+  // The ExtentType will be changed to VTK_3D_EXTENT for data objects with 3D structure such as vtkImageData 
+  // (and its subclass vtkStructuredPoints), vtkRectilinearGrid, and vtkStructuredGrid. The default is the have an 
+  // extent in pieces, with only one piece (no streaming possible).
   // Reimplemented in vtkImageData, vtkRectilinearGrid, vtkStructuredGrid, vtkTemporalDataSet, and vtkImageStencilData."
 
 
@@ -96,8 +99,10 @@ void ISATISReaderDelegate::readOneVariable(vtkDataSet* output,GTXClient*client, 
   GTXVariableInfo varInfo = client->GetVariableInfo();
   GTXVariableInfo::VariableType varType = varInfo.GetVariableType();
 
-  const vtkIdType nx = dim[0], ny = dim[1], nz = dim[2];
-  const gtx_long  expectedSize = dim[0]*dim[1]*dim[2];
+  // At this point, dim[] contains VTK style point-based dims
+  // subtract 1 to get Isatis cell-based dims
+  const vtkIdType nx = dim[0]-1, ny = dim[1]-1, nz = dim[2]-1;
+  const gtx_long  expectedSize = nx * ny * nz;
 
   if(varType == GTXVariableInfo::VAR_TYPE_MACRO)
     copyMacroArray(output,client, nx, ny, nz, expectedSize,name); //// multiple scalars to copy
@@ -106,7 +111,8 @@ void ISATISReaderDelegate::readOneVariable(vtkDataSet* output,GTXClient*client, 
 
 }
 
-int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output,GTXClient* client,vtkIdType nx,vtkIdType ny,vtkIdType nz,vtkIdType expectedSize,const char* vtkArrayName)
+int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output, GTXClient* client, vtkIdType nx, vtkIdType ny, vtkIdType nz,
+        vtkIdType expectedSize, const char* vtkArrayName)
 {
   // name[xxxxx]. Want to drop the [xxxxxx]
   vtkStdString baseName(vtkArrayName);
@@ -155,7 +161,8 @@ int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output,GTXClient* client,vt
 }
 
 
-int ISATISReaderDelegate::copyArray(int varType,vtkDataSet* output,GTXClient* client,vtkIdType nx,vtkIdType ny,vtkIdType nz,vtkIdType expectedSize,const char* vtkArrayName)
+int ISATISReaderDelegate::copyArray(int varType, vtkDataSet* output, GTXClient* client,
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* vtkArrayName)
 {
   assert(vtkArrayName);
   vtkAbstractArray *result = 0;
@@ -182,7 +189,7 @@ int ISATISReaderDelegate::copyArray(int varType,vtkDataSet* output,GTXClient* cl
     result->SetName(vtkArrayName);
 
     if(expectedSize == result->GetNumberOfTuples())
-      output->GetPointData()->AddArray(result);
+      output->GetCellData()->AddArray(result);
     else
       output->GetFieldData()->AddArray(result);
 
@@ -192,7 +199,8 @@ int ISATISReaderDelegate::copyArray(int varType,vtkDataSet* output,GTXClient* cl
 }
 
 
-vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize, const char*name)
+vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient* client, 
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* name)
 {
   const GTXCharData stringArray = client->ReadCharVariable(false); // false = no compress
   const gtx_long  count = stringArray.GetCount();
@@ -203,7 +211,8 @@ vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient*client, vtkId
 
   if(count != expectedSize) {
     vtkArray->Delete(); // result->Delete won't be happening for this array
-    vtkErrorMacro(<<"Ignoring "<< (name?name:"<unknown>") <<": Expected "<<expectedSize<<" values but only found "<<count<<" values.");
+    vtkErrorMacro(<<"Ignoring "<< (name?name:"<unknown>") 
+            <<": Expected "<<expectedSize<<" values but only found "<<count<<" values.");
     return 0; // failed
   }
   gtx_long gtxIndex = -1;
@@ -223,7 +232,8 @@ vtkAbstractArray * ISATISReaderDelegate::createCharArray(GTXClient*client, vtkId
 
 template<class Tprimitive,class Tvtk>
 static
-vtkAbstractArray *createTypedArray(Tvtk* vtkArray, GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize,const char*name)
+vtkAbstractArray *createTypedArray(Tvtk* vtkArray, GTXClient*client, 
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* name)
 {
   const GTXDoubleData doubleData = client->ReadDoubleVariable(false); // false = no compress
   const gtx_long  count = doubleData.GetCount();
@@ -257,7 +267,8 @@ vtkAbstractArray *createTypedArray(Tvtk* vtkArray, GTXClient*client, vtkIdType n
   return vtkArray;
 }
 
-vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client, vtkIdType nx,vtkIdType ny,vtkIdType nz, vtkIdType expectedSize, const char*name)
+vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client, 
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* name)
 {
 
   GTXVariableInfo vinfo = client->GetVariableInfo();
@@ -274,35 +285,34 @@ vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client, vtk
 
 
 
-int ISATISReaderDelegate::createPoints(vtkPointSet* data,GTXClient* client,const vtkIdType expectedSize, const char** names)
+int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* client, 
+        const vtkIdType expectedNumCells, const vtkIdType expectedNumPts, const char** names, const double deltas[3])
 {
   assert(names && names[0] && names[1] && names[2]);
-  assert(data && data->GetPointData());
+  assert(data && data->GetCellData());
   const char *zzz = names[2];
-  vtkPointData* pointData=data->GetPointData();
-  vtkDoubleArray* xarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[0]));
-  vtkDoubleArray* yarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[1]));
-  vtkDoubleArray* zarray= strlen(names[2])>0 ? vtkDoubleArray::SafeDownCast( pointData->GetArray(names[2])) : NULL;
+
+  vtkCellData* cellData = data->GetCellData();
+  vtkDoubleArray* xarray = vtkDoubleArray::SafeDownCast(cellData->GetArray(names[0]));
+  vtkDoubleArray* yarray = vtkDoubleArray::SafeDownCast(cellData->GetArray(names[1]));
+  vtkDoubleArray* zarray = strlen(names[2]) > 0 ? vtkDoubleArray::SafeDownCast(cellData->GetArray(names[2])) : NULL;
 
   vtkPoints *points = vtkPoints::New();
   points->SetNumberOfPoints(0);
-
-  data->SetPoints(points);
-  points->Delete();
 
   if(!xarray || !yarray ) {
     vtkErrorMacro("No X,Y coordinate arrays!");
     return 0;
   }
-  if(xarray->GetNumberOfTuples() != expectedSize && yarray->GetNumberOfTuples() != expectedSize &&
-      (zarray && zarray->GetNumberOfTuples() != expectedSize)) {
+  if(xarray->GetNumberOfTuples() != expectedNumCells && yarray->GetNumberOfTuples() != expectedNumCells &&
+      (zarray && zarray->GetNumberOfTuples() != expectedNumCells)) {
     vtkErrorMacro("Coordinate arrays are != expectedSize");
     return 0;
   }
 
-  points->SetNumberOfPoints(expectedSize);
+  points->SetNumberOfPoints(expectedNumPts);
 
-  vtkDebugMacro(<<"Creating "<<expectedSize<<" points");
+  vtkDebugMacro(<<"Creating "<<expectedNumPts<<" points");
 
   const double* x = xarray->GetPointer(0);
   const double* y = yarray->GetPointer(0);
@@ -311,15 +321,79 @@ int ISATISReaderDelegate::createPoints(vtkPointSet* data,GTXClient* client,const
   assert(x && y);
 
   double ZDEFAULT = 0; // no Z values. This could be a parameter
+  
+  // These are the pt-based dims.
+  int ncoords[3]; 
+  data->GetDimensions(ncoords);
+  int ptindex = 0;
+  int cellindex = 0;
+  double xcoord, ycoord, zcoord;
+  for (vtkIdType k = 0; k < ncoords[2]; k++) {
+     for (vtkIdType j = 0; j < ncoords[1]; j++) {
+        for (vtkIdType i = 0; i < ncoords[0]; i++) {
+           
+            // MVM: The cell-based indexing is one short of the pt-based indexing.
+            // At the end of an i-row, the last index is repeated, but with 
+            // a positive half-delta offset instead of negative.
+            if (i < ncoords[0] - 1) {
+               xcoord = x[cellindex] - deltas[0] * 0.5;
+            }
+            else {
+                xcoord = x[cellindex] + deltas[0] * 0.5;
+            }
+           
+            if (j < ncoords[1] - 1) {
+                ycoord = y[cellindex] - deltas[1] * 0.5;
+            }
+            else {
+                ycoord = y[cellindex] + deltas[1] * 0.5;
 
-  for(vtkIdType i=0; i<expectedSize; i++){
-    double zValue = z!=NULL ? z[i] : ZDEFAULT;
-    points->SetPoint(i,x[i],y[i],zValue);
-    
-    maxZ = (zValue > maxZ || i ==0) ? zValue : maxZ;
-    minZ = (zValue < minZ || i ==0) ? zValue : minZ;
-  }
+            }
 
+            if (k < ncoords[2] - 1) {
+                if (z) {
+                    zcoord = z[cellindex] - deltas[2] * 0.5;
+                }
+                else {
+                    zcoord = ZDEFAULT - deltas[2] * 0.5;
+                }
+            }
+            else {
+                if (z) {
+                    zcoord = z[cellindex] + deltas[2] * 0.5;
+                }
+                else {
+                    zcoord = ZDEFAULT + deltas[2] * 0.5;
+                }
+            }
+            points->SetPoint(ptindex, xcoord, ycoord, zcoord);
+            ptindex++; 
+
+            // MVM: These is the end of the cell-based i-row length.
+            if (i < ncoords[0] - 2) {
+                cellindex++;
+            }
+        }
+        // MVM: have to jump up 1 since we're behind from reusing at the
+        // end of the i-row.
+        cellindex++;
+
+        // MVM: End of the cell-based j-row, reuse an i-row's worth
+        // of indices for the j-th most points.
+        if (j == ncoords[1] - 2) { 
+            cellindex -= (ncoords[0] - 1);
+        }
+     }
+
+     // MVM: End of the cell-based k-row, reuse an i-j plane's worth
+     // of indices for the k-th most points.
+     if (k == ncoords[2] - 2) {
+         cellindex -= (ncoords[0] - 1) * (ncoords[1] - 1);
+     }
+  } 
+
+  data->SetPoints(points);
+  points->Delete();
   return 1;
 }
 
@@ -351,12 +425,14 @@ int  ISATISReaderDelegate:: findXYZVarNames(GTXClient* client, vtkStdString* x,v
   return ok; // did we find X,Y and Z ?
 }
 
-int ISATISReaderDelegate::createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLines, vtkIdType numSamples, const char*relativename, const char* linenumname)
+int ISATISReaderDelegate::createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLines, 
+        vtkIdType numSamples, const char* relativename, const char* linenumname)
 {
   assert(ugrid && relativename && linenumname);
   vtkDoubleArray* relativeArray = vtkDoubleArray::SafeDownCast(ugrid->GetPointData()->GetAbstractArray(relativename));
   vtkDoubleArray* lineArray = vtkDoubleArray::SafeDownCast(ugrid->GetPointData()->GetAbstractArray(linenumname));
-  if( ! relativeArray || ! lineArray || relativeArray->GetNumberOfTuples() != numSamples || lineArray->GetNumberOfTuples() != numSamples ) {
+  if( ! relativeArray || ! lineArray || relativeArray->GetNumberOfTuples() != numSamples 
+          || lineArray->GetNumberOfTuples() != numSamples ) {
     vtkErrorMacro(<<"Could not find arrays of correct size "<< relativename << "," <<linenumname);
     return 0;
 
@@ -369,7 +445,8 @@ int ISATISReaderDelegate::createLines(vtkUnstructuredGrid* ugrid,vtkIdType numLi
   vtkPolyLine * line = 0;
   vtkIdList* pointIds = 0;
 
-  // Phase 1. Determine number of points per line and also check our assumptions about how the points are organized (based on our sample data)
+  // Phase 1. Determine number of points per line and also check our assumptions 
+  // about how the points are organized (based on our sample data)
   vtkSmartPointer<vtkIdList> histogram = vtkSmartPointer<vtkIdList>::New();
   histogram->SetNumberOfIds(numLines);
 

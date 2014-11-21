@@ -40,10 +40,13 @@ public:
 
   // Description:
   // Default method always returning 1.
-  virtual int CanRead(ISATISReaderSource* source,GTXClient* gtxclient, GTXFileInfo* fileInfo);
-  virtual int RequestDataObject(vtkInformation* request,vtkInformationVector* outputVector,ISATISReaderSource* source,GTXClient* gtxClient);
-  virtual int RequestInformation(vtkInformation* request,vtkInformationVector* outputVector,ISATISReaderSource* source,GTXClient* gtxClient);
-  virtual int RequestData(vtkInformation* request,vtkInformationVector* outputVector,ISATISReaderSource* source,GTXClient* gtxClient);
+  virtual int CanRead(ISATISReaderSource* source, GTXClient* gtxclient, GTXFileInfo* fileInfo);
+  virtual int RequestDataObject(vtkInformation* request, vtkInformationVector* outputVector,
+          ISATISReaderSource* source, GTXClient* gtxClient);
+  virtual int RequestInformation(vtkInformation* request, vtkInformationVector* outputVector,
+          ISATISReaderSource* source, GTXClient* gtxClient);
+  virtual int RequestData(vtkInformation* request, vtkInformationVector* outputVector,
+          ISATISReaderSource* source, GTXClient* gtxClient);
   virtual int FillOutputPortInformation(int port, vtkInformation *info);
 
 protected:

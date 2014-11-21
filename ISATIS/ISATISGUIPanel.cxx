@@ -232,7 +232,8 @@ ISATISGUIPanel::ISATISGUIPanel(pqProxy* pxy, QWidget *q)
   RefreshButton->setToolTip(QString("Connect or reconnect to the specified GTX server"));
   RefreshButton->setStatusTip(QString("Connect or reconnect to the specified GTX server"));
 
-  // Now we add the Status and Refresh button just above GTX Study. Note we are overwriting a placeholder property that we defined in sources.xml
+  // Now we add the Status and Refresh button just above GTX Study. 
+  // Note we are overwriting a placeholder property that we defined in sources.xml
   int idx = this->layout()->indexOf(PathEdit)-1;
   QGridLayout * gl = dynamic_cast<QGridLayout*>(this->layout());
 

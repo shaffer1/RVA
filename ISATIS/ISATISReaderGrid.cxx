@@ -66,10 +66,12 @@ int ISATISReaderGrid::RequestInformation(
 
   GTXFileInfo fi = client->GetFileInfo();
 
-  int dim[3] = {fi.GetGridNX(),fi.GetGridNY(),fi.GetGridNZ()};
+  // MVM: These are +1 because Isatis is counting cells, but for 
+  // vtkStructuredGrid we need the point-based dimension.
+  int dim[3] = {fi.GetGridNX()+1,fi.GetGridNY()+1,fi.GetGridNZ()+1};
+  
+  // MVM: These are then index-range min, max of the points dimensions.
   int ext[6] = {0,dim[0]-1,0,dim[1]-1,0,dim[2]-1};
-  //double origin[3] = {fi.GetGridX0(),fi.GetGridY0(),fi.GetGridZ0()};
-  //double volume[3] = {fi.GetGridDX(),fi.GetGridDY(),fi.GetGridDZ()};
   long num_points = dim[0]*dim[1]*dim[2];
   if(num_points<=0)
     return 0; // 0 == Failure
@@ -88,13 +90,18 @@ int ISATISReaderGrid::RequestData(
   ISATISReaderSource* source,
   GTXClient* client)
 {
+ 
   vtkStructuredGrid*sgrid = vtkStructuredGrid::GetData(outputVector,0);
   vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
   GTXFileInfo fi = client->GetFileInfo();
 
-  vtkIdType dimVtk[3] = {fi.GetGridNX(),fi.GetGridNY(),fi.GetGridNZ()}; // This needed for 64-bit compilation
-  int dim[3] = {fi.GetGridNX(),fi.GetGridNY(),fi.GetGridNZ()};
+ 
+  vtkIdType dimVtk[3] = {fi.GetGridNX()+1,fi.GetGridNY()+1,fi.GetGridNZ()+1}; // This needed for 64-bit compilation
+  // MVM: double check the claim that using two dimension arrays is needed for
+  // 64-bit compilation.
+  int dim[3] = {fi.GetGridNX()+1,fi.GetGridNY()+1,fi.GetGridNZ()+1};
+  double deltas[3] = {fi.GetGridDX(), fi.GetGridDY(), fi.GetGridDZ()};
 
   sgrid->SetDimensions(dim);
 
@@ -102,15 +109,15 @@ int ISATISReaderGrid::RequestData(
   readAllVariables(sgrid, source,client,dimVtk);
   source->SetProgressText("Creating Points");
 
-  vtkIdType expectedSize= dim[0] *dim[1]*dim[2];
+  vtkIdType expectedNumCells = (dim[0]-1) * (dim[1]-1) * (dim[2]-1);
+  vtkIdType expectedNumPts = dim[0] * dim[1] * dim[2];
+
   vtkStdString x,y,z;
   int found = findXYZVarNames(client, &x,&y,&z);
   if((found&3) != 3) { // Make sure we have at least X and Y since x means found |= 1 and y means found |= 2
     return 0;
   }
-  cchar xyznames[3] = {x,y,z};
+  const char* xyznames[3] = {x,y,z};
 
-  return createPoints(sgrid,client,expectedSize,xyznames); // 1 = success
+  return createPoints(sgrid,client,expectedNumCells, expectedNumPts,xyznames,deltas); // 1 = success
 }
-
-
