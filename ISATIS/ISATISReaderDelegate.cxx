@@ -283,6 +283,43 @@ vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client,
     return createTypedArray<double, vtkDoubleArray>(vtkDoubleArray::New(),client,  nx, ny, nz, expectedSize,name);
 }
 
+int ISATISReaderDelegate::createPoints(vtkPointSet* data, GTXClient* client, const vtkIdType expectedSize, const char** names)
+{
+    assert(names && names[0] && names[1] && names[2]);
+    assert(data && data->GetPointData());
+    const char *zzz = names[2];
+    vtkPointData* pointData=data->GetPointData();
+    vtkDoubleArray* xarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[0]));
+    vtkDoubleArray* yarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[1]));
+    vtkDoubleArray* zarray= strlen(names[2])>0 ? vtkDoubleArray::SafeDownCast( pointData->GetArray(names[2])) : NULL;
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(0);
+    data->SetPoints(points);
+    points->Delete();
+    if(!xarray || !yarray ) {
+        vtkErrorMacro("No X,Y coordinate arrays!");
+        return 0;
+    }
+    if(xarray->GetNumberOfTuples() != expectedSize && yarray->GetNumberOfTuples() != expectedSize &&
+            (zarray && zarray->GetNumberOfTuples() != expectedSize)) {
+        vtkErrorMacro("Coordinate arrays are != expectedSize");
+        return 0;
+    }
+    points->SetNumberOfPoints(expectedSize);
+    vtkDebugMacro(<<"Creating "<<expectedSize<<" points");
+    const double* x = xarray->GetPointer(0);
+    const double* y = yarray->GetPointer(0);
+    const double* z = zarray ? zarray->GetPointer(0) : NULL;
+    assert(x && y);
+    double ZDEFAULT = 0; // no Z values. This could be a parameter
+    for(vtkIdType i=0; i<expectedSize; i++){
+        double zValue = z!=NULL ? z[i] : ZDEFAULT;
+        points->SetPoint(i,x[i],y[i],zValue);
+        maxZ = (zValue > maxZ || i ==0) ? zValue : maxZ;
+        minZ = (zValue < minZ || i ==0) ? zValue : minZ;
+    }
+    return 1;
+}
 
 
 int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* client, 
