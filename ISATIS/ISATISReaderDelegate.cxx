@@ -189,12 +189,8 @@ int ISATISReaderDelegate::copyArray(int varType, vtkDataSet* output, GTXClient* 
     result->SetName(vtkArrayName);
 
     if(expectedSize == result->GetNumberOfTuples())
-      // MVM: think I just have to change this to ->GetCellData()
-      // output->GetPointData()->AddArray(result);
       output->GetCellData()->AddArray(result);
     else
-      // MVM: but I'm not sure about this. Do I need to associate
-      // field data with cells explictly?
       output->GetFieldData()->AddArray(result);
 
     result->Delete();
@@ -292,35 +288,17 @@ vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client,
 int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* client, 
         const vtkIdType expectedNumCells, const vtkIdType expectedNumPts, const char** names, const double deltas[3])
 {
-  // MVM: Not sure what's going on here, when it's called, the first parameter is a vtkStructuredGrid,
-  // why is that being cast to a vtkPointSet? Because he's being clever and reusing this for 
-  // the line instance, which is an unstructured grid. But I need the dimensions to create the missing 
-  // coords!
-  // All of the GetPointData will have to be changed to GetCellData?
   assert(names && names[0] && names[1] && names[2]);
-  //assert(data && data->GetPointData()); // Just checking for existence
   assert(data && data->GetCellData());
   const char *zzz = names[2];
 
-  // MVM: So, the x,y,z coordinates are given for the cell centers in ISATIS.
-  // Is there a way to create a vtkStructuredGrid from that? Do I have dx, dy, dz? Are they constant?
-  /*
-  vtkPointData* pointData = data->GetPointData();
-  vtkDoubleArray* xarray = vtkDoubleArray::SafeDownCast(pointData->GetArray(names[0]));
-  vtkDoubleArray* yarray = vtkDoubleArray::SafeDownCast(pointData->GetArray(names[1]));
-  vtkDoubleArray* zarray = strlen(names[2]) > 0 ? vtkDoubleArray::SafeDownCast(pointData->GetArray(names[2])) : NULL;
-  */
-
-  // Isatis coordinates are for cell, "node", centers.
   vtkCellData* cellData = data->GetCellData();
   vtkDoubleArray* xarray = vtkDoubleArray::SafeDownCast(cellData->GetArray(names[0]));
   vtkDoubleArray* yarray = vtkDoubleArray::SafeDownCast(cellData->GetArray(names[1]));
   vtkDoubleArray* zarray = strlen(names[2]) > 0 ? vtkDoubleArray::SafeDownCast(cellData->GetArray(names[2])) : NULL;
 
-
   vtkPoints *points = vtkPoints::New();
   points->SetNumberOfPoints(0);
-
 
   if(!xarray || !yarray ) {
     vtkErrorMacro("No X,Y coordinate arrays!");
@@ -343,21 +321,7 @@ int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* clien
   assert(x && y);
 
   double ZDEFAULT = 0; // no Z values. This could be a parameter
-
-  // however, here we are dealing with point dimensions so expectedSize is 
-  // going to be smaller. We do have the dims of the vtkPointSet, though.
-  // but... the x[], y[], z[] arrays are only expectedNumCells in size.
-  // have to manufacture the furthest boundary planes. Much easier if
-  // we loop over the nx, ny, nz of the 
- /*
-  for (vtkIdType i = 0; i < expectedNumPts; i++) {
-    double zValue = z!=NULL ? z[i]-deltas[2]/2.0 : ZDEFAULT-deltas[2]/2.0;
-    points->SetPoint(i,x[i]-deltas[0]/2.0,y[i]-deltas[1]/2.0,zValue);
-    
-    maxZ = (zValue > maxZ || i ==0) ? zValue : maxZ;
-    minZ = (zValue < minZ || i ==0) ? zValue : minZ;
-  }
-*/
+  
   // These are the pt-based dims.
   int ncoords[3]; 
   data->GetDimensions(ncoords);
@@ -367,11 +331,10 @@ int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* clien
   for (vtkIdType k = 0; k < ncoords[2]; k++) {
      for (vtkIdType j = 0; j < ncoords[1]; j++) {
         for (vtkIdType i = 0; i < ncoords[0]; i++) {
-           // thinking out loud, ncoords[0] == 37
-           // loop 0 to 36
-           // at 0 to 35, I shift down dx
-           // at 36 I shift up dx 
-            
+           
+            // MVM: The cell-based indexing is one short of the pt-based indexing.
+            // At the end of an i-row, the last index is repeated, but with 
+            // a positive half-delta offset instead of negative.
             if (i < ncoords[0] - 1) {
                xcoord = x[cellindex] - deltas[0] * 0.5;
             }
@@ -403,26 +366,31 @@ int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* clien
                     zcoord = ZDEFAULT + deltas[2] * 0.5;
                 }
             }
-            if (ptindex > 160000 ) {
-            std::cout << "MVM debugging: " << ptindex << " " << cellindex << " " << xcoord 
-                << " " << ycoord << " " << zcoord << std::endl;
-            }
             points->SetPoint(ptindex, xcoord, ycoord, zcoord);
             ptindex++; 
+
+            // MVM: These is the end of the cell-based i-row length.
             if (i < ncoords[0] - 2) {
                 cellindex++;
             }
         }
+        // MVM: have to jump up 1 since we're behind from reusing at the
+        // end of the i-row.
         cellindex++;
+
+        // MVM: End of the cell-based j-row, reuse an i-row's worth
+        // of indices for the j-th most points.
         if (j == ncoords[1] - 2) { 
             cellindex -= (ncoords[0] - 1);
         }
      }
+
+     // MVM: End of the cell-based k-row, reuse an i-j plane's worth
+     // of indices for the k-th most points.
      if (k == ncoords[2] - 2) {
          cellindex -= (ncoords[0] - 1) * (ncoords[1] - 1);
      }
   } 
-
 
   data->SetPoints(points);
   points->Delete();
