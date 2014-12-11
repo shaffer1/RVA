@@ -24,11 +24,8 @@ protected:
     ~EclipseASCIIReader();
 
     char* FileName;
-
-    // MVM: note to self -- based on my eclipse2vtk.py script
-    void ConvertGrid(std::string, vtkUnstructuredGrid*);
-    void CreateVTKCells(vtkUnstructuredGrid*, int, int, int);
-    vtkPoints* CreateVTKPoints(int, int, int);
+    int filepos; // for skipping file sections.
+    int ReadGrid(vtkUnstructuredGrid*);
 
     virtual int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
     virtual int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
