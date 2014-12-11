@@ -17,13 +17,18 @@ OPTION(ISATIS "Build ISATIS Readers" ON)
 OPTION(UTChem "Build UTChem Readers" ON)
 OPTION(ShapefileReader "Build Shapefile Reader" ON)
 option(ZMapPlusReader "Build ZMapPlus GRID Reader" ON)
+option(EclipseASCIIReader "Build Eclipse ASCII Reader" ON)
 OPTION(Paraview "Pack with paraview" OFF)
-
 
 SET(COMPONENTS_STRING "")
 
 ADD_SUBDIRECTORY(Core)
 SET(COMPONENTS_STRING "${COMPONENTS_STRING}Core;")
+
+if (EclipseASCIIReader)
+    add_subdirectory(EclipseASCIIReader)
+    set(COMPONETNS_STRING "${COMPONENTS_STRING}EclipseASCIIReader;")
+endif(EclipseASCIIReader)
 
 if(ZMapPlusReader)
     add_subdirectory(ZMapPlusReader)
@@ -53,7 +58,7 @@ ENDIF(Paraview)
 MESSAGE("Adding the following components: ${COMPONENTS_STRING}")
 
 set(RVA_VERSION_MAJOR 1)
-set(RVA_VERSION_MINOR 5)
+set(RVA_VERSION_MINOR 7)
 set(RVA_VERSION_PATCH 0) 
 
 configure_file(
