@@ -27,7 +27,7 @@ SET(COMPONENTS_STRING "${COMPONENTS_STRING}Core;")
 
 if (EclipseASCIIReader)
     add_subdirectory(EclipseASCIIReader)
-    set(COMPONETNS_STRING "${COMPONENTS_STRING}EclipseASCIIReader;")
+    set(COMPONENTS_STRING "${COMPONENTS_STRING}EclipseASCIIReader;")
 endif(EclipseASCIIReader)
 
 if(ZMapPlusReader)
