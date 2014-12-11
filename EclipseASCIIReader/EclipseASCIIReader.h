@@ -8,6 +8,7 @@
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
 #include <string>
+#include <vector>
 
 class VTK_IO_EXPORT EclipseASCIIReader : public vtkUnstructuredGridAlgorithm
 {
@@ -26,7 +27,8 @@ protected:
     char* FileName;
     int filepos; // for skipping file sections.
     int ReadGrid(vtkUnstructuredGrid*);
-
+    void ReadCOORDSection(ifstream&, std::vector<float>&, std::vector<float>&, int, int);
+    void CreateVTKCells(vtkUnstructuredGrid*, int, int, int);
     virtual int RequestData(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
     virtual int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*);
 
