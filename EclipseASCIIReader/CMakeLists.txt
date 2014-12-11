@@ -7,10 +7,10 @@ if(NOT ParaView_BINARY_DIR)
 endif(NOT ParaView_BINARY_DIR)
 
 add_paraview_plugin(
-    EclipseASCIIReader "Eclipse_ASCII_Reader 0.1"
+    EclipseASCIIReader "beta"
     SERVER_MANAGER_XML EclipseASCIIReader.xml
     SERVER_MANAGER_SOURCES EclipseASCIIReader.cpp
-    GUI_RESOURCE_FILES EclipseASCIIReader.xml
+    GUI_RESOURCE_FILES EclipseASCIIReaderGUI.xml
 )
 
 target_link_libraries(EclipseASCIIReader)
