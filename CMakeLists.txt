@@ -18,7 +18,6 @@ OPTION(ISATIS "Build ISATIS Readers" ON)
 OPTION(UTChem "Build UTChem Readers" ON)
 OPTION(ShapefileReader "Build Shapefile Reader" ON)
 option(ZMapPlusReader "Build ZMapPlus GRID Reader" ON)
-option(EclipseASCIIReader "Build Eclipse ASCII Reader" ON)
 OPTION(Paraview "Pack with paraview" OFF)
 
 SET(COMPONENTS_STRING "")
@@ -26,10 +25,6 @@ SET(COMPONENTS_STRING "")
 ADD_SUBDIRECTORY(Core)
 SET(COMPONENTS_STRING "${COMPONENTS_STRING}Core;")
 
-if (EclipseASCIIReader)
-    add_subdirectory(EclipseASCIIReader)
-    set(COMPONENTS_STRING "${COMPONENTS_STRING}EclipseASCIIReader;")
-endif(EclipseASCIIReader)
 
 if(ZMapPlusReader)
     add_subdirectory(ZMapPlusReader)
