@@ -55,7 +55,7 @@ int SumFilter::RequestUpdateExtent (
 
   // always request the whole extent
   inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_EXTENT(),
-    inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT()),6);
+  inInfo->Get(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT()),6);
 
   return 1;
 }
@@ -72,26 +72,27 @@ int SumFilter::RequestData(vtkInformation *vtkNotUsed(request),
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector)
 {
-  // Get the info objects
-  vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-  vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    // Get the info objects
+    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
 
-  //vtkInformation* inInfo2 = inputVector[1]->GetInformationObject(0);
+    //vtkInformation* inInfo2 = inputVector[1]->GetInformationObject(0);
 
-  // Get the input and ouptut
-  vtkDataSet * input = vtkDataSet::SafeDownCast(
+    // Get the input and ouptut
+    vtkDataSet * input = vtkDataSet::SafeDownCast(
     inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-	vtkDataSet * output = vtkDataSet::SafeDownCast(
+    vtkDataSet * output = vtkDataSet::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
 	
 	assert(output);
-	if(output==NULL)
+	if(output==NULL) {
 		return 0;
+    }
 
 	output->ShallowCopy(input);
-  this->Output = output;
+    this->Output = output;
 
 	vtkFieldData* cellData = input->GetAttributesAsFieldData(vtkDataObject::CELL);
 	vtkFieldData* pointData = input->GetAttributesAsFieldData(vtkDataObject::POINT);
@@ -108,7 +109,7 @@ int SumFilter::RequestData(vtkInformation *vtkNotUsed(request),
   output->SetUpdateExtent(extent);
   output->SetWholeExtent(extent);
   */
-  return 1;
+    return 1;
 }
 
 void SumFilter::calculateSums(vtkFieldData * data, vtkDataSet * output)
@@ -145,25 +146,31 @@ void SumFilter::calculateSums(vtkFieldData * data, vtkDataSet * output)
 
 void SumFilter::SetExtent(vtkDataSet* image, int extent[])
 {
-  vtkImageData* imd = vtkImageData::SafeDownCast(image);
-  vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast(image);
+    vtkImageData* imd = vtkImageData::SafeDownCast(image);
+    vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast(image);
 	vtkStructuredGrid* sgrid = vtkStructuredGrid::SafeDownCast(image);
-  if(imd)
-    imd->SetExtent(extent);
-  else if(rgrid != NULL)
-    rgrid->SetExtent(extent);
-	else if(sgrid != NULL)
+    if(imd) {
+        imd->SetExtent(extent);
+    }
+    else if(rgrid != NULL) {
+        rgrid->SetExtent(extent);
+    }
+    else if(sgrid != NULL) {
 		sgrid->SetExtent(extent);
+    }
 }
 void SumFilter::GetExtent(vtkDataSet* image, int extent[])
 {
-  vtkImageData* imd = vtkImageData::SafeDownCast(image);
-  vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast(image);
-  vtkStructuredGrid* sgrid = vtkStructuredGrid::SafeDownCast(image);
- if(imd != NULL)
-    imd->GetExtent(extent);
-  else if(rgrid != NULL)
-    rgrid->GetExtent(extent);
- else if(sgrid != NULL)
-    sgrid->GetExtent(extent);
+    vtkImageData* imd = vtkImageData::SafeDownCast(image);
+    vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast(image);
+    vtkStructuredGrid* sgrid = vtkStructuredGrid::SafeDownCast(image);
+    if(imd != NULL) {
+        imd->GetExtent(extent);
+    } 
+    else if(rgrid != NULL) {
+        rgrid->GetExtent(extent);
+    }
+    else if(sgrid != NULL) {
+        sgrid->GetExtent(extent);
+    }
 }

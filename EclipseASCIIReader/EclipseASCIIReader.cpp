@@ -100,23 +100,27 @@ int EclipseASCIIReader::ReadGrid(vtkUnstructuredGrid* output)
     while (getline(grdecl,line)) 
     {
         // MVM: would really like these to be /^PINCH/ etc.
-        if (line.find("PINCH")
-                || line.find("MAPUNITS")
-                || line.find("MAPAXES")
-                || line.find("GRIDUNIT")
-                || line.find("COORDSYS"))
+        if (line.find("--") == 0) {
+            // ignore comment lines
+            continue;
+        }
+        else if (line.find("PINCH") != std::string::npos
+                || line.find("MAPUNITS") != std::string::npos
+                || line.find("MAPAXES") != std::string::npos
+                || line.find("GRIDUNIT") != std::string::npos
+                || line.find("COORDSYS") != std::string::npos)
         {
             // skip the following section 
             while (true) 
             {
                 getline(grdecl,line);
-                if (line.find("/")) 
+                if (line.find("/") != std::string::npos) 
                 {
                     break;
                 }
             }   
         } 
-        else if (line.find("SPECGRID")) {
+        else if (line.find("SPECGRID") != std::string::npos) {
             // grab x,y,z dims
             // These are the cell-based dims, not
             // the point-based.
@@ -126,7 +130,7 @@ int EclipseASCIIReader::ReadGrid(vtkUnstructuredGrid* output)
             ss.clear();
             this->CreateVTKCells(output, xdim, ydim, zdim);
         }
-        else if (line.find("COORD")) {
+        else if (line.find("COORD") != std::string::npos) {
             // be sure this doesn't clash with COORDSYS
             // read coord section
             // grab specific values from it
@@ -134,26 +138,26 @@ int EclipseASCIIReader::ReadGrid(vtkUnstructuredGrid* output)
             // this is a weird section. use valarray?
             this->ReadCOORDSection(grdecl, xcoords, ycoords, xdim, ydim);
         }
-        else if (line.find("ZCORN")) {
+        else if (line.find("ZCORN") != std::string::npos) {
             // read zcorn section
             // create the ug cells and points
         }
-        else if (line.find("ACTNUM")) {
+        else if (line.find("ACTNUM") != std::string::npos) {
             // read scalars
         }
-        else if (line.find("EQLNUM")) {
+        else if (line.find("EQLNUM") != std::string::npos) {
         }
-        else if (line.find("SATNUM")) {
+        else if (line.find("SATNUM") != std::string::npos) {
         }
-        else if (line.find("FIPNUM")) {
+        else if (line.find("FIPNUM") != std::string::npos) {
         }
-        else if (line.find("PERMX")) {
+        else if (line.find("PERMX") != std::string::npos) {
         }
-        else if (line.find("PERMY")) {
+        else if (line.find("PERMY") != std::string::npos) {
         }
-        else if (line.find("PERMZ")) {
+        else if (line.find("PERMZ") != std::string::npos) {
         }
-        else if (line.find("PORO")) {
+        else if (line.find("PORO") != std::string::npos) {
         }
         else {
             // unhandled comment, scalar type, or other section
@@ -181,6 +185,8 @@ void EclipseASCIIReader::ReadCOORDSection(ifstream& f,
     // ...
     // xn ym ztop xn ym zbot /
     // 
+    // The difficulty is, there is no effor to make sure there are whole triplets
+    // per line. This is evil.
     // We just need unique x0-xn and y0-ym, which we can get by pushing
     // the first n x's and every nth y.
     
@@ -201,10 +207,10 @@ void EclipseASCIIReader::ReadCOORDSection(ifstream& f,
                 xcoords.push_back(x);
                 i++;
             }
-            if (0 == xdim % j) {
+            if (j % xdim == 0) {
                 ycoords.push_back(y);
-                j++;
             }
+            j++;
         } 
         if (line.find("/")) 
         {
@@ -219,9 +225,10 @@ void EclipseASCIIReader::ReadCOORDSection(ifstream& f,
 
 void EclipseASCIIReader::CreateVTKCells(vtkUnstructuredGrid* ug, int x, int y, int z)
 {
+    ug->Allocate(x * y * z);
     // Index pattern for zeroeth cell.
     int cellZeroPattern[] = {0, 1, 2*x, 2*x+1, 4*x*y, 4*x*y+1, 4*x*y+2*x, 4*x*y+2*x+1};
-
+    
     for (int k = 0; k < z; k++) {
        for (int j = 0; j < y; j++) {
           for (int i = 0; i < x; i++) {

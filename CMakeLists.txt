@@ -1,0 +1,82 @@
+#
+project(RVA)
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
+
+# MVM: cmake_policy is core CMake 3.0
+if(COMMAND cmake_policy)
+      cmake_policy(SET CMP0003 NEW)
+    endif(COMMAND cmake_policy)
+
+# MVM: why is this looking for binary directory instead of source?
+IF(NOT ParaView_BINARY_DIR)
+  FIND_PACKAGE(ParaView REQUIRED)
+  INCLUDE(${PARAVIEW_USE_FILE})
+ENDIF(NOT ParaView_BINARY_DIR)
+
+OPTION(ISATIS "Build ISATIS Readers" ON)
+OPTION(UTChem "Build UTChem Readers" ON)
+OPTION(ShapefileReader "Build Shapefile Reader" ON)
+option(ZMapPlusReader "Build ZMapPlus GRID Reader" ON)
+option(EclipseASCIIReader "Build Eclipse ASCII Reader" ON)
+OPTION(Paraview "Pack with paraview" OFF)
+
+SET(COMPONENTS_STRING "")
+
+ADD_SUBDIRECTORY(Core)
+SET(COMPONENTS_STRING "${COMPONENTS_STRING}Core;")
+
+if (EclipseASCIIReader)
+    add_subdirectory(EclipseASCIIReader)
+    set(COMPONENTS_STRING "${COMPONENTS_STRING}EclipseASCIIReader;")
+endif(EclipseASCIIReader)
+
+if(ZMapPlusReader)
+    add_subdirectory(ZMapPlusReader)
+    set(COMPONENTS_STRING "${COMPONENTS_STRING}ZMapPlusReader;")
+endif(ZMapPlusReader)
+
+IF(ShapefileReader)
+	ADD_SUBDIRECTORY(ShapefileReader)
+	SET(COMPONENTS_STRING "${COMPONENTS_STRING}ShapefileReader;")
+ENDIF(ShapefileReader)
+
+IF(ISATIS)
+	ADD_SUBDIRECTORY(ISATIS)
+	SET(COMPONENTS_STRING "${COMPONENTS_STRING}ISATIS;")
+ENDIF(ISATIS)
+
+IF(UTChem)
+	ADD_SUBDIRECTORY(UTChem)
+	SET(COMPONENTS_STRING "${COMPONENTS_STRING}UTChem;")
+ENDIF(UTChem)
+
+
+IF(Paraview)
+  SET(COMPONENTS_STRING "${COMPONENTS_STRING}ParaView;")
+ENDIF(Paraview)
+
+MESSAGE("Adding the following components: ${COMPONENTS_STRING}")
+
+set(RVA_VERSION_MAJOR 1)
+set(RVA_VERSION_MINOR 7)
+set(RVA_VERSION_PATCH 0) 
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/common/RVA_Build.h.in"
+    "${PROJECT_BINARY_DIR}/common/RVA_Build.h"
+    )
+
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
+SET(CPACK_PACKAGE_NAME "RVA")
+SET(CPACK_PACKAGE_VENDOR "University of Illinois Urbana-Champaign")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "RVA Plugins")
+set(CPACK_PACKAGE_VERSION_MAJOR "${RVA_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${RVA_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${RVA_VERSION_PATCH}")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "")
+SET(CPACK_NSIS_DISPLAY_NAME "RVA ${RVA_VERSION_MAJOR}.${RVA_VERSION_MINOR}.${RVA_VERSION_PATCH}")
+SET(CPACK_NSIS_INSTALL_ROOT "C:\\\\Program Files\\\\ParaView 3.14.1\\\\bin\\\\plugins")
+SET(CPACK_COMPONENTS_ALL ${COMPONENTS_STRING})
+
+INCLUDE(CPack)
