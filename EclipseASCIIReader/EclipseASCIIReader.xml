@@ -15,6 +15,9 @@
                     This property specifies the file name for the Eclipse ASCII grdecl reader.
                 </Documentation>
             </StringVectorProperty>
+            <Hints>
+                <ReaderFactory extensions="grdecl" file_description="Eclipse ASCII Format" />
+            </Hints>
         </SourceProxy>
     </ProxyGroup>
 </ServerManagerConfiguration>
