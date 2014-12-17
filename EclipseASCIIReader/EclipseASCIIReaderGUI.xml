@@ -1,4 +1,0 @@
-<ParaViewReaders>
-    <Reader name="EclipseASCIIReader" extensions="grdecl" file_description="Eclipse ASCII grdecl reader">
-    </Reader>
-</ParaViewReaders>
