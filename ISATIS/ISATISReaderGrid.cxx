@@ -119,5 +119,5 @@ int ISATISReaderGrid::RequestData(
   }
   const char* xyznames[3] = {x,y,z};
 
-  return createPoints(sgrid,client,expectedNumCells, expectedNumPts,xyznames,deltas); // 1 = success
+  return createCells(sgrid,client,expectedNumCells, expectedNumPts,xyznames,deltas); // 1 = success
 }

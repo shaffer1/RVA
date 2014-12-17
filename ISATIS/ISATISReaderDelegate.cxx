@@ -285,7 +285,7 @@ vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client,
 
 
 
-int ISATISReaderDelegate::createPoints(vtkStructuredGrid* data, GTXClient* client, 
+int ISATISReaderDelegate::createCells(vtkStructuredGrid* data, GTXClient* client, 
         const vtkIdType expectedNumCells, const vtkIdType expectedNumPts, const char** names, const double deltas[3])
 {
   assert(names && names[0] && names[1] && names[2]);

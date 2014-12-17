@@ -92,19 +92,15 @@ protected:
   void readOneVariable(vtkDataSet* output, GTXClient*client, vtkIdType dim[3], const char* name);
 
   // Description:
-  // Creates points to create a VTK object based on appropriate
+  // Creates points or cells to create a VTK object based on appropriate
   // ISATIS input data from GTXserver. Returns 1 for success otherwise 0 for
   // failure.
- 
-  // MVM: Appears the original intention was to let the Delegator push point creation to the 
-  // Delegatee, but this proved to be impossible to adhere to when correctly implementing
-  // Isatis nodes as VTK_CELL type.
 
-  // This version is for the ugrid in ISATISReaderLine and is not unimplemented!
+  // For ISATISReaderLine 
   int createPoints(vtkPointSet* data, GTXClient* client, const vtkIdType expectedSize, const char* names[3]);
 
-  // This version is for the sgrid in ISATISReaderGrid
-  int createPoints(vtkStructuredGrid* data, GTXClient* client, 
+  // For ISATISReaderGrid
+  int createCells(vtkStructuredGrid* data, GTXClient* client, 
           const vtkIdType expectedNumCells, const vtkIdType expectedNumPts, 
           const char* names[3], const double deltas[3]);
 
