@@ -76,7 +76,7 @@ void ISATISReaderDelegate::SetDataObject(vtkInformationVector* outputVector, int
 
 }
 
-void ISATISReaderDelegate::readAllVariables(vtkDataSet* output,vtkAlgorithm*source, GTXClient*client, vtkIdType dim[3])
+void ISATISReaderDelegate::readAllVariables(vtkDataSet* output,vtkAlgorithm*source, GTXClient*client, vtkIdType dim[3], bool pointBased)
 {
   GTXStringArray vars = client->GetVariableList();
   const double oneOverCount = vars.GetCount() > 0 ? 1. / vars.GetCount() : 1;
@@ -88,31 +88,40 @@ void ISATISReaderDelegate::readAllVariables(vtkDataSet* output,vtkAlgorithm*sour
     source->SetProgressText(varName);
     source->SetProgress(ivar * oneOverCount);
 
-    readOneVariable(output,client,dim,varName);
+    readOneVariable(output,client,dim,varName,pointBased);
   } // for each variable name
 }
 
-void ISATISReaderDelegate::readOneVariable(vtkDataSet* output,GTXClient*client, vtkIdType dim[3], const char* name)
+void ISATISReaderDelegate::readOneVariable(vtkDataSet* output,GTXClient*client, vtkIdType dim[3], const char* name, bool pointBased)
 {
 
   client->SetVariable(name);
   GTXVariableInfo varInfo = client->GetVariableInfo();
   GTXVariableInfo::VariableType varType = varInfo.GetVariableType();
 
-  // At this point, dim[] contains VTK style point-based dims
-  // subtract 1 to get Isatis cell-based dims
-  const vtkIdType nx = dim[0]-1, ny = dim[1]-1, nz = dim[2]-1;
+  vtkIdType nx, ny, nz;
+  if (pointBased) {
+      nx = dim[0];
+      ny = dim[1];
+      nz = dim[2];
+  }
+  else {
+      nx = dim[0] - 1;
+      ny = dim[1] - 1;
+      nz = dim[2] - 1;
+  }
+      
   const gtx_long  expectedSize = nx * ny * nz;
 
   if(varType == GTXVariableInfo::VAR_TYPE_MACRO)
-    copyMacroArray(output,client, nx, ny, nz, expectedSize,name); //// multiple scalars to copy
+    copyMacroArray(output,client, nx, ny, nz, expectedSize,name,pointBased); //// multiple scalars to copy
   else
-    copyArray(varType, output, client, nx,ny,nz, expectedSize,name);
+    copyArray(varType, output, client, nx,ny,nz, expectedSize,name,pointBased);
 
 }
 
 int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output, GTXClient* client, vtkIdType nx, vtkIdType ny, vtkIdType nz,
-        vtkIdType expectedSize, const char* vtkArrayName)
+        vtkIdType expectedSize, const char* vtkArrayName,bool pointBased)
 {
   // name[xxxxx]. Want to drop the [xxxxxx]
   vtkStdString baseName(vtkArrayName);
@@ -134,7 +143,7 @@ int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output, GTXClient* client, 
     colName += "]";
 
     client->SetAlphaIndice(colNameShort);
-    if(! copyArray(GTXVariableInfo::VAR_TYPE_MACRO, output,client, nx,ny,nz, expectedSize,colName))
+    if(! copyArray(GTXVariableInfo::VAR_TYPE_MACRO, output,client, nx,ny,nz, expectedSize,colName,pointBased))
       result = 0; // don't use short circuiting otherwise later arrays will not be copied when result =0
   }
   if( columnNameCount )
@@ -154,7 +163,7 @@ int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output, GTXClient* client, 
     colName += temp;
 
     client->SetIndice(index);
-    if(! copyArray(GTXVariableInfo::VAR_TYPE_MACRO, output, client, nx,ny,nz, expectedSize,colName))
+    if(! copyArray(GTXVariableInfo::VAR_TYPE_MACRO, output, client, nx,ny,nz, expectedSize,colName,pointBased))
       result = 0; // don't use short circuiting otherwise later arrays will not be copied when result =0
   }
   return result;
@@ -162,7 +171,7 @@ int ISATISReaderDelegate::copyMacroArray(vtkDataSet* output, GTXClient* client, 
 
 
 int ISATISReaderDelegate::copyArray(int varType, vtkDataSet* output, GTXClient* client,
-        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* vtkArrayName)
+        vtkIdType nx, vtkIdType ny, vtkIdType nz, vtkIdType expectedSize, const char* vtkArrayName, bool pointBased)
 {
   assert(vtkArrayName);
   vtkAbstractArray *result = 0;
@@ -188,8 +197,14 @@ int ISATISReaderDelegate::copyArray(int varType, vtkDataSet* output, GTXClient* 
   if(result) {
     result->SetName(vtkArrayName);
 
-    if(expectedSize == result->GetNumberOfTuples())
-      output->GetCellData()->AddArray(result);
+    if(expectedSize == result->GetNumberOfTuples()) {
+        if (pointBased) {
+            output->GetPointData()->AddArray(result);
+        }
+        else {
+            output->GetCellData()->AddArray(result);
+        }
+    }
     else
       output->GetFieldData()->AddArray(result);
 
@@ -281,6 +296,56 @@ vtkAbstractArray *ISATISReaderDelegate::createNumericArray(GTXClient*client,
     return createTypedArray<float, vtkFloatArray>(vtkFloatArray::New(),client,  nx, ny, nz, expectedSize,name);
   else
     return createTypedArray<double, vtkDoubleArray>(vtkDoubleArray::New(),client,  nx, ny, nz, expectedSize,name);
+}
+
+int ISATISReaderDelegate::createPoints(vtkPointSet* data,GTXClient* client,const vtkIdType expectedSize, const char** names)
+{
+    assert(names && names[0] && names[1] && names[2]);
+    assert(data && data->GetPointData());
+    const char *zzz = names[2];
+    vtkPointData* pointData=data->GetPointData();
+    vtkDoubleArray* xarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[0]));
+    vtkDoubleArray* yarray= vtkDoubleArray::SafeDownCast( pointData->GetArray(names[1]));
+    vtkDoubleArray* zarray= strlen(names[2])>0 ? vtkDoubleArray::SafeDownCast( pointData->GetArray(names[2])) : NULL;
+
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(0);
+
+    data->SetPoints(points);
+    points->Delete();
+
+    if(!xarray || !yarray ) {
+        vtkErrorMacro("No X,Y coordinate arrays!");
+        return 0;
+    }
+    
+    if(xarray->GetNumberOfTuples() != expectedSize && yarray->GetNumberOfTuples() != expectedSize &&
+         (zarray && zarray->GetNumberOfTuples() != expectedSize)) {
+        vtkErrorMacro("Coordinate arrays are != expectedSize");
+        return 0;
+    }
+
+    points->SetNumberOfPoints(expectedSize);
+
+    vtkDebugMacro(<<"Creating "<<expectedSize<<" points");
+
+    const double* x = xarray->GetPointer(0);
+    const double* y = yarray->GetPointer(0);
+    const double* z = zarray ? zarray->GetPointer(0) : NULL;
+
+    assert(x && y);
+
+    double ZDEFAULT = 0; // no Z values. This could be a parameter
+
+    for(vtkIdType i=0; i<expectedSize; i++){
+        double zValue = z!=NULL ? z[i] : ZDEFAULT;
+        points->SetPoint(i,x[i],y[i],zValue);
+        
+        maxZ = (zValue > maxZ || i ==0) ? zValue : maxZ;
+        minZ = (zValue < minZ || i ==0) ? zValue : minZ;
+    }
+
+    return 1;
 }
 
 

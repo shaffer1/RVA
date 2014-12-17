@@ -66,6 +66,7 @@ int ISATISReaderGrid::RequestInformation(
 
   GTXFileInfo fi = client->GetFileInfo();
 
+  // MVM: later - this might be messing up the dims for the point-based lines.
   // MVM: These are +1 because Isatis is counting cells, but for 
   // vtkStructuredGrid we need the point-based dimension.
   int dim[3] = {fi.GetGridNX()+1,fi.GetGridNY()+1,fi.GetGridNZ()+1};
@@ -106,7 +107,7 @@ int ISATISReaderGrid::RequestData(
   sgrid->SetDimensions(dim);
 
   source->SetProgressText("Reading Variables");
-  readAllVariables(sgrid, source,client,dimVtk);
+  readAllVariables(sgrid, source,client,dimVtk, false);
   source->SetProgressText("Creating Points");
 
   vtkIdType expectedNumCells = (dim[0]-1) * (dim[1]-1) * (dim[2]-1);

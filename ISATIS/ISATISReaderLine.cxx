@@ -106,7 +106,7 @@ int  ISATISReaderLine::RequestData(
   vtkIdType dim[3] = { numSamples,1,1};
 
   source->SetProgressText("Reading Variables");
-  readAllVariables(ugrid, source,client,dim);
+  readAllVariables(ugrid, source,client,dim,true);
 
   source->SetProgressText("Creating Lines");
 
