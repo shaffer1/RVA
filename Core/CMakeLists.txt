@@ -9,18 +9,10 @@ ENDIF(NOT ParaView_BINARY_DIR)
 
 INCLUDE_DIRECTORIES(../common)
 
-# Object panels
-ADD_PARAVIEW_OBJECT_PANEL(IFACES3 IFACE_SRCS3
-  CLASS_NAME ConnectedThresholdWithCustomSourceGUIPanel
-  XML_NAME ConnectedThresholdWithCustomSource XML_GROUP filters)
-
-ADD_PARAVIEW_OBJECT_PANEL(IFACES4 IFACE_SRCS4
-  CLASS_NAME ConnectedThresholdGUIPanel
-  XML_NAME ConnectedThreshold XML_GROUP filters)
 
 IF(PARAVIEW_BUILD_QT_GUI)
   
-  QT4_WRAP_CPP(MOC_SRCS ConnectedThresholdWithCustomSourceGUIPanel.h ConnectedThresholdGUIPanel.h CoreMenuActions.h GeolocationPanel.h zGlobalScale.h)
+  QT4_WRAP_CPP(MOC_SRCS CoreMenuActions.h GeolocationPanel.h zGlobalScale.h)
 
   ADD_PARAVIEW_ACTION_GROUP(IFACES IFACE_SRCS
     CLASS_NAME CoreMenuActions
@@ -49,6 +41,7 @@ IF(PARAVIEW_BUILD_QT_GUI)
       SumFilter.cxx
       ConnectedThresholdWithCustomSourceFilter.cxx
       ConnectedThresholdFilter.cxx
+      RVAVolumetrics.cxx
     GUI_RESOURCES 
       ../common/RVAQt.qrc
     GUI_RESOURCE_FILES 
@@ -56,8 +49,6 @@ IF(PARAVIEW_BUILD_QT_GUI)
     GUI_INTERFACES 
       ${IFACES}
       ${IFACES2}
-      ${IFACES3}
-      ${IFACES4}
     GUI_SOURCES 
       zGlobalScale.cxx 
       ${MOC_SRCS}
@@ -67,26 +58,20 @@ IF(PARAVIEW_BUILD_QT_GUI)
       ${MOC_SRCS} 
       ${IFACE_SRCS}
       ${IFACE_SRCS2}
-      ${IFACE_SRCS3}
-      ${IFACE_SRCS4}
       CoreMenuActions.cxx
       CoreMenuActions.h
       SumFilter.h
       SumFilter.cxx
       CutBetweenWellsFilter.h
       CutBetweenWellsFilter.cxx
-      ConnectedThresholdWithCustomSourceGUIPanel.h
-      ConnectedThresholdWithCustomSourceGUIPanel.cxx
       ConnectedThresholdWithCustomSourceFilter.h
       ConnectedThresholdWithCustomSourceFilter.cxx
-      ui_pqConnectedThresholdWithCustomSourcePanel.h
-      ConnectedThresholdGUIPanel.h
-      ConnectedThresholdGUIPanel.cxx
       ConnectedThresholdFilter.h
       ConnectedThresholdFilter.cxx
-      ui_pqConnectedThresholdPanel.h
       GeolocationPanel.h
       GeolocationPanel.cxx
+      RVAVolumetrics.h
+      RVAVolumetrics.cxx
 )
 
 IF(WIN32)
