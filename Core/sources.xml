@@ -3,6 +3,23 @@
   <!-- Filters -->
   <ProxyGroup name="filters">
     <!-- For filters - set SourceProxy elements in a very similar way-->
+    <SourceProxy name="RVAVolumetrics" label="RVA Volumetrics" class="RVAVolumetrics">
+        <Documentation
+            long_help="This filter is a wrapped-pipeline to compute volumetrics for RVA supported data sets."
+            short_help="Compute volumetrics.">
+        </Documentation>
+        <InputProperty
+            name="Input"
+            command="SetInputConnection">
+            <ProxyGroupDomain name="groups">
+                <Group name="sources" />
+                <Group name="filters" />
+            </ProxyGroupDomain>
+            <DataTypeDomain name="input_type">
+                <DataType value="vtkDataSet"/>
+            </DataTypeDomain>
+        </InputProperty>
+    </SourceProxy>
 
     <!-- Cut Between Wells filter -->
     <SourceProxy name="CutBetweenWells" label="Cut Between Wells" class="CutBetweenWellsFilter">
@@ -133,6 +150,60 @@
         </Hints>
       </StringVectorProperty>
 
+      <DoubleVectorProperty name="LowerThreshold1"
+          command="SetLowerThreshold"
+          number_of_elements="1"
+          default_values="0.0"
+          label="Lower Threshold 1">
+          <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+                   <Documentation>
+              The value of this property specifies the lower bound of the threshold for Scalar 1.
+          </Documentation>
+      </DoubleVectorProperty>
+
+    <DoubleVectorProperty name="UpperThreshold1"
+        command="SetUpperThreshold"
+        number_of_elements="1"
+        default_values="0.0"
+        label="Upper Threshold 1">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+         <Documentation>
+            The value of this property specifies the upper bound of the threshold for Scalar 1.
+        </Documentation>
+    </DoubleVectorProperty>
+   
+      <IntVectorProperty
+        name="InsideOut"
+        command="SetInsideOut"
+        number_of_elements="1"
+        default_values="0"
+        label="Exclude Range (Inverse) 1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this option is selected only scalars in Scalar 1 below the Lower Threshold and above the Upper Threshold will be retained.
+        </Documentation>
+      </IntVectorProperty>
+
+    <!-- Filter mode drop-down -->
+      <IntVectorProperty name="FilterMode" 
+                         command="SetMode" 
+                         number_of_elements="1" 
+                         default_values="2"
+                         label="Filter Mode">
+        <EnumerationDomain name="FilterModeBox">
+          <Entry value="0" text="And" />
+          <Entry value="1" text="Or" />
+          <Entry value="2" text="Only Scalar 1" />
+          <Entry value="3" text="Only Scalar 2" />
+        </EnumerationDomain>
+        <Documentation>
+          This specifies how to combine the two scalars. "And" will retain only cells that pass the threshold for both scalars. "Or" retains
+          cells that pass the threshold for either scalar. "Only Scalar 1" ignores Scalar 2 and "Only Scalar 2" ignores Scalar 1.
+        </Documentation>
+      </IntVectorProperty>
+
+
+
       <StringVectorProperty
    name="SelectInputScalars2"
    command="SetRVAArrayName2"
@@ -154,42 +225,7 @@
         </Hints>
       </StringVectorProperty>
 
-      <!-- Filter mode drop-down -->
-      <IntVectorProperty name="FilterMode" 
-                         command="SetMode" 
-                         number_of_elements="1" 
-                         default_values="2"
-                         label="Filter Mode">
-        <EnumerationDomain name="FilterModeBox">
-          <Entry value="0" text="And" />
-          <Entry value="1" text="Or" />
-          <Entry value="2" text="Only Scalar 1" />
-          <Entry value="3" text="Only Scalar 2" />
-        </EnumerationDomain>
-        <Documentation>
-          This specifies how to combine the two scalars. "And" will retain only cells that pass the threshold for both scalars. "Or" retains
-          cells that pass the threshold for either scalar. "Only Scalar 1" ignores Scalar 2 and "Only Scalar 2" ignores Scalar 1.
-        </Documentation>
-      </IntVectorProperty>
-
-      <DoubleVectorProperty
-   name="ThresholdBetween"
-   command="ThresholdBetween"
-   number_of_elements="2"
-   default_values="0 0"
-   label="Threshold Range 1">
-        <ArrayRangeDomain name="range">
-          <RequiredProperties>
-            <Property name="Input" function="Input"/>
-            <Property name="SelectInputScalars" function="ArraySelection"/>
-          </RequiredProperties>
-        </ArrayRangeDomain>
-        <Documentation>
-          The values of this property specify the upper and lower bounds of the thresholding operation for Scalar 1.
-        </Documentation>
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
+        <DoubleVectorProperty
     name="ThresholdBetween2"
     command="ThresholdBetween2"
     number_of_elements="2"
@@ -209,19 +245,7 @@
         </Hints>
       </DoubleVectorProperty>
 
-      <IntVectorProperty
-        name="InsideOut"
-        command="SetInsideOut"
-        number_of_elements="1"
-        default_values="0"
-        label="Exclude Range (Inverse) 1">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          If this option is selected only scalars in Scalar 1 below the Lower Threshold and above the Upper Threshold will be retained.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
+         <IntVectorProperty
         name="InsideOut2"
         command="SetInsideOut2"
         number_of_elements="1"
