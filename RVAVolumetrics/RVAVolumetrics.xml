@@ -3,7 +3,7 @@
         <SourceProxy name="RVAVolumetrics" class="RVAVolumetrics" label="RVA Volumetrics">
             <Documentation
                 long_help = "A wrapped pipeline filter for volumetrics with RVA data sets."
-                short_help = "RVA volumetrics."
+                short_help = "RVA volumetrics.">
             </Documentation>
             <InputProperty
                 name="Input"
