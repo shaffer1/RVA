@@ -1,7 +1,7 @@
 #ifndef __RVAVolumetrics_h
 #define __RVAVolumetrics_h
 
-#include "vtkAlgorithm.h"
+#include "vtkUnstructuredGridAlgorithm.h"
 #include "vtkArrayCalculator.h"
 #include "vtkIntegrateAttributes.h"
 #include "vtkSmartPointer.h"
@@ -10,7 +10,7 @@
 class RVAVolumetrics : public vtkUnstructuredGridAlgorithm
 {
     public:
-        vtkTypeMacro(RVAVolumetrics,vtkAlgorithm);
+        vtkTypeMacro(RVAVolumetrics,vtkUnstructuredGridAlgorithm);
         void PrintSelf(ostream& os, vtkIndent indent);
 
         static RVAVolumetrics *New();
