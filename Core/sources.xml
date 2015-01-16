@@ -19,6 +19,9 @@
                 <DataType value="vtkDataSet"/>
             </DataTypeDomain>
         </InputProperty>
+        <Hints>
+            <View type="SpreadSheetView" />
+        </Hints>
     </SourceProxy>
 
     <!-- Cut Between Wells filter -->
