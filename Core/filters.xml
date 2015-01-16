@@ -4,5 +4,6 @@
 	<Filter name="ConnectedThresholdWithCustomSource" />
     <Filter name="CutBetweenWells" />
     <Filter name="Sum" />
+    <Filter name="RVAVolumetrics" />
   </Category>
 </ParaViewFilters>
