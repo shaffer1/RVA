@@ -19,12 +19,17 @@ OPTION(UTChem "Build UTChem Readers" ON)
 OPTION(ShapefileReader "Build Shapefile Reader" ON)
 option(ZMapPlusReader "Build ZMapPlus GRID Reader" ON)
 OPTION(Paraview "Pack with paraview" OFF)
+option(RVAVolumetrics "Build Volumetrics wrapped pipeline" ON)
 
 SET(COMPONENTS_STRING "")
 
 ADD_SUBDIRECTORY(Core)
 SET(COMPONENTS_STRING "${COMPONENTS_STRING}Core;")
 
+if(RVAVolumetrics)
+    add_subdirectory(RVAVolumetrics)
+    set(COMPONENTS_STRING "${COMPONENTS_STRING}RVAVolumetrics;")
+endif(RVAVolumetrics)
 
 if(ZMapPlusReader)
     add_subdirectory(ZMapPlusReader)
