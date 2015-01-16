@@ -5,6 +5,7 @@
 #include "vtkArrayCalculator.h"
 #include "vtkIntegrateAttributes.h"
 #include "vtkSmartPointer.h"
+#include "vtkStdString.h"
 
 class RVAVolumetrics : public vtkUnstructuredGridAlgorithm
 {
@@ -14,14 +15,14 @@ class RVAVolumetrics : public vtkUnstructuredGridAlgorithm
 
         static RVAVolumetrics *New();
 
-        vtkGetMacro(multiplier, std::string);
-        vtkSetMacro(multiplier, std::string);
+        vtkGetMacro(multiplier, vtkStdString);
+        vtkSetMacro(multiplier, vtkStdString);
 
-        vtkGetMacro(multiplicand, std::string);
-        vtkSetMacro(multiplicand, std::string);
+        vtkGetMacro(multiplicand, vtkStdString);
+        vtkSetMacro(multiplicand, vtkStdString);
 
-        vtkGetMacro(ResultArrayName, std::string);
-        vtkSetMacro(ResultArrayName, std::string);
+        vtkGetMacro(ResultArrayName, vtkStdString);
+        vtkSetMacro(ResultArrayName, vtkStdString);
 
     protected:
         RVAVolumetrics();
@@ -41,9 +42,9 @@ class RVAVolumetrics : public vtkUnstructuredGridAlgorithm
         vtkSmartPointer<vtkIntegrateAttributes> integrate;
 
         // The scalars multiplieed
-        std::string multiplier;
-        std::string multiplicand;
-        std::string ResultArrayName;
+        vtkStdString multiplier;
+        vtkStdString multiplicand;
+        vtkStdString ResultArrayName;
 };
 
 #endif
