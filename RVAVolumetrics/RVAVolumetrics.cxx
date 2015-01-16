@@ -1,4 +1,4 @@
-#include "Volumetrics.h"
+#include "RVARVAVolumetrics.h"
 
 #include "vtkObjectFactory.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
@@ -11,9 +11,9 @@
 #include "vtkDoubleArray.h"
 
 
-vtkStandardNewMacro(Volumetrics);
+vtkStandardNewMacro(RVAVolumetrics);
 
-Volumetrics::Volumetrics()
+RVAVolumetrics::RVAVolumetrics()
 {
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1);
@@ -21,11 +21,11 @@ Volumetrics::Volumetrics()
     this->integrate = vtkSmartPointer<vtkIntegrateAttributes>::New();
 }
 
-Volumetrics::~Volumetrics()
+RVAVolumetrics::~RVAVolumetrics()
 {
 }
 
-int Volumetrics::FillInputPortInformation(int port, vtkInformation* info)
+int RVAVolumetrics::FillInputPortInformation(int port, vtkInformation* info)
 {
     if (!this->Superclass::FillInputPortInformation(port, info))
     {
@@ -43,7 +43,7 @@ int Volumetrics::FillInputPortInformation(int port, vtkInformation* info)
     return 0;
 }
 
-int Volumetrics::RequestData(vtkInformation *vtkNotUsed(request),
+int RVAVolumetrics::RequestData(vtkInformation *vtkNotUsed(request),
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector)
 {
@@ -73,7 +73,7 @@ int Volumetrics::RequestData(vtkInformation *vtkNotUsed(request),
     return 1;
 }
 
-void Volumetrics::PrintSelf(ostream& os, vtkIndent indent)
+void RVAVolumetrics::PrintSelf(ostream& os, vtkIndent indent)
 {
     this->SuperClass::PrintSelf(os, indent);
 }

@@ -1,18 +1,18 @@
-#ifndef __Volumetrics_h
-#define __Volumetrics_h
+#ifndef __RVAVolumetrics_h
+#define __RVAVolumetrics_h
 
 #include "vtkAlgorithm.h"
 #include "vtkArrayCalculator.h"
 #include "vtkIntegrateAttributes.h"
 #include "vtkSmartPointer.h"
 
-class Volumetrics : public vtkUnstructuredGridAlgorithm
+class RVAVolumetrics : public vtkUnstructuredGridAlgorithm
 {
     public:
-        vtkTypeMacro(Volumetrics,vtkAlgorithm);
+        vtkTypeMacro(RVAVolumetrics,vtkAlgorithm);
         void PrintSelf(ostream& os, vtkIndent indent);
 
-        static Volumetrics *New();
+        static RVAVolumetrics *New();
 
         vtkGetMacro(multiplier, std::string);
         vtkSetMacro(multiplier, std::string);
@@ -24,8 +24,8 @@ class Volumetrics : public vtkUnstructuredGridAlgorithm
         vtkSetMacro(ResultArrayName, std::string);
 
     protected:
-        Volumetrics();
-        ~Volumetrics();
+        RVAVolumetrics();
+        ~RVAVolumetrics();
 
         int RequestData(vtkInformation *, vtkInformationVector **,
                 vtkInformationVector *);
@@ -34,8 +34,8 @@ class Volumetrics : public vtkUnstructuredGridAlgorithm
         virtual int FillInputPortInformation(int, vtkInformation*);
 
     private:
-        Volumetrics(const Volumetrics&); // Not implemented.
-        void operator=(const Volumetrics&); // Not implemented.
+        RVAVolumetrics(const RVAVolumetrics&); // Not implemented.
+        void operator=(const RVAVolumetrics&); // Not implemented.
 
         vtkSmartPointer<vtkArrayCalculator> calc;
         vtkSmartPointer<vtkIntegrateAttributes> integrate;
