@@ -66,7 +66,7 @@ int RVAVolumetrics::RequestData(vtkInformation *vtkNotUsed(request),
     // Step 1. just get integrate attributes working
     // Step 2. get calculator working with hard coded arrays
     // Step 3. user selectable arrays.
-    this->integrate->SetInputData(input);
+    this->integrate->SetInput(input);
     this->integrate->Update();
     
     output->ShallowCopy(input);
@@ -75,5 +75,5 @@ int RVAVolumetrics::RequestData(vtkInformation *vtkNotUsed(request),
 
 void RVAVolumetrics::PrintSelf(ostream& os, vtkIndent indent)
 {
-    this->SuperClass::PrintSelf(os, indent);
+    this->Superclass::PrintSelf(os, indent);
 }
