@@ -20,6 +20,17 @@ RVAVolumetrics::RVAVolumetrics()
     this->SetNumberOfOutputPorts(1);
     this->calc = vtkSmartPointer<vtkArrayCalculator>::New();
     this->integrate = vtkSmartPointer<vtkIntegrateAttributes>::New();
+    this->SetInputArrayToProcess(0, 
+            0, 
+            0, 
+            vtkDataObject::FIELD_ASSOCIATION_CELLS, 
+            vtkDataSetAttributes::SCALARS);
+    this->SetInputArrayToProcess(1,
+            0,
+            0,
+            vtkDataObject::FIELD_ASSOCIATION_CELLS,
+            vtkDataSetAttributes::SCALARS);
+
 }
 
 RVAVolumetrics::~RVAVolumetrics()
@@ -35,7 +46,6 @@ int RVAVolumetrics::FillInputPortInformation(int port, vtkInformation* info)
 
     if (port == 0)
     {
-        info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
         info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
         return 1;
     }
@@ -59,21 +69,34 @@ int RVAVolumetrics::RequestData(vtkInformation *vtkNotUsed(request),
         return 0;
     }
 
-    // What I want
-    // User to be able to select two scalars from dropdown menus, then
-    // this filter will multiply them and integrate them.
+    // array2 is not getting populated. which I take to mean inputVector
+    // is not getting populated. Why?!
+    vtkDataArray* array1 = this->GetInputArrayToProcess(0, inputVector);
+    vtkDataArray* array2 = this->GetInputArrayToProcess(1, inputVector);
 
-    // Constructing this backwards.
-    // Step 1. just get integrate attributes working
-    // Step 2. get calculator working with hard coded arrays
-    // Step 3. user selectable arrays.
-    this->integrate->SetInput(input);
+    vtkErrorMacro(" array1: "<<array1->GetName());
+    vtkErrorMacro(" array2: "<<array2->GetName());
+    this->calc->SetInput(input);
+    // This will only work with cell data.
+    this->calc->SetAttributeModeToUseCellData(); 
+    this->calc->AddScalarArrayName(array1->GetName());
+    //this->calc->AddScalarArrayName(array2->GetName());
+    this->calc->AddScalarArrayName("Saturation02_Oil");
+    vtkStdString function(array1->GetName());
+    function.append(" * Saturation02_Oil");
+    //function.append(array2->GetName());
+    this->calc->SetFunction(function);
+
+    this->calc->SetResultArrayName("Cell-wise Volumetric Product");
+    this->calc->Update();
+    
+    this->integrate->SetInputConnection(this->calc->GetOutputPort());
     this->integrate->Update();
     vtkStdString scalarName;
     scalarName = this->integrate->GetOutput()->GetCellData()->GetArrayName(0);
     this->integrate->GetOutput()->GetCellData()->SetActiveScalars(scalarName.c_str());
 
-    double dummy = 0.12345;
+    double *volumetric = this->integrate->GetOutput()->GetCellData()->GetScalars()->GetTuple(0);
 
     // The Integrate Variables filter creates a data set of a single point on which
     // to attached the field data output. This does the same.
@@ -83,7 +106,7 @@ int RVAVolumetrics::RequestData(vtkInformation *vtkNotUsed(request),
     vtx->GetPointIds()->InsertNextId(0);
     vtkSmartPointer<vtkDoubleArray> results = vtkSmartPointer<vtkDoubleArray>::New();
     results->SetName("Results");
-    results->InsertNextTuple(&dummy);
+    results->InsertNextTuple(volumetric);
    
     output->Allocate(1);
     output->InsertNextCell(vtx->GetCellType(), vtx->GetPointIds());
