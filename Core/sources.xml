@@ -18,7 +18,37 @@
             <DataTypeDomain name="input_type">
                 <DataType value="vtkDataSet"/>
             </DataTypeDomain>
+            <InputArrayDomain name="input_array1" attribute_type="cell"
+                number_of_components="1" />
+            <InputArrayDomain name="input_array2" attribute_type="cell"
+                number_of_components="1" />
+
         </InputProperty>
+        <StringVectorProperty
+            name="SelectMultiplier"
+            command="SetInputArrayToProcess"
+            number_of_elements="5"
+            element_types="0 0 0 0 2"
+            label="Scalars 1">
+            <ArrayListDomain name="array_list" attribute_type="Scalars" input_domain_name="input_array1">
+                <RequiredProperties>
+                    <Property name="Input" function="Input" />
+                </RequiredProperties>
+            </ArrayListDomain>
+        </StringVectorProperty> 
+        <StringVectorProperty
+            name="SelectMultiplicand"
+            command="SetInputArrayToProcess"
+            number_of_elements="5"
+            element_types="0 0 0 0 2"
+            label="Scalars 2">
+            <ArrayListDomain name="array_list" attribute_type="Scalars" input_domain_name="input_array2">
+                <RequiredProperties>
+                    <Property name="Input" function="Input" />
+                </RequiredProperties>
+            </ArrayListDomain>
+        </StringVectorProperty>
+
         <Hints>
             <View type="SpreadSheetView" />
         </Hints>
