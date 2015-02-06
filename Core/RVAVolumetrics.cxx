@@ -20,12 +20,14 @@ RVAVolumetrics::RVAVolumetrics()
     this->SetNumberOfOutputPorts(1);
     this->calc = vtkSmartPointer<vtkArrayCalculator>::New();
     this->integrate = vtkSmartPointer<vtkIntegrateAttributes>::New();
-    this->SetInputArrayToProcess(0, 
+    this->SetInputArrayToProcess(
+            0, 
             0, 
             0, 
             vtkDataObject::FIELD_ASSOCIATION_CELLS, 
             vtkDataSetAttributes::SCALARS);
-    this->SetInputArrayToProcess(1,
+    this->SetInputArrayToProcess(
+            1,
             0,
             0,
             vtkDataObject::FIELD_ASSOCIATION_CELLS,
@@ -69,22 +71,17 @@ int RVAVolumetrics::RequestData(vtkInformation *vtkNotUsed(request),
         return 0;
     }
 
-    // array2 is not getting populated. which I take to mean inputVector
-    // is not getting populated. Why?!
     vtkDataArray* array1 = this->GetInputArrayToProcess(0, inputVector);
     vtkDataArray* array2 = this->GetInputArrayToProcess(1, inputVector);
 
-    vtkErrorMacro(" array1: "<<array1->GetName());
-    vtkErrorMacro(" array2: "<<array2->GetName());
     this->calc->SetInput(input);
     // This will only work with cell data.
     this->calc->SetAttributeModeToUseCellData(); 
     this->calc->AddScalarArrayName(array1->GetName());
-    //this->calc->AddScalarArrayName(array2->GetName());
-    this->calc->AddScalarArrayName("Saturation02_Oil");
+    this->calc->AddScalarArrayName(array2->GetName());
     vtkStdString function(array1->GetName());
-    function.append(" * Saturation02_Oil");
-    //function.append(array2->GetName());
+    function.append(" * ");
+    function.append(array2->GetName());
     this->calc->SetFunction(function);
 
     this->calc->SetResultArrayName("Cell-wise Volumetric Product");
@@ -105,7 +102,7 @@ int RVAVolumetrics::RequestData(vtkInformation *vtkNotUsed(request),
     vtkSmartPointer<vtkVertex> vtx = vtkSmartPointer<vtkVertex>::New();
     vtx->GetPointIds()->InsertNextId(0);
     vtkSmartPointer<vtkDoubleArray> results = vtkSmartPointer<vtkDoubleArray>::New();
-    results->SetName("Results");
+    results->SetName("Integrated Cell-wise Volumetric Product");
     results->InsertNextTuple(volumetric);
    
     output->Allocate(1);
