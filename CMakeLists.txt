@@ -53,8 +53,8 @@ ENDIF(Paraview)
 MESSAGE("Adding the following components: ${COMPONENTS_STRING}")
 
 set(RVA_VERSION_MAJOR 1)
-set(RVA_VERSION_MINOR 6)
-set(RVA_VERSION_PATCH 1) 
+set(RVA_VERSION_MINOR 7)
+set(RVA_VERSION_PATCH 0) 
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/common/RVA_Build.h.in"
