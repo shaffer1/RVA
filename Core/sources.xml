@@ -28,7 +28,6 @@
             </InputArrayDomain>
             <InputArrayDomain name="input_array2" attribute_type="cell"
                 number_of_components="1" />
-
         </InputProperty>
         <StringVectorProperty
             name="SelectMultiplier"
