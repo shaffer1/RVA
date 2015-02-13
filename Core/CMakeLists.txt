@@ -27,7 +27,6 @@ IF(PARAVIEW_BUILD_QT_GUI)
   IF(VTK_WRAP_PYTHON) 
   SET(RVA_PYTHON_MODULES 
       RVAMacros/__init__.py
-      RVAMacros/Tubify.py
       RVAMacros/ContextView.py)
   ENDIF(VTK_WRAP_PYTHON)
 

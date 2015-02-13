@@ -118,9 +118,6 @@ CoreMenuActions::CoreMenuActions(QObject* p) : QActionGroup(p), geoPanel(this)
   Separator = new QAction(this);
   Separator->setSeparator(true);
   
-  QAction* VisualizeMacro = new QAction("&Visualize Flow", this);
-  VisualizeMacro->setData("PythonMacro");
-
   QAction*ContextViewMacro = new QAction("&Context View", this);
   ContextViewMacro->setData("PythonMacro");
 
@@ -157,11 +154,6 @@ void CoreMenuActions::onAction(QAction* a)
     pqPythonDialog* dlg = mgr->pythonShellDialog();
     dlg->shell()->releaseControl();
     dlg->shell()->makeCurrent();
-
-    if(a->text() == "&Visualize Flow") { // Tubify macro
-      dlg->runString("from RVAMacros import Tubify");
-      dlg->runString("Tubify.Tubify()");
-    }
 
     if(a->text() == "&Context View") { // ContextView macro
       dlg->runString("from RVAMacros import ContextView");
