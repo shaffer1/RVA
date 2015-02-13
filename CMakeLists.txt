@@ -18,7 +18,6 @@ OPTION(ISATIS "Build ISATIS Readers" ON)
 OPTION(UTChem "Build UTChem Readers" ON)
 OPTION(ShapefileReader "Build Shapefile Reader" ON)
 option(ZMapPlusReader "Build ZMapPlus GRID Reader" ON)
-OPTION(Paraview "Pack with paraview" OFF)
 
 SET(COMPONENTS_STRING "")
 
@@ -44,11 +43,6 @@ IF(UTChem)
 	ADD_SUBDIRECTORY(UTChem)
 	SET(COMPONENTS_STRING "${COMPONENTS_STRING}UTChem;")
 ENDIF(UTChem)
-
-
-IF(Paraview)
-  SET(COMPONENTS_STRING "${COMPONENTS_STRING}ParaView;")
-ENDIF(Paraview)
 
 MESSAGE("Adding the following components: ${COMPONENTS_STRING}")
 
