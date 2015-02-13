@@ -41,3 +41,4 @@ ConnectedThresholdFilter::ConnectedThresholdFilter()
 ConnectedThresholdFilter::~ConnectedThresholdFilter() 
 {
 }
+

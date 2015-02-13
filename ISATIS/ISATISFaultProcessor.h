@@ -70,3 +70,4 @@ private:
 };
 
 #endif //__ISATIS_FAULT_PROCESSOR_H
+
