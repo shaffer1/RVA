@@ -265,7 +265,7 @@ int UTChemConcReader::parseAsPCONCENTRATIONline(const char* match, const char* c
   if(componentNames.count(phase) == 0)
     componentNames[phase] = name;
 
-  return readLayerValues(NULL, false);//(char*)name.c_str());
+  return readLayerValues(std::string(), false);//(char*)name.c_str());
 }
 
 int UTChemConcReader::parseAsTEMPERATUREline(const char* c_str)
