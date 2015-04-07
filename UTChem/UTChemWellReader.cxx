@@ -561,7 +561,7 @@ void UTChemWellReader::buildWell(vtkPolyData* data)
     else {
         // vtkImageData and vtkRectilinearGrid types (should work for Radial when those are added.)
         if (numPts > 1) {
-            for (int i = 0 ; i < numPts ; ++i) {
+            for (int i = well.ifirst - 1; i < well.ilast; ++i) {
                 switch (well.idir) {
                     default: // Ignore bad cases
                         break;
