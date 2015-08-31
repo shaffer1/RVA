@@ -189,6 +189,7 @@
         </Hints>
       </StringVectorProperty>
 
+      <!--
       <DoubleVectorProperty name="LowerThreshold1"
           command="SetLowerThreshold"
           number_of_elements="1"
@@ -210,7 +211,28 @@
             The value of this property specifies the upper bound of the threshold for Scalar 1.
         </Documentation>
     </DoubleVectorProperty>
-   
+  -->
+    <DoubleVectorProperty
+        name="ThresholdBetween"
+        command="ThresholdBetween"
+        number_of_elements="2"
+        default_values="0 0"
+        label="Threshold Range 1">
+        <ArrayRangeDomain name="range">
+            <RequiredProperties>
+                <Property name="Input" function="Input"/>
+                <Property name="SelectInputScalars" function="ArraySelection"/>
+            </RequiredProperties>
+        </ArrayRangeDomain>
+        <Documentation>
+            The value of this property specifies the bounds of the threshold for Scalar 1.
+        </Documentation>
+        <Hints>
+            <ShowInSummaryPanel/>
+        </Hints>
+    </DoubleVectorProperty>
+
+
       <IntVectorProperty
         name="InsideOut"
         command="SetInsideOut"
