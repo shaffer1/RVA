@@ -465,11 +465,11 @@ int UTChemAsciiReader::buildImageData(vtkDataSet * dataSet)
 
   if (InputInfo->icoord == 1) {
     imgData->SetDimensions(nx+1, ny+1, nz+1); // For CellData of nx*ny*nz cells
-    imgData->SetSpacing(InputInfo->dx1,InputInfo->dy1,InputInfo->dz1);
+    imgData->SetSpacing(InputInfo->dx1,InputInfo->dy1, -InputInfo->dz1);
   }
   else if (InputInfo->icoord == 2) {
     imgData->SetDimensions(nx+1, 1, nz+1);
-    imgData->SetSpacing(InputInfo->dx1, 0, InputInfo->dz1);
+    imgData->SetSpacing(InputInfo->dx1, 0, -InputInfo->dz1);
   }
 
 

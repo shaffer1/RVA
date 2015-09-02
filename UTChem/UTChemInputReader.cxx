@@ -663,7 +663,7 @@ void UTChemInputReader::setupRGridCoords()
     }
 
     for (i = 0; i < nz; ++i) {
-      zpos += zspace[i];
+      zpos -= zspace[i];
       zdim->InsertNextValue(zpos);
     }
 }
@@ -679,7 +679,11 @@ void UTChemInputReader::setupSGridCoords()
 	// change this - UTChem gives deltas, but VTK wants absolutes
 	// need to convert the dys to absolutes, x-z-y ordering messes up
 	// the obvious way to do this!
-	std::vector<double> y;
+    
+    // MVM: why is this converting ys to absolute positions, but not
+    // x and z?
+
+    std::vector<double> y;
 	double ypos = 0.0;
 	y.push_back(ypos);
 	
@@ -691,7 +695,7 @@ void UTChemInputReader::setupSGridCoords()
 	for (int k = 0; k <= nz; k++) {
 		for (int j = 0; j <= ny; j++) {
 			for (int i = 0; i <= nx; i++) {
-				points->InsertNextPoint(xspace[i], y.at(j), zspace[k]);
+				points->InsertNextPoint(xspace[i], y.at(j), -zspace[k]);
 
 			}
 		}
@@ -860,7 +864,7 @@ float** UTChemInputReader::getCellCenters()
 
             curr = 0.0f;
             for (int i = 0 ; i < nz ; ++i) {
-                float next = curr + dz1;
+                float next = curr - dz1;
                 cellCenters[2][i] = (curr + next) / 2.0f;
                 curr = next;
             }
@@ -883,7 +887,7 @@ float** UTChemInputReader::getCellCenters()
 
             curr = 0.0f;
             for (int i = 0 ; i < nz ; ++i) {
-                float next = curr + zspace[i];
+                float next = curr - zspace[i];
                 cellCenters[2][i] = (curr + next) / 2.0f;
                 curr = next;
             }
